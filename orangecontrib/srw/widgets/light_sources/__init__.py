@@ -9,7 +9,7 @@ Widgets for association rules.
 
 # Category description for the widget registry
 
-NAME = "SRW Magnetic Structures"
+NAME = "SRW Light Sources"
 
 DESCRIPTION = "Widgets for SRW"
 

@@ -44,7 +44,7 @@ INSTALL_REQUIRES = (
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
 
 PACKAGE_DATA = {
-    "orangecontrib.srw.widgets.magnetic_structures":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.srw.widgets.light_sources":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.optical_elements":["icons/*.png", "icons/*.jpg"],
 }
 
@@ -53,7 +53,7 @@ NAMESPACE_PACAKGES = ["orangecontrib", "orangecontrib.srw", "orangecontrib.srw.w
 ENTRY_POINTS = {
     'oasys.addons' : ("SRW = orangecontrib.srw", ),
     'oasys.widgets' : (
-        "SRW Magnetic Structures = orangecontrib.srw.widgets.magnetic_structures",
+        "SRW Light Sources = orangecontrib.srw.widgets.light_sources",
         "SRW Optical Elements = orangecontrib.srw.widgets.optical_elements",
     ),
 }
