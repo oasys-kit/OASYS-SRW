@@ -4,7 +4,7 @@ import os
 
 from setuptools import find_packages, setup
 
-NAME = 'OASYS-SRW'
+NAME = 'OASYS1-SRW'
 VERSION = '0.0.1'
 ISRELEASED = False
 
@@ -38,7 +38,8 @@ SETUP_REQUIRES = (
 
 INSTALL_REQUIRES = (
     'setuptools',
-    'oasys>=1.0.0',
+    'oasys1>=1.0.0',
+    'wofrysrw'
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
