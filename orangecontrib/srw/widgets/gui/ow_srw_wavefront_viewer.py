@@ -17,7 +17,7 @@ class SRWWavefrontViewer(SRWWidget):
     IMAGE_HEIGHT = 545
 
     want_main_area=1
-    view_type=Setting(1)
+    view_type=Setting(0)
 
     plotted_tickets=None
 
@@ -39,8 +39,6 @@ class SRWWavefrontViewer(SRWWidget):
         self.tabs = gui.tabWidget(plot_tab)
 
         self.initializeTabs()
-
-        self.enableFootprint(False)
 
         self.srw_output = QtGui.QTextEdit()
         self.srw_output.setReadOnly(True)
@@ -79,11 +77,11 @@ class SRWWavefrontViewer(SRWWidget):
     def set_PlotQuality(self):
         self.progressBarInit()
 
-        if not self.plotted_wavefront==None:
+        if not self.plotted_tickets==None:
             try:
                 self.initializeTabs()
 
-                self.plot_results(self.plotted_wavefront, 80)
+                self.plot_results(self.plotted_tickets, 80)
             except Exception as exception:
                 QtGui.QMessageBox.critical(self, "Error",
                                            str(exception),
@@ -132,7 +130,7 @@ class SRWWavefrontViewer(SRWWidget):
                         self.plot_2D(tickets[0], progressBarValue + 4,  variables[0][0], variables[0][1], plot_canvas_index=0, title=titles[0], xtitle=xtitles[0], ytitle=ytitles[0], xum=xums[0], yum=yums[0])
                         self.plot_2D(tickets[1], progressBarValue + 8,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
                         if (len(tickets)) == 3:
-                            self.plot_1D(tickets[1], progressBarValue + 20, variables[2],                  plot_canvas_index=3, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2] )
+                            self.plot_1D(tickets[2], progressBarValue + 20, variables[2],                  plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2] )
 
 
                 except Exception as e:
@@ -161,7 +159,7 @@ class SRWWavefrontViewer(SRWWidget):
         return [[1, 2], [1, 2], -1]
 
     def getTitles(self):
-        return ["Intensity [ph/s/.1%bw/mm^2]", "Power density [$W/mm^2$]", "Flux [ph/s/.1%bw]"]
+        return ["Intensity", "Power density", "Flux"]
 
     def getXTitles(self):
         return ["X [mm]", "X [mm]", "Energy [eV]"]

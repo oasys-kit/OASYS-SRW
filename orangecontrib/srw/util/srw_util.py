@@ -99,33 +99,6 @@ class SRWPlot:
             palette.setColor(QPalette.Base, QColor(243, 240, 160))
             self.total.setPalette(palette)
 
-            self.total_rays.setReadOnly(True)
-            font = QFont(self.total_rays.font())
-            font.setBold(True)
-            self.total_rays.setFont(font)
-            palette = QPalette(self.total.palette())
-            palette.setColor(QPalette.Text, QColor('dark blue'))
-            palette.setColor(QPalette.Base, QColor(243, 240, 160))
-            self.total_rays.setPalette(palette)
-
-            self.total_good_rays.setReadOnly(True)
-            font = QFont(self.total_good_rays.font())
-            font.setBold(True)
-            self.total_good_rays.setFont(font)
-            palette = QPalette(self.total_good_rays.palette())
-            palette.setColor(QPalette.Text, QColor('dark blue'))
-            palette.setColor(QPalette.Base, QColor(243, 240, 160))
-            self.total_good_rays.setPalette(palette)
-
-            self.total_lost_rays.setReadOnly(True)
-            font = QFont(self.total_lost_rays.font())
-            font.setBold(True)
-            self.total_lost_rays.setFont(font)
-            palette = QPalette(self.total_lost_rays.palette())
-            palette.setColor(QPalette.Text, QColor('dark blue'))
-            palette.setColor(QPalette.Base, QColor(243, 240, 160))
-            self.total_lost_rays.setPalette(palette)
-
             self.fwhm_h.setReadOnly(True)
             font = QFont(self.total.font())
             font.setBold(True)
@@ -147,9 +120,6 @@ class SRWPlot:
 
         def clear(self):
             self.total.setText("0.0")
-            self.total_rays.setText("0")
-            self.total_good_rays.setText("0")
-            self.total_lost_rays.setText("0")
             self.fwhm_h.setText("0.0000")
             if hasattr(self, "fwhm_v"):  self.fwhm_v.setText("0.0000")
 
@@ -180,8 +150,8 @@ class SRWPlot:
 
             factor=SRWPlot.get_factor(col)
 
-            histogram = ticket['histogram_path']
-            bins = ticket['bin_path']*factor
+            histogram = ticket['histogram']
+            bins = ticket['bins']*factor
 
             self.plot_canvas.addCurve(bins, histogram, title, symbol='', color='blue', replace=True) #'+', '^', ','
             if not xtitle is None: self.plot_canvas.setGraphXLabel(xtitle)
@@ -229,7 +199,7 @@ class SRWPlot:
 
             self.plot_canvas = ImageView()
 
-            self.plot_canvas.setColormap({"name":"temperature", "normalization":"linear", "autoscale":True, "vmin":0, "vmax":0, "colors":256})
+            self.plot_canvas.setColormap({"name":"gray", "normalization":"linear", "autoscale":True, "vmin":0, "vmax":0, "colors":256})
             self.plot_canvas.setMinimumWidth(590 * x_scale_factor)
             self.plot_canvas.setMaximumWidth(590 * y_scale_factor)
 
@@ -255,8 +225,8 @@ class SRWPlot:
             factor1=SRWPlot.get_factor(var_x)
             factor2=SRWPlot.get_factor(var_y)
 
-            xx = ticket['bin_h_edges']
-            yy = ticket['bin_v_edges']
+            xx = ticket['bin_h']
+            yy = ticket['bin_v']
 
             nbins = ticket['nbins']
 
@@ -336,9 +306,6 @@ class SRWPlot:
             self.plot_canvas.replot()
 
             self.info_box.total.setText("{:4.3f}".format(ticket['total']))
-            self.info_box.total_rays.setText(str(ticket['nrays']))
-            self.info_box.total_good_rays.setText(str(ticket['good_rays']))
-            self.info_box.total_lost_rays.setText(str(ticket['nrays']-ticket['good_rays']))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm_h'] * factor1))
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
@@ -397,30 +364,15 @@ class SRWPlot:
         # output
         ticket['histogram'] = h
         ticket['bins'] = bins
-        bin_center = bins[:-1]+(bins[1]-bins[0])*0.5
-        ticket['bin_center'] = bin_center
-        ticket['bin_left'] = bins[:-1]
-        ticket['bin_right'] = bins[:-1]+(bins[1]-bins[0])
         ticket['xrange'] = xrange
         ticket['total'] = numpy.sum(h)
-
         ticket['fwhm'] = None
-        #for practical purposes, writes the points the will define the histogram area
-        tmp_b = []
-        tmp_h = []
-        for s,t,v in zip(ticket["bin_left"],ticket["bin_right"],ticket["histogram"]):
-          tmp_b.append(s)
-          tmp_h.append(v)
-          tmp_b.append(t)
-          tmp_h.append(v)
-        ticket['histogram_path'] = numpy.array(tmp_h)
-        ticket['bin_path'] = numpy.array(tmp_b)
 
         tt = numpy.where(h>=max(h)*0.5)
         if h[tt].size > 1:
             binSize = bins[1]-bins[0]
             ticket['fwhm'] = binSize*(tt[0][-1]-tt[0][0])
-            ticket['fwhm_coordinates'] = (bin_center[tt[0][0]],bin_center[tt[0][-1]])
+            ticket['fwhm_coordinates'] = (bins[tt[0][0]], bins[tt[0][-1]])
 
         return ticket
 
@@ -438,34 +390,32 @@ class SRWPlot:
 
         ticket['xrange'] = xrange
         ticket['yrange'] = yrange
-        ticket['bin_h_edges'] = xx
-        ticket['bin_v_edges'] = yy
-        ticket['bin_h_left'] = numpy.delete(xx,-1)
-        ticket['bin_v_left'] = numpy.delete(yy,-1)
-        ticket['bin_h_right'] = numpy.delete(xx,0)
-        ticket['bin_v_right'] = numpy.delete(yy,0)
-        ticket['bin_h_center'] = 0.5*(ticket['bin_h_left']+ticket['bin_h_right'])
-        ticket['bin_v_center'] = 0.5*(ticket['bin_v_left']+ticket['bin_v_right'])
+        ticket['bin_h'] = xx
+        ticket['bin_v'] = yy
         ticket['histogram'] = hh
         ticket['histogram_h'] = hh.sum(axis=1)
         ticket['histogram_v'] = hh.sum(axis=0)
         ticket['total'] = numpy.sum(z_array)
 
         h = ticket['histogram_h']
-        tt = numpy.where(h>=max(h)*0.5)
+        tt = numpy.where(h >= (numpy.min(h) + (numpy.max(h)-numpy.min(h))*0.5))
+
         if h[tt].size > 1:
-            binSize = ticket['bin_h_center'][1]-ticket['bin_h_center'][0]
+            binSize = ticket['bin_h'][1]-ticket['bin_h'][0]
             ticket['fwhm_h'] = binSize*(tt[0][-1]-tt[0][0])
-            ticket['fwhm_coordinates_h'] = (ticket['bin_h_center'][tt[0][0]],ticket['bin_h_center'][tt[0][-1]])
+
+            ticket['fwhm_coordinates_h'] = (ticket['bin_h'][tt[0][0]],
+                                            ticket['bin_h'][tt[0][-1]])
         else:
             ticket["fwhm_h"] = None
 
         h = ticket['histogram_v']
-        tt = numpy.where(h>=max(h)*0.5)
+        tt = numpy.where(h >= numpy.min(h) + (numpy.max(h)-numpy.min(h))*0.5)
+
         if h[tt].size > 1:
-            binSize = ticket['bin_v_center'][1]-ticket['bin_v_center'][0]
+            binSize = ticket['bin_v'][1]-ticket['bin_v'][0]
             ticket['fwhm_v'] = binSize*(tt[0][-1]-tt[0][0])
-            ticket['fwhm_coordinates_v'] = (ticket['bin_v_center'][tt[0][0]],ticket['bin_v_center'][tt[0][-1]])
+            ticket['fwhm_coordinates_v'] =(ticket['bin_v'][tt[0][0]], ticket['bin_v'][tt[0][-1]])
         else:
             ticket["fwhm_v"] = None
 

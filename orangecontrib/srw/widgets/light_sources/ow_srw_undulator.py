@@ -118,20 +118,25 @@ class SRWUndulator(SRWSource):
                                                       photon_energy_points=1,
                                                       h_slit_gap = 0.001,
                                                       v_slit_gap = 0.001,
-                                                      h_slit_points=51,
-                                                      v_slit_points=51,
+                                                      h_slit_points=100,
+                                                      v_slit_points=100,
                                                       distance = 10.0)
 
             e, h, v, i = undulator.get_flux_per_unit_surface(source_wavefront_parameters=wf_parameters)
 
 
-            tickets.append(SRWPlot.get_ticket_2D(h, v, i))
+            tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
 
 
-            wf_parameters = SourceWavefrontParameters(h_slit_gap = 0.001,
+            self.progressBarSet(30)
+
+            wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
+                                                      photon_energy_max = resonance_energy*1,
+                                                      photon_energy_points=1,
+                                                      h_slit_gap = 0.001,
                                                       v_slit_gap = 0.001,
-                                                      h_slit_points=51,
-                                                      v_slit_points=51,
+                                                      h_slit_points=100,
+                                                      v_slit_points=100,
                                                       distance = 10.0)
 
             h, v, p = undulator.get_power_density(source_wavefront_parameters=wf_parameters)
@@ -140,6 +145,7 @@ class SRWUndulator(SRWSource):
 
             tickets.append(SRWPlot.get_ticket_2D(h, v, p))
 
+            self.progressBarSet(40)
 
             wf_parameters = SourceWavefrontParameters(photon_energy_min = 1,
                                                       photon_energy_max = 12001,
@@ -156,7 +162,8 @@ class SRWUndulator(SRWSource):
 
             self.setStatusMessage("Plotting Results")
 
-            self.progressBarSet(80)
+            self.progressBarSet(50)
+
             self.plot_results(tickets)
 
             self.setStatusMessage("")
@@ -173,110 +180,15 @@ class SRWUndulator(SRWSource):
 
         self.progressBarFinished()
 
-    def sendNewBeam(self, trigger):
-        if trigger and trigger.new_beam == True:
-            self.runShadowSource()
-
-    def setupUI(self):
-        self.set_OptimizeSource()
-        self.calculateMagneticField()
 
     def checkFields(self):
-        self.number_of_rays = congruence.checkPositiveNumber(self.number_of_rays, "Number of rays")
-        self.seed = congruence.checkPositiveNumber(self.seed, "Seed")
-        self.e_min = congruence.checkPositiveNumber(self.e_min, "Minimum energy")
-        self.e_max = congruence.checkPositiveNumber(self.e_max, "Maximum energy")
-        congruence.checkLessThan(self.e_min, self.e_max,  "Minimum energy",  "Maximum energy")
+        pass
 
-        self.sigma_x = congruence.checkPositiveNumber(self.sigma_x, "Sigma x")
-        self.sigma_z = congruence.checkPositiveNumber(self.sigma_z, "Sigma z")
-        self.emittance_x = congruence.checkPositiveNumber(self.emittance_x, "Emittance x")
-        self.emittance_z = congruence.checkPositiveNumber(self.emittance_z, "Emittance z")
-        self.distance_from_waist_x = congruence.checkPositiveNumber(self.distance_from_waist_x, "Distance from waist x")
-        self.distance_from_waist_z = congruence.checkPositiveNumber(self.distance_from_waist_z, "Distance from waist z")
-        self.energy = congruence.checkPositiveNumber(self.energy, "Energy")
-        self.magnetic_radius = congruence.checkPositiveNumber(self.magnetic_radius, "Magnetic radius")
-        self.horizontal_half_divergence_from = congruence.checkPositiveNumber(self.horizontal_half_divergence_from,
-                                                                             "Horizontal half-divergence from [+]")
-        self.horizontal_half_divergence_to = congruence.checkPositiveNumber(self.horizontal_half_divergence_to,
-                                                                           "Horizontal half-divergence to [-]")
-        self.max_vertical_half_divergence_from = congruence.checkPositiveNumber(self.max_vertical_half_divergence_from,
-                                                                               "Max vertical half-divergence from [+]")
-        self.max_vertical_half_divergence_to = congruence.checkPositiveNumber(self.max_vertical_half_divergence_to,
-                                                                             "Max vertical half-divergence to [-]")
-        if self.optimize_source > 0:
-            self.max_number_of_rejected_rays = congruence.checkPositiveNumber(self.max_number_of_rejected_rays,
-                                                                             "Max number of rejected rays")
-            congruence.checkFile(self.optimize_file_name)
-
-    def populateFields(self, shadow_src):
-        shadow_src.src.NPOINT = self.number_of_rays
-        shadow_src.src.ISTAR1 = self.seed
-        shadow_src.src.PH1 = self.e_min
-        shadow_src.src.PH2 = self.e_max
-        shadow_src.src.F_OPD = 1
-        shadow_src.src.F_SR_TYPE = self.sample_distribution_combo
-        shadow_src.src.F_POL = 1 + self.generate_polarization_combo
-        shadow_src.src.SIGMAX = self.sigma_x
-        shadow_src.src.SIGMAZ = self.sigma_z
-        shadow_src.src.EPSI_X = self.emittance_x
-        shadow_src.src.EPSI_Z = self.emittance_z
-        shadow_src.src.BENER = self.energy
-        shadow_src.src.EPSI_DX = self.distance_from_waist_x
-        shadow_src.src.EPSI_DZ = self.distance_from_waist_z
-        shadow_src.src.R_MAGNET = self.magnetic_radius
-        shadow_src.src.R_ALADDIN = self.magnetic_radius * 100
-        shadow_src.src.HDIV1 = self.horizontal_half_divergence_from
-        shadow_src.src.HDIV2 = self.horizontal_half_divergence_to
-        shadow_src.src.VDIV1 = self.max_vertical_half_divergence_from
-        shadow_src.src.VDIV2 = self.max_vertical_half_divergence_to
-        shadow_src.src.FDISTR = 4 + 2 * self.calculation_mode_combo
-        shadow_src.src.F_BOUND_SOUR = self.optimize_source
-        if self.optimize_source > 0:
-            shadow_src.src.FILE_BOUND = bytes(congruence.checkFileName(self.optimize_file_name), 'utf-8')
-        shadow_src.src.NTOTALPOINT = self.max_number_of_rejected_rays
-
-    def deserialize(self, shadow_file):
-        if not shadow_file is None:
-            try:
-                self.number_of_rays=int(shadow_file.getProperty("NPOINT"))
-                self.seed=int(shadow_file.getProperty("ISTAR1"))
-                self.e_min=float(shadow_file.getProperty("PH1"))
-                self.e_max=float(shadow_file.getProperty("PH2"))
-                self.sample_distribution_combo=int(shadow_file.getProperty("F_SR_TYPE"))
-                self.generate_polarization_combo=int(shadow_file.getProperty("F_POL"))-1
-
-                self.sigma_x=float(shadow_file.getProperty("SIGMAX"))
-                self.sigma_z=float(shadow_file.getProperty("SIGMAZ"))
-                self.emittance_x=float(shadow_file.getProperty("EPSI_X"))
-                self.emittance_z=float(shadow_file.getProperty("EPSI_Z"))
-                self.energy=float(shadow_file.getProperty("BENER"))
-                self.distance_from_waist_x=float(shadow_file.getProperty("EPSI_DX"))
-                self.distance_from_waist_z=float(shadow_file.getProperty("EPSI_DZ"))
-
-                self.magnetic_radius=float(shadow_file.getProperty("R_MAGNET"))
-                self.horizontal_half_divergence_from=float(shadow_file.getProperty("HDIV1"))
-                self.horizontal_half_divergence_to=float(shadow_file.getProperty("HDIV2"))
-                self.max_vertical_half_divergence_from=float(shadow_file.getProperty("VDIV1"))
-                self.max_vertical_half_divergence_to=float(shadow_file.getProperty("VDIV2"))
-                self.calculation_mode_combo = (int(shadow_file.getProperty("FDISTR"))-4)/2
-
-                self.optimize_source = int(shadow_file.getProperty("F_BOUND_SOUR"))
-                self.optimize_file_name = str(shadow_file.getProperty("FILE_BOUND"))
-
-                if not shadow_file.getProperty("NTOTALPOINT") is None:
-                    self.max_number_of_rejected_rays = int(shadow_file.getProperty("NTOTALPOINT"))
-                else:
-                    self.max_number_of_rejected_rays = 10000000
-            except Exception as exception:
-                raise BlockingIOError("Bending magnet source failed to load, bad file format: " + exception.args[0])
-
-            self.setupUI()
 
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)
-    ow = BendingMagnet()
+    ow = SRWUndulator()
     ow.show()
     a.exec_()
     ow.saveSettings()
