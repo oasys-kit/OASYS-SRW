@@ -176,11 +176,9 @@ class SRWPlot:
 
             self.setLayout(layout)
 
-        def plot_1D(self, ticket, col, ref, title, xtitle, ytitle, xum=""):
+        def plot_1D(self, ticket, col, title, xtitle, ytitle, xum=""):
 
             factor=SRWPlot.get_factor(col)
-
-            if ref != 0 and not ytitle is None:  ytitle = ytitle + ' weighted by ' + SRWPlot.get_shadow_label(ref)
 
             histogram = ticket['histogram_path']
             bins = ticket['bin_path']*factor
@@ -250,7 +248,7 @@ class SRWPlot:
 
             self.plot_canvas.toolBar()
 
-        def plot_xy(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum=""):
+        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum=""):
 
             matplotlib.rcParams['axes.formatter.useoffset']='False'
 
