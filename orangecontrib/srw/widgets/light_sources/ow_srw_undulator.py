@@ -8,6 +8,11 @@ from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
 
+from syned.widget.widget_decorator import WidgetDecorator
+
+import syned.storage_ring.light_source as synedls
+import syned.storage_ring.magnetic_structures.insertion_device as synedid
+
 from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, SRWLightSource
 from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
 
@@ -16,7 +21,7 @@ from orangecontrib.srw.util.srw_objects import SRWSourceData
 from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
 
 
-class SRWUndulator(SRWSource):
+class SRWUndulator(SRWSource, WidgetDecorator):
 
     name = "SRW Undulator"
     description = "SRW Source: Undulator"
@@ -35,6 +40,8 @@ class SRWUndulator(SRWSource):
     K_vertical = Setting(1.5)
     period_length = Setting(0.02)
     number_of_periods = Setting(75)
+
+    inputs = [WidgetDecorator.syned_input_data()]
 
     want_main_area=1
 
@@ -183,6 +190,30 @@ class SRWUndulator(SRWSource):
 
     def checkFields(self):
         pass
+
+
+    def receive_syned_data(self, data):
+
+        if isinstance(data, synedls.LightSource) and isinstance(data._magnetic_structure, synedid.InsertionDevice):
+            self.source_name = data._name
+            self.electron_energy_in_GeV = data._electron_beam._energy_in_GeV
+            self.electron_energy_spread = data._electron_beam._energy_spread
+            self.ring_current = data._electron_beam._current
+
+            x, xp, y, yp = data._electron_beam.get_sigmas_all()
+
+            self.electron_beam_size_h = x
+            self.electron_beam_size_v = y
+            self.emittance = xp
+            self.coupling_costant = yp
+
+
+            self.K_horizontal = data._magnetic_structure._K_horizontal
+            self.K_vertical = data._magnetic_structure._K_vertical
+            self.period_length = data._magnetic_structure._period_length
+            self.number_of_periods = data._magnetic_structure._number_of_periods
+        else:
+            raise ValueError("Syned data not correct")
 
 
 
