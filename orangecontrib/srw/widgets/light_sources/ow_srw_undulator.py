@@ -10,6 +10,7 @@ from oasys.util.oasys_util import EmittingStream
 
 from syned.widget.widget_decorator import WidgetDecorator
 
+import syned.beamline.beamline as synedb
 import syned.storage_ring.light_source as synedls
 import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
@@ -183,7 +184,7 @@ class SRWUndulator(SRWSource, WidgetDecorator):
                                        str(exception),
                 QtGui.QMessageBox.Ok)
 
-            raise exception
+            #raise exception
 
         self.progressBarFinished()
 
@@ -193,25 +194,30 @@ class SRWUndulator(SRWSource, WidgetDecorator):
 
 
     def receive_syned_data(self, data):
-
-        if isinstance(data, synedls.LightSource) and isinstance(data._magnetic_structure, synedid.InsertionDevice):
-            self.source_name = data._name
-            self.electron_energy_in_GeV = data._electron_beam._energy_in_GeV
-            self.electron_energy_spread = data._electron_beam._energy_spread
-            self.ring_current = data._electron_beam._current
-
-            x, xp, y, yp = data._electron_beam.get_sigmas_all()
-
-            self.electron_beam_size_h = x
-            self.electron_beam_size_v = y
-            self.emittance = xp
-            self.coupling_costant = yp
-
-
-            self.K_horizontal = data._magnetic_structure._K_horizontal
-            self.K_vertical = data._magnetic_structure._K_vertical
-            self.period_length = data._magnetic_structure._period_length
-            self.number_of_periods = data._magnetic_structure._number_of_periods
+        
+        if isinstance(data, synedb.Beamline):
+            if not data._light_source is None and isinstance(data._light_source._magnetic_structure, synedid.InsertionDevice):
+                light_source = data._light_source
+                
+                self.source_name = light_source._name
+                self.electron_energy_in_GeV = light_source._electron_beam._energy_in_GeV
+                self.electron_energy_spread = light_source._electron_beam._energy_spread
+                self.ring_current = light_source._electron_beam._current
+    
+                x, xp, y, yp = light_source._electron_beam.get_sigmas_all()
+    
+                self.electron_beam_size_h = x
+                self.electron_beam_size_v = y
+                self.emittance = xp
+                self.coupling_costant = yp
+    
+    
+                self.K_horizontal = light_source._magnetic_structure._K_horizontal
+                self.K_vertical = light_source._magnetic_structure._K_vertical
+                self.period_length = light_source._magnetic_structure._period_length
+                self.number_of_periods = light_source._magnetic_structure._number_of_periods
+            else:
+                raise ValueError("Syned data not correct")
         else:
             raise ValueError("Syned data not correct")
 
