@@ -11,14 +11,13 @@ from oasys.util.oasys_util import EmittingStream
 from syned.widget.widget_decorator import WidgetDecorator
 
 import syned.beamline.beamline as synedb
-import syned.storage_ring.light_source as synedls
 import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
 from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, SRWLightSource
 from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
 
 from orangecontrib.srw.util.srw_util import SRWPlot
-from orangecontrib.srw.util.srw_objects import SRWSourceData
+from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
 
 
@@ -29,14 +28,7 @@ class SRWUndulator(SRWSource, WidgetDecorator):
     icon = "icons/undulator.png"
     priority = 2
 
-    source_name = Setting("SRW Undulator")
-    electron_energy_in_GeV = Setting(2.0)
-    electron_energy_spread = Setting(0.0007)
-    ring_current = Setting(0.4)
-    electron_beam_size_h = Setting(0.05545e-3)
-    electron_beam_size_v = Setting(2.784e-6)
-    emittance = Setting(0.2525e-9)
-    coupling_costant = Setting(0.01)
+
     K_horizontal = Setting(0.0)
     K_vertical = Setting(1.5)
     period_length = Setting(0.02)
@@ -49,28 +41,9 @@ class SRWUndulator(SRWSource, WidgetDecorator):
     def __init__(self):
         super().__init__()
 
-        self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
+        tab_plots = oasysgui.createTabPage(self.tabs_setting, "Wavefront Setting")
 
-        tabs_setting = oasysgui.tabWidget(self.controlArea)
-        tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
-        tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
-
-        tab_sou = oasysgui.createTabPage(tabs_setting, "Light Source Setting")
-        tab_plots = oasysgui.createTabPage(tabs_setting, "Wavefront Setting")
-
-        oasysgui.lineEdit(tab_sou, self, "source_name", "Light Source Name", labelWidth=260, valueType=str, orientation="horizontal")
-
-        left_box_1 = oasysgui.widgetBox(tab_sou, "Electron Beam/Machine Parameters", addSpace=True, orientation="vertical")
-
-        oasysgui.lineEdit(left_box_1, self, "electron_energy_in_GeV", "Energy [GeV]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_energy_spread", "Energy Spread", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "ring_current", "Ring Current [A]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_size_h", "Horizontal Beam Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_size_v", "Vertical Beam Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "emittance", "Emittance [rad.m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "coupling_costant", "Coupling Costant", labelWidth=260, valueType=float, orientation="horizontal")
-
-        left_box_2 = oasysgui.widgetBox(tab_sou, "ID Parameters", addSpace=True, orientation="vertical")
+        left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical")
 
         oasysgui.lineEdit(left_box_2, self, "K_horizontal", "Horizontal K", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "K_vertical", "Vertical K", labelWidth=260, valueType=float, orientation="horizontal")
@@ -94,8 +67,8 @@ class SRWUndulator(SRWSource, WidgetDecorator):
                                                 ring_current=self.ring_current,
                                                 electron_beam_size_h=self.electron_beam_size_h,
                                                 electron_beam_size_v=self.electron_beam_size_v,
-                                                emittance=self.emittance,
-                                                coupling_costant=self.coupling_costant,
+                                                electron_beam_divergence_h=self.electron_beam_divergence_h,
+                                                electron_beam_divergence_v=self.electron_beam_divergence_v,
                                                 K_horizontal=self.K_horizontal,
                                                 K_vertical=self.K_vertical,
                                                 period_length=self.period_length,
@@ -124,8 +97,8 @@ class SRWUndulator(SRWSource, WidgetDecorator):
             wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
                                                       photon_energy_max = resonance_energy*1,
                                                       photon_energy_points=1,
-                                                      h_slit_gap = 0.001,
-                                                      v_slit_gap = 0.001,
+                                                      h_slit_gap = 0.01,
+                                                      v_slit_gap = 0.01,
                                                       h_slit_points=100,
                                                       v_slit_points=100,
                                                       distance = 10.0)
@@ -177,14 +150,14 @@ class SRWUndulator(SRWSource, WidgetDecorator):
             self.setStatusMessage("")
 
             #TODO: COMPLETE!
-            self.send("SRWSourceData", SRWSourceData())
+            self.send("SRWData", SRWData())
 
         except Exception as exception:
             QtGui.QMessageBox.critical(self, "Error",
                                        str(exception),
                 QtGui.QMessageBox.Ok)
 
-            #raise exception
+            raise exception
 
         self.progressBarFinished()
 
@@ -208,10 +181,9 @@ class SRWUndulator(SRWSource, WidgetDecorator):
     
                 self.electron_beam_size_h = x
                 self.electron_beam_size_v = y
-                self.emittance = xp
-                self.coupling_costant = yp
-    
-    
+                self.electron_beam_divergence_h = xp
+                self.electron_beam_divergence_v = yp
+
                 self.K_horizontal = light_source._magnetic_structure._K_horizontal
                 self.K_vertical = light_source._magnetic_structure._K_vertical
                 self.period_length = light_source._magnetic_structure._period_length
@@ -220,7 +192,6 @@ class SRWUndulator(SRWSource, WidgetDecorator):
                 raise ValueError("Syned data not correct")
         else:
             raise ValueError("Syned data not correct")
-
 
 
 if __name__ == "__main__":
