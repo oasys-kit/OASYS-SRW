@@ -97,8 +97,8 @@ class SRWUndulator(SRWSource, WidgetDecorator):
             wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
                                                       photon_energy_max = resonance_energy*1,
                                                       photon_energy_points=1,
-                                                      h_slit_gap = 0.01,
-                                                      v_slit_gap = 0.01,
+                                                      h_slit_gap = 0.001,
+                                                      v_slit_gap = 0.001,
                                                       h_slit_points=100,
                                                       v_slit_points=100,
                                                       distance = 10.0)
