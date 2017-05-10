@@ -15,11 +15,11 @@ import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
 from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, SRWLightSource
 from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
+from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
-
 
 class SRWUndulator(SRWSource, WidgetDecorator):
 
@@ -149,8 +149,29 @@ class SRWUndulator(SRWSource, WidgetDecorator):
 
             self.setStatusMessage("")
 
-            #TODO: COMPLETE!
-            self.send("SRWData", SRWData())
+
+            beamline = SRWBeamline(light_source=undulator)
+
+            wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
+                                                      photon_energy_max = resonance_energy*1,
+                                                      photon_energy_points=1,
+                                                      h_slit_gap = 0.0001,
+                                                      v_slit_gap = 0.0001,
+                                                      h_slit_points=100,
+                                                      v_slit_points=100,
+                                                      distance = undulator.get_length()*1.01)
+
+
+            wavefront = undulator.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
+
+            from srwlib import SRWLOptC, SRWLOptD, srwl
+
+            opDrift = SRWLOptD(-undulator.get_length()*1.01) #Drift space from lens to image plane
+            ppDrift = [0, 0, 1., 1, 0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0]
+
+            srwl.PropagElecField(wavefront, SRWLOptC([opDrift], [ppDrift]))
+
+            self.send("SRWData", SRWData(srw_beamline=beamline, srw_wavefront=wavefront))
 
         except Exception as exception:
             QtGui.QMessageBox.critical(self, "Error",
