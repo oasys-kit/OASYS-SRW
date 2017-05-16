@@ -14,7 +14,7 @@ class OWToWofryWavefront2d(widget.OWWidget):
     name = "To Wofry Wavefront 2D"
     id = "toWofryWavefront2D"
     description = "To Wofry Wavefront 2D"
-    icon = "icons/from_wofry_wavefront_1d.png"
+    icon = "icons/to_wofry_wavefront_1d.png"
     priority = 1
     category = ""
     keywords = ["wise", "gaussian"]
@@ -27,6 +27,8 @@ class OWToWofryWavefront2d(widget.OWWidget):
                 "id":"GenericWavefront2D"}]
 
     CONTROL_AREA_WIDTH = 405
+
+    want_main_area = 0
 
     def __init__(self):
         super().__init__()
