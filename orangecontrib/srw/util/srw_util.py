@@ -3,7 +3,7 @@ from PyQt4.QtGui import QWidget, QFont, QPalette, QColor, QGridLayout, QLabel
 from matplotlib.patches import FancyArrowPatch, ArrowStyle
 
 from oasys.widgets import gui
-from oasys.widgets.gui import OasysPlotWindow
+from silx.gui.plot.PlotWindow import PlotWindow
 
 from silx.gui.plot.ImageView import ImageView
 
@@ -128,9 +128,9 @@ class SRWPlot:
         def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0):
             super(SRWPlot.Detailed1DWidget, self).__init__()
 
-            self.plot_canvas = OasysPlotWindow(roi=False, control=False, position=True, logScale=False)
+            self.plot_canvas = PlotWindow(roi=False, control=False, position=True, logScale=False)
             self.plot_canvas.setDefaultPlotLines(True)
-            self.plot_canvas.setActiveCurveColor(color='darkblue')
+            self.plot_canvas.setActiveCurveColor(color='blue')
             self.plot_canvas.setMinimumWidth(590*x_scale_factor)
             self.plot_canvas.setMaximumWidth(590*x_scale_factor)
 
