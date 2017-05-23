@@ -24,9 +24,9 @@ class SRWWavefrontViewer(SRWWidget):
     def __init__(self, show_automatic_box=True):
         super().__init__(show_automatic_box)
 
-        self.main_tabs = gui.tabWidget(self.mainArea)
-        plot_tab = gui.createTabPage(self.main_tabs, "Plots")
-        out_tab = gui.createTabPage(self.main_tabs, "Output")
+        self.main_tabs = oasysgui.TabWidget(self.mainArea)
+        plot_tab = oasysgui.createTabPage(self.main_tabs, "Plots")
+        out_tab = oasysgui.createTabPage(self.main_tabs, "Output")
 
         view_box = oasysgui.widgetBox(plot_tab, "Plotting", addSpace=False, orientation="horizontal")
         view_box_1 = oasysgui.widgetBox(view_box, "", addSpace=False, orientation="vertical", width=350)
