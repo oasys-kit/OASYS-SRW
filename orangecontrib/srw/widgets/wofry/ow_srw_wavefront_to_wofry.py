@@ -3,8 +3,8 @@ from oasys.widgets import gui as oasysgui
 
 from oasys.widgets import widget
 
-from PyQt4.QtGui import QApplication, QMessageBox
-from PyQt4.QtCore import QRect
+from PyQt5.QtWidgets import QApplication, QMessageBox
+from PyQt5.QtCore import QRect
 
 from wofry.propagator.wavefront2D.generic_wavefront import GenericWavefront2D
 

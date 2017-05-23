@@ -1,8 +1,8 @@
 import sys
 
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QApplication
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtWidgets import QApplication
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
@@ -36,11 +36,11 @@ class SRWWavefrontViewer(SRWWidget):
                                             items=["Yes", "No"],
                                             callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
         self.tab = []
-        self.tabs = gui.tabWidget(plot_tab)
+        self.tabs = oasysgui.tabWidget(plot_tab)
 
         self.initializeTabs()
 
-        self.srw_output = QtGui.QTextEdit()
+        self.srw_output = QtWidgets.QTextEdit()
         self.srw_output.setReadOnly(True)
 
         out_box = gui.widgetBox(out_tab, "System Output", addSpace=True, orientation="horizontal")
@@ -60,9 +60,9 @@ class SRWWavefrontViewer(SRWWidget):
 
         titles = self.getTitles()
 
-        self.tab = [gui.createTabPage(self.tabs, titles[0]),
-                    gui.createTabPage(self.tabs, titles[1]),
-                    gui.createTabPage(self.tabs, titles[2]),
+        self.tab = [oasysgui.createTabPage(self.tabs, titles[0]),
+                    oasysgui.createTabPage(self.tabs, titles[1]),
+                    oasysgui.createTabPage(self.tabs, titles[2]),
         ]
 
         for tab in self.tab:
@@ -83,9 +83,9 @@ class SRWWavefrontViewer(SRWWidget):
 
                 self.plot_results(self.plotted_tickets, 80)
             except Exception as exception:
-                QtGui.QMessageBox.critical(self, "Error",
+                QtWidgets.QMessageBox.critical(self, "Error",
                                            str(exception),
-                    QtGui.QMessageBox.Ok)
+                    QtWidgets.QMessageBox.Ok)
 
                 #raise exception
                 

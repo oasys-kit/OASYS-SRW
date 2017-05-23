@@ -1,7 +1,7 @@
 import sys
 
-from PyQt4 import QtGui
-from PyQt4.QtGui import QApplication
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QApplication
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
@@ -174,9 +174,9 @@ class SRWUndulator(SRWSource, WidgetDecorator):
             self.send("SRWData", SRWData(srw_beamline=beamline, srw_wavefront=wavefront))
 
         except Exception as exception:
-            QtGui.QMessageBox.critical(self, "Error",
+            QtWidgets.QMessageBox.critical(self, "Error",
                                        str(exception),
-                QtGui.QMessageBox.Ok)
+                QtWidgets.QMessageBox.Ok)
 
             raise exception
 

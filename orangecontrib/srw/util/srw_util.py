@@ -1,5 +1,6 @@
 import numpy
-from PyQt4.QtGui import QWidget, QFont, QPalette, QColor, QGridLayout, QLabel
+from PyQt5.QtGui import QFont, QPalette, QColor
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel
 from matplotlib.patches import FancyArrowPatch, ArrowStyle
 
 from oasys.widgets import gui
