@@ -24,7 +24,7 @@ class SRWWavefrontViewer(SRWWidget):
     def __init__(self, show_automatic_box=True):
         super().__init__(show_automatic_box)
 
-        self.main_tabs = oasysgui.TabWidget(self.mainArea)
+        self.main_tabs = oasysgui.tabWidget(self.mainArea)
         plot_tab = oasysgui.createTabPage(self.main_tabs, "Plots")
         out_tab = oasysgui.createTabPage(self.main_tabs, "Output")
 
