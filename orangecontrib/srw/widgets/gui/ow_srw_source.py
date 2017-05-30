@@ -35,7 +35,7 @@ class SRWSource(SRWWavefrontViewer):
     electron_beam_size_h = Setting(0.05545e-3)
     electron_beam_size_v = Setting(2.784e-6)
     electron_beam_divergence_h = Setting(0.2525e-9)
-    electron_beam_divergence_v = Setting(0.01)
+    electron_beam_divergence_v = Setting(0.8352e-11)
 
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
