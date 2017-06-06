@@ -60,7 +60,7 @@ ENTRY_POINTS = {
     'oasys.widgets' : (
         "SRW Light Sources = orangecontrib.srw.widgets.light_sources",
         "SRW Optical Elements = orangecontrib.srw.widgets.optical_elements",
-        "SRW - WOFRY = orangecontrib.srw.widgets.wofry",
+        "SRW Wofry = orangecontrib.srw.widgets.wofry",
     ),
 }
 
