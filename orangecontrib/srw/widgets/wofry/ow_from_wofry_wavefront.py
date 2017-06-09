@@ -10,21 +10,23 @@ from wofry.propagator.wavefront2D.generic_wavefront import GenericWavefront2D
 
 from orangecontrib.srw.util.srw_objects import SRWData
 
-class OWToWofryWavefront2d(widget.OWWidget):
-    name = "To Wofry Wavefront 2D"
-    id = "toWofryWavefront2D"
-    description = "To Wofry Wavefront 2D"
-    icon = "icons/to_wofry_wavefront_2d.png"
-    priority = 2
+from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront
+
+class OWFromWofryWavefront2d(widget.OWWidget):
+    name = "From Wofry Wavefront 2D"
+    id = "fromWofryWavefront2D"
+    description = "from Wofry Wavefront 2D"
+    icon = "icons/from_wofry_wavefront_1d.png"
+    priority = 1
     category = ""
     keywords = ["wise", "gaussian"]
 
-    inputs = [("SRWData", SRWData, "set_input")]
+    inputs = [("GenericWavefront2D", GenericWavefront2D, "set_input")]
 
-    outputs = [{"name":"GenericWavefront2D",
-                "type":GenericWavefront2D,
-                "doc":"GenericWavefront2D",
-                "id":"GenericWavefront2D"}]
+    outputs = [{"name":"SRWData",
+                "type":SRWData,
+                "doc":"SRWData",
+                "id":"SRWData"}]
 
     CONTROL_AREA_WIDTH = 605
 
@@ -44,16 +46,16 @@ class OWToWofryWavefront2d(widget.OWWidget):
 
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
-        main_box = oasysgui.widgetBox(self.controlArea, "SRW to Wofry Wavefront Converter", orientation="vertical", width=self.CONTROL_AREA_WIDTH-5, height=50)
+        main_box = oasysgui.widgetBox(self.controlArea, "Wofry to SRW Wavefront Converter", orientation="vertical", width=self.CONTROL_AREA_WIDTH-5, height=50)
 
-        gui.label(main_box, self, "--------------- from SRW SRWWfr to Wofry GenericWavefront2D ---------------")
+        gui.label(main_box, self, "--------------- from Wofry GenericWavefront2D to SRW SRWWfr ---------------")
 
     def set_input(self, input_data):
         self.setStatusMessage("")
 
         if not input_data is None:
             try:
-                self.send("GenericWavefront2D", input_data._srw_wavefront.toGenericWavefront())
+                self.send("SRWData", SRWData(srw_wavefront=SRWWavefront.fromGenericWavefront(input_data)))
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
