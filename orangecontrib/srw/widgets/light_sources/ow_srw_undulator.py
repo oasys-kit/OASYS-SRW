@@ -34,7 +34,7 @@ class SRWUndulator(SRWSource, WidgetDecorator):
     period_length = Setting(0.02)
     number_of_periods = Setting(75)
 
-    inputs = [WidgetDecorator.syned_input_data()]
+    inputs = WidgetDecorator.syned_input_data()
 
     want_main_area=1
 
