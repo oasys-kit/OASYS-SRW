@@ -10,7 +10,6 @@ from oasys.util.oasys_util import EmittingStream
 
 from syned.widget.widget_decorator import WidgetDecorator
 
-import syned.beamline.beamline as synedb
 import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
 from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, SRWLightSource
@@ -188,18 +187,17 @@ class SRWUndulator(SRWSource, WidgetDecorator):
 
 
     def receive_syned_data(self, data):
-        
-        if isinstance(data, synedb.Beamline):
+        if not data is None:
             if not data._light_source is None and isinstance(data._light_source._magnetic_structure, synedid.InsertionDevice):
                 light_source = data._light_source
-                
+
                 self.source_name = light_source._name
                 self.electron_energy_in_GeV = light_source._electron_beam._energy_in_GeV
                 self.electron_energy_spread = light_source._electron_beam._energy_spread
                 self.ring_current = light_source._electron_beam._current
-    
+
                 x, xp, y, yp = light_source._electron_beam.get_sigmas_all()
-    
+
                 self.electron_beam_size_h = x
                 self.electron_beam_size_v = y
                 self.electron_beam_divergence_h = xp
@@ -211,8 +209,6 @@ class SRWUndulator(SRWSource, WidgetDecorator):
                 self.number_of_periods = light_source._magnetic_structure._number_of_periods
             else:
                 raise ValueError("Syned data not correct")
-        else:
-            raise ValueError("Syned data not correct")
 
 
 if __name__ == "__main__":
