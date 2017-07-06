@@ -16,6 +16,6 @@ DESCRIPTION = "Widgets for SRW"
 
 BACKGROUND = "#b8bcdb"
 
-ICON = "icons/srw2.png"
+ICON = "icons/wofry.png"
 
 PRIORITY = 203

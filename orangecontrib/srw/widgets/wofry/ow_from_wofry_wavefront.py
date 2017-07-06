@@ -16,7 +16,7 @@ class OWFromWofryWavefront2d(widget.OWWidget):
     name = "From Wofry Wavefront 2D"
     id = "fromWofryWavefront2D"
     description = "from Wofry Wavefront 2D"
-    icon = "icons/from_wofry_wavefront_1d.png"
+    icon = "icons/from_wofry_wavefront_2d.png"
     priority = 1
     category = ""
     keywords = ["wise", "gaussian"]

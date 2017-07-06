@@ -15,6 +15,6 @@ DESCRIPTION = "Widgets for SRW"
 
 BACKGROUND = "#b8bcdb"
 
-ICON = "icons/srw1.png"
+ICON = "icons/source.png"
 
 PRIORITY = 201
