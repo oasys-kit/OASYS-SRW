@@ -89,10 +89,9 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
                                                                                                               use_terminating_terms=self.spe_use_terminating_terms,
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
 
-        e, i = srw_source.get_spectral_flux(source_wavefront_parameters=wf_parameters)
-        f = SRWLightSource.get_flux_from_spectral_flux(e, i)
+        e, i = srw_source.get_flux(source_wavefront_parameters=wf_parameters)
 
-        tickets.append(SRWPlot.get_ticket_1D(e, f))
+        tickets.append(SRWPlot.get_ticket_1D(e, i))
 
         self.progressBarSet(progress_bar_value)
 
