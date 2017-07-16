@@ -6,19 +6,16 @@ from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
-from oasys.util.oasys_util import EmittingStream
 
 from syned.widget.widget_decorator import WidgetDecorator
 
 import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
-from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, SRWLightSource
-from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
-from wofrysrw.beamline.srw_beamline import SRWBeamline
+from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, WavefrontPrecisionParameters
+from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import FluxPrecisionParameters, SRWUndulatorLightSource
 
-from orangecontrib.srw.util.srw_util import SRWPlot
-from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
+from orangecontrib.srw.util.srw_util import SRWPlot
 
 class SRWUndulator(SRWSource, WidgetDecorator):
 
@@ -35,12 +32,13 @@ class SRWUndulator(SRWSource, WidgetDecorator):
 
     inputs = WidgetDecorator.syned_input_data()
 
+    wf_use_harmonic = Setting(0)
+    wf_harmonic_number = Setting(1)
+
     want_main_area=1
 
     def __init__(self):
         super().__init__()
-
-        tab_plots = oasysgui.createTabPage(self.tabs_setting, "Wavefront Setting")
 
         left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical")
 
@@ -53,137 +51,80 @@ class SRWUndulator(SRWSource, WidgetDecorator):
         gui.rubber(self.mainArea)
 
 
-    def runSRWSource(self):
-        self.setStatusMessage("")
-        self.progressBarInit()
+    def build_wf_photon_energy_box(self, box):
 
-        try:
-            self.checkFields()
+        gui.comboBox(box, self, "wf_use_harmonic", label="Energy Setting",
+                                            items=["Harmonic", "Other"], labelWidth=260,
+                                            callback=self.set_WFUseHarmonic, sendSelectedValue=False, orientation="horizontal")
 
-            undulator = SRWUndulatorLightSource(name=self.source_name,
-                                                electron_energy_in_GeV=self.electron_energy_in_GeV,
-                                                electron_energy_spread=self.electron_energy_spread,
-                                                ring_current=self.ring_current,
-                                                electron_beam_size_h=self.electron_beam_size_h,
-                                                electron_beam_size_v=self.electron_beam_size_v,
-                                                electron_beam_divergence_h=self.electron_beam_divergence_h,
-                                                electron_beam_divergence_v=self.electron_beam_divergence_v,
-                                                K_horizontal=self.K_horizontal,
-                                                K_vertical=self.K_vertical,
-                                                period_length=self.period_length,
-                                                number_of_periods=int(self.number_of_periods))
+        self.use_harmonic_box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=30)
+        oasysgui.lineEdit(self.use_harmonic_box_1, self, "wf_harmonic_number", "Harmonic #", labelWidth=260, valueType=int, orientation="horizontal")
 
-            self.progressBarSet(10)
+        self.use_harmonic_box_2 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=30)
+        oasysgui.lineEdit(self.use_harmonic_box_2, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
 
-            self.setStatusMessage("Running SRW")
+        self.set_WFUseHarmonic()
 
-            sys.stdout = EmittingStream(textWritten=self.writeStdOut)
+    def set_WFUseHarmonic(self):
+        self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
+        self.use_harmonic_box_2.setVisible(self.wf_use_harmonic==1)
 
-            print(undulator.get_electron_beam().get_electron_beam_geometrical_properties().to_info())
+    def get_srw_source(self):
+        return SRWUndulatorLightSource(name=self.source_name,
+                                       electron_energy_in_GeV=self.electron_energy_in_GeV,
+                                       electron_energy_spread=self.electron_energy_spread,
+                                       ring_current=self.ring_current,
+                                       electron_beam_size_h=self.electron_beam_size_h,
+                                       electron_beam_size_v=self.electron_beam_size_v,
+                                       electron_beam_divergence_h=self.electron_beam_divergence_h,
+                                       electron_beam_divergence_v=self.electron_beam_divergence_v,
+                                       K_horizontal=self.K_horizontal,
+                                       K_vertical=self.K_vertical,
+                                       period_length=self.period_length,
+                                       number_of_periods=int(self.number_of_periods))
 
-            resonance_energy = undulator.get_resonance_energy()
+    def print_specific_infos(self, srw_source):
+        print("1st Harmonic Energy", srw_source.get_resonance_energy())
+        print(srw_source.get_photon_source_properties(harmonic=1).to_info())
 
-            print("1st Harmonic Energy", resonance_energy)
+    def get_automatic_sr_method(self):
+        return 1
 
-            properties = undulator.get_photon_source_properties(harmonic=1)
+    def get_photon_energy_for_wavefront_propagation(self, srw_source):
+        return self.wf_photon_energy if self.wf_use_harmonic == 1 else srw_source.get_resonance_energy()*self.wf_harmonic_number
 
-            print(properties.to_info())
+    def get_source_length(self, srw_source):
+        return srw_source.get_length()
 
-            self.progressBarSet(20)
-
-            tickets = []
-
-            wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
-                                                      photon_energy_max = resonance_energy*1,
-                                                      photon_energy_points=1,
-                                                      h_slit_gap = 0.001,
-                                                      v_slit_gap = 0.001,
-                                                      h_slit_points=100,
-                                                      v_slit_points=100,
-                                                      distance = 10.0)
-
-            e, h, v, i = undulator.get_flux_per_unit_surface(source_wavefront_parameters=wf_parameters)
-
-
-            tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
-
-
-            self.progressBarSet(30)
-
-            wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
-                                                      photon_energy_max = resonance_energy*1,
-                                                      photon_energy_points=1,
-                                                      h_slit_gap = 0.001,
-                                                      v_slit_gap = 0.001,
-                                                      h_slit_points=100,
-                                                      v_slit_points=100,
-                                                      distance = 10.0)
-
-            h, v, p = undulator.get_power_density(source_wavefront_parameters=wf_parameters)
-
-            print(SRWLightSource.get_total_power_from_power_density(h, v, p))
-
-            tickets.append(SRWPlot.get_ticket_2D(h, v, p))
-
-            self.progressBarSet(40)
-
-            wf_parameters = SourceWavefrontParameters(photon_energy_min = 1,
-                                                      photon_energy_max = 12001,
-                                                      photon_energy_points=12000,
-                                                      h_slit_gap = 0.001,
-                                                      v_slit_gap = 0.001,
-                                                      h_slit_points=1,
-                                                      v_slit_points=1,
-                                                      distance = 10.0)
-
-            e, i = undulator.get_undulator_flux(source_wavefront_parameters=wf_parameters)
-
-            tickets.append(SRWPlot.get_ticket_1D(e, i))
-
-            self.setStatusMessage("Plotting Results")
-
-            self.progressBarSet(50)
-
-            self.plot_results(tickets)
-
-            self.setStatusMessage("")
-
-
-            beamline = SRWBeamline(light_source=undulator)
-
-            wf_parameters = SourceWavefrontParameters(photon_energy_min = resonance_energy*1,
-                                                      photon_energy_max = resonance_energy*1,
-                                                      photon_energy_points=1,
-                                                      h_slit_gap = 0.0001,
-                                                      v_slit_gap = 0.0001,
-                                                      h_slit_points=100,
-                                                      v_slit_points=100,
-                                                      distance = undulator.get_length()*1.01)
-
-
-            wavefront = undulator.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
-
-            from srwlib import SRWLOptC, SRWLOptD, srwl
-
-            opDrift = SRWLOptD(-undulator.get_length()*1.01) #Drift space from lens to image plane
-            ppDrift = [0, 0, 1., 1, 0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0]
-
-            srwl.PropagElecField(wavefront, SRWLOptC([opDrift], [ppDrift]))
-
-            self.send("SRWData", SRWData(srw_beamline=beamline, srw_wavefront=wavefront))
-
-        except Exception as exception:
-            QtWidgets.QMessageBox.critical(self, "Error",
-                                       str(exception),
-                QtWidgets.QMessageBox.Ok)
-
-            raise exception
-
-        self.progressBarFinished()
-
-
-    def checkFields(self):
+    def checkSpecificFields(self):
         pass
+
+    def run_calculation_flux(self, srw_source, tickets, progress_bar_value=50):
+        wf_parameters = SourceWavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
+                                                  photon_energy_max = self.spe_photon_energy_max,
+                                                  photon_energy_points=self.spe_photon_energy_points,
+                                                  h_slit_gap = self.spe_h_slit_gap,
+                                                  v_slit_gap = self.spe_v_slit_gap,
+                                                  h_slit_points=1,
+                                                  v_slit_points=1,
+                                                  distance = self.spe_distance,
+                                                  wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.spe_sr_method == 0 else self.get_automatic_sr_method(),
+                                                                                                              relative_precision=self.spe_relative_precision,
+                                                                                                              start_integration_longitudinal_position=self.spe_start_integration_longitudinal_position,
+                                                                                                              end_integration_longitudinal_position=self.spe_end_integration_longitudinal_position,
+                                                                                                              number_of_points_for_trajectory_calculation=self.spe_number_of_points_for_trajectory_calculation,
+                                                                                                              use_terminating_terms=self.spe_use_terminating_terms,
+                                                                                                              sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
+
+        e, i = srw_source.get_flux(source_wavefront_parameters=wf_parameters,
+                                   flux_precision_parameters=FluxPrecisionParameters(initial_UR_harmonic=self.spe_initial_UR_harmonic,
+                                                                                     final_UR_harmonic=self.spe_final_UR_harmonic,
+                                                                                     longitudinal_integration_precision_parameter=self.spe_longitudinal_integration_precision_parameter,
+                                                                                     azimuthal_integration_precision_parameter=self.spe_azimuthal_integration_precision_parameter))
+
+        tickets.append(SRWPlot.get_ticket_1D(e, i))
+
+        self.progressBarSet(progress_bar_value)
 
 
     def receive_syned_data(self, data):

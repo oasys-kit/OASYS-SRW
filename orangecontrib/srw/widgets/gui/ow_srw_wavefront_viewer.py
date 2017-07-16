@@ -159,7 +159,7 @@ class SRWWavefrontViewer(SRWWidget):
         return [[1, 2], [1, 2], -1]
 
     def getTitles(self):
-        return ["Intensity", "Power density", "Flux"]
+        return ["Intensity", "Power", "Flux"]
 
     def getXTitles(self):
         return ["X [mm]", "X [mm]", "Energy [eV]"]
