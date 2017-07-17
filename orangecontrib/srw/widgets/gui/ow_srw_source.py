@@ -97,11 +97,7 @@ class SRWSource(SRWWavefrontViewer):
     spe_use_terminating_terms = Setting(1)
     spe_sampling_factor_for_adjusting_nx_ny = Setting(0.0)
 
-    spe_initial_UR_harmonic = Setting(1)
-    spe_final_UR_harmonic = Setting(21)
-    spe_longitudinal_integration_precision_parameter = Setting(1.5)
-    spe_azimuthal_integration_precision_parameter = Setting(1.5)
-    spe_calculation_type = Setting(2)
+    calculated_total_power = 0.0
 
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
@@ -194,7 +190,7 @@ class SRWSource(SRWWavefrontViewer):
 
         # INTENSITY/POWER  -------------------------------------------
 
-        tab_convolution = oasysgui.createTabPage(self.tabs_plots_setting, "Intensity/Power")
+        tab_convolution = oasysgui.createTabPage(self.tabs_plots_setting, "Intensity/Power Density")
 
         int_box = oasysgui.widgetBox(tab_convolution, "Wavefront Parameters", addSpace=True, orientation="vertical")
     
@@ -228,7 +224,7 @@ class SRWSource(SRWWavefrontViewer):
 
         oasysgui.lineEdit(tab_prop, self, "int_sampling_factor_for_adjusting_nx_ny", "Sampling factor for adjusting nx/ny", labelWidth=260, valueType=int, orientation="horizontal")
 
-        tab_pow = oasysgui.createTabPage(tabs_precision, "Power")
+        tab_pow = oasysgui.createTabPage(tabs_precision, "Power Density")
 
         oasysgui.lineEdit(tab_pow, self, "pow_precision_factor", "Precision Factor", labelWidth=260, valueType=float, orientation="horizontal")
 
@@ -242,7 +238,7 @@ class SRWSource(SRWWavefrontViewer):
     
         # FLUX -------------------------------------------
 
-        tab_flux = oasysgui.createTabPage(self.tabs_plots_setting, "Spectral Flux")
+        tab_flux = oasysgui.createTabPage(self.tabs_plots_setting, "Flux")
 
         spe_box = oasysgui.widgetBox(tab_flux, "Wavefront Parameters", addSpace=True, orientation="vertical")
     
@@ -276,15 +272,13 @@ class SRWSource(SRWWavefrontViewer):
 
         # FLUX  -------------------------------------------
 
-        tab_flu = oasysgui.createTabPage(tabs_precision, "Spectral Flux")
-
-        oasysgui.lineEdit(tab_flu, self, "spe_initial_UR_harmonic", "Initial Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
-        oasysgui.lineEdit(tab_flu, self, "spe_final_UR_harmonic", "Final Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
-        oasysgui.lineEdit(tab_flu, self, "spe_longitudinal_integration_precision_parameter", "Longitudinal integration precision param.", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(tab_flu, self, "spe_azimuthal_integration_precision_parameter", "Azimuthal integration precision param.", labelWidth=260, valueType=int, orientation="horizontal")
+        self.build_flux_precision_tab(tabs_precision)
 
     def build_wf_photon_energy_box(self, box):
         oasysgui.lineEdit(box, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
+
+    def build_flux_precision_tab(self, tabs_precision):
+        pass
 
     def runSRWSource(self):
         self.setStatusMessage("")
@@ -324,23 +318,94 @@ class SRWSource(SRWWavefrontViewer):
             self.send("SRWData", SRWData(srw_beamline=beamline, srw_wavefront=wavefront))
 
         except Exception as exception:
-            QMessageBox.critical(self, "Error",
-                                       str(exception),
-                QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-            raise exception
+            #raise exception
 
         self.progressBarFinished()
 
+    def getCalculatedTotalPowerString(self):
+        if self.calculated_total_power == 0:
+            return ""
+        else:
+            return "Total: " + str(int(self.calculated_total_power)) + " W"
 
     def checkFields(self):
 
-        #TODO: checks
+        congruence.checkStrictlyPositiveNumber(self.electron_energy_in_GeV, "Energy")
+        congruence.checkPositiveNumber(self.electron_energy_spread, "Energy Spread")
+        congruence.checkStrictlyPositiveNumber(self.ring_current, "Ring Current")
+        congruence.checkPositiveNumber(self.electron_beam_size_h, "Horizontal Beam Size")
+        congruence.checkPositiveNumber(self.electron_beam_size_v, "Vertical Beam Size")
+        congruence.checkPositiveNumber(self.electron_beam_divergence_h, "Horizontal Beam Divergence")
+        congruence.checkPositiveNumber(self.electron_beam_divergence_v, "Vetical Beam Divergence")
 
-        self.checkSpecificFields()
+        self.checkLightSourceSpecificFields()
 
-    def checkSpecificFields(self):
+        # WAVEFRONT
+
+        self.checkWavefrontPhotonenergy()
+        congruence.checkStrictlyPositiveNumber(self.wf_h_slit_gap, "Wavefront Propagation H Slit Gap")
+        congruence.checkStrictlyPositiveNumber(self.wf_v_slit_gap, "Wavefront Propagation V Slit Gap")
+        congruence.checkStrictlyPositiveNumber(self.wf_h_slit_points, "Wavefront Propagation H Slit Points")
+        congruence.checkStrictlyPositiveNumber(self.wf_v_slit_points, "Wavefront Propagation V Slit Points")
+        congruence.checkGreaterOrEqualThan(self.wf_distance, self.get_minimum_propagation_distance(),
+                                           "Wavefront Propagation Distance", "Minimum Distance out of the Source: " + str(self.get_minimum_propagation_distance()))
+
+        congruence.checkStrictlyPositiveNumber(self.wf_relative_precision, "Wavefront Propagation Relative Precision")
+        congruence.checkStrictlyPositiveNumber(self.wf_number_of_points_for_trajectory_calculation, "Wavefront Propagation Number of points for trajectory calculation")
+        congruence.checkPositiveNumber(self.wf_sampling_factor_for_adjusting_nx_ny, "Wavefront Propagation Sampling Factor for adjusting nx/ny")
+
+
+        # INTENSITY/POWER
+
+        congruence.checkStrictlyPositiveNumber(self.int_photon_energy_min, "Intensity/Power Density Photon Energy Min")
+        congruence.checkStrictlyPositiveNumber(self.int_photon_energy_max, "Intensity/Power Density Photon Energy Max")
+        congruence.checkGreaterOrEqualThan(self.int_photon_energy_max, self.int_photon_energy_min, "Intensity/Power Density Photon Energy Max", "Intensity/Power Density Photon Energy Min")
+        congruence.checkStrictlyPositiveNumber(self.int_photon_energy_points, "Intensity/Power Density Photon Energy Points")
+        
+        congruence.checkStrictlyPositiveNumber(self.int_h_slit_gap, "Intensity/Power Density H Slit Gap")
+        congruence.checkStrictlyPositiveNumber(self.int_v_slit_gap, "Intensity/Power Density V Slit Gap")
+        congruence.checkStrictlyPositiveNumber(self.int_h_slit_points, "Intensity/Power Density H Slit Points")
+        congruence.checkStrictlyPositiveNumber(self.int_v_slit_points, "Intensity/Power Density V Slit Points")
+        congruence.checkGreaterOrEqualThan(self.int_distance, self.get_minimum_propagation_distance(),
+                                           "Intensity/Power Density Distance", "Minimum Distance out of the Source: " + str(self.get_minimum_propagation_distance()))
+
+        congruence.checkStrictlyPositiveNumber(self.int_relative_precision, "Intensity/Power Density Propagation - Relative Precision")
+        congruence.checkStrictlyPositiveNumber(self.int_number_of_points_for_trajectory_calculation, "Intensity/Power Density Propagation - Number of points for trajectory calculation")
+        congruence.checkPositiveNumber(self.int_sampling_factor_for_adjusting_nx_ny, " Intensity/Power Density Propagation - Sampling Factor for adjusting nx/ny")
+
+        congruence.checkStrictlyPositiveNumber(self.pow_precision_factor, "Intensity/Power Density Power - Precision Factor")
+        congruence.checkStrictlyPositiveNumber(self.pow_number_of_points_for_trajectory_calculation, "Intensity/Power Density Power - Number of points for trajectory calculation")
+
+
+        # FLUX
+        congruence.checkStrictlyPositiveNumber(self.spe_photon_energy_min, "Flux Photon Energy Min")
+        congruence.checkStrictlyPositiveNumber(self.spe_photon_energy_max, "Flux Photon Energy Max")
+        congruence.checkGreaterOrEqualThan(self.spe_photon_energy_max, self.spe_photon_energy_min, "Flux Photon Energy Max", "Flux Photon Energy Min")
+        congruence.checkStrictlyPositiveNumber(self.spe_photon_energy_points, "Flux Photon Energy Points")
+        
+        congruence.checkStrictlyPositiveNumber(self.spe_h_slit_gap, "Flux H Slit Gap")
+        congruence.checkStrictlyPositiveNumber(self.spe_v_slit_gap, "Flux V Slit Gap")
+        congruence.checkGreaterOrEqualThan(self.spe_distance, self.get_minimum_propagation_distance(),
+                                           "Flux Distance", "Minimum Distance out of the Source: " + str(self.get_minimum_propagation_distance()))
+
+        congruence.checkStrictlyPositiveNumber(self.spe_relative_precision, "Flux Propagation - Relative Precision")
+        congruence.checkStrictlyPositiveNumber(self.spe_number_of_points_for_trajectory_calculation, "Flux Propagation - Number of points for trajectory calculation")
+        congruence.checkPositiveNumber(self.spe_sampling_factor_for_adjusting_nx_ny, "Flux Propagation - Sampling Factor for adjusting nx/ny")
+
+        self.checkFluxSpecificFields()
+
+
+    def checkLightSourceSpecificFields(self):
         raise NotImplementedError()
+
+
+    def checkWavefrontPhotonenergy(self):
+        congruence.checkStrictlyPositiveNumber(self.wf_photon_energy, "Wavefront Propagation Photon Energy")
+
+    def checkFluxSpecificFields(self):
+        pass
 
     def run_calculation_intensity_power(self, srw_source, tickets, progress_bar_value=30):
         wf_parameters = SourceWavefrontParameters(photon_energy_min = self.int_photon_energy_min,
@@ -390,7 +455,9 @@ class SRWSource(SRWWavefrontViewer):
                                                                                                                  final_longitudinal_position=self.pow_final_longitudinal_position,
                                                                                                                  number_of_points_for_trajectory_calculation=self.pow_number_of_points_for_trajectory_calculation))
 
-        print(SRWLightSource.get_total_power_from_power_density(h, v, p))
+        self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, p)
+
+        print("TOTAL POWER: ", self.calculated_total_power, " W")
 
         tickets.append(SRWPlot.get_ticket_2D(h, v, p))
 
@@ -413,7 +480,7 @@ class SRWSource(SRWWavefrontViewer):
                                                   v_slit_gap = self.wf_v_slit_gap,
                                                   h_slit_points=self.wf_h_slit_points,
                                                   v_slit_points=self.wf_v_slit_points,
-                                                  distance = self.get_source_length(srw_source)*1.01,
+                                                  distance = self.wf_distance,
                                                   wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.wf_sr_method == 0 else self.get_automatic_sr_method(),
                                                                                                               relative_precision=self.wf_relative_precision,
                                                                                                               start_integration_longitudinal_position=self.wf_start_integration_longitudinal_position,
@@ -423,19 +490,22 @@ class SRWSource(SRWWavefrontViewer):
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.wf_sampling_factor_for_adjusting_nx_ny))
 
 
-        wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
-
+        '''
         from srwlib import SRWLOptC, SRWLOptD, srwl
 
         opDrift = SRWLOptD(-self.get_source_length(srw_source)*1.01) #Drift space from lens to image plane
         ppDrift = [0, 0, 1., 1, 0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0]
 
         srwl.PropagElecField(wavefront, SRWLOptC([opDrift], [ppDrift]))
+        '''
 
-        return wavefront
+        return srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
         return self.wf_photon_energy
+
+    def get_minimum_propagation_distance(self):
+        return round(self.get_source_length()*1.01, 6)
 
     def get_source_length(self):
         raise NotImplementedError()

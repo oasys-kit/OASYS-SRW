@@ -35,6 +35,11 @@ class SRWUndulator(SRWSource, WidgetDecorator):
     wf_use_harmonic = Setting(0)
     wf_harmonic_number = Setting(1)
 
+    spe_initial_UR_harmonic = Setting(1)
+    spe_final_UR_harmonic = Setting(21)
+    spe_longitudinal_integration_precision_parameter = Setting(1.5)
+    spe_azimuthal_integration_precision_parameter = Setting(1.5)
+
     want_main_area=1
 
     def __init__(self):
@@ -65,6 +70,15 @@ class SRWUndulator(SRWSource, WidgetDecorator):
 
         self.set_WFUseHarmonic()
 
+    def build_flux_precision_tab(self, tabs_precision):
+        tab_flu = oasysgui.createTabPage(tabs_precision, "Flux")
+
+        oasysgui.lineEdit(tab_flu, self, "spe_initial_UR_harmonic", "Initial Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(tab_flu, self, "spe_final_UR_harmonic", "Final Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(tab_flu, self, "spe_longitudinal_integration_precision_parameter", "Longitudinal integration precision param.", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(tab_flu, self, "spe_azimuthal_integration_precision_parameter", "Azimuthal integration precision param.", labelWidth=260, valueType=int, orientation="horizontal")
+
+
     def set_WFUseHarmonic(self):
         self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
         self.use_harmonic_box_2.setVisible(self.wf_use_harmonic==1)
@@ -93,11 +107,27 @@ class SRWUndulator(SRWSource, WidgetDecorator):
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
         return self.wf_photon_energy if self.wf_use_harmonic == 1 else srw_source.get_resonance_energy()*self.wf_harmonic_number
 
-    def get_source_length(self, srw_source):
-        return srw_source.get_length()
+    def get_source_length(self):
+        return self.period_length*self.number_of_periods
 
-    def checkSpecificFields(self):
-        pass
+    def checkLightSourceSpecificFields(self):
+        congruence.checkPositiveNumber(self.K_horizontal, "Horizontal K")
+        congruence.checkPositiveNumber(self.K_vertical, "Vertical K")
+        congruence.checkStrictlyPositiveNumber(self.period_length, "Period Length")
+        congruence.checkStrictlyPositiveNumber(self.number_of_periods, "Number of Periods")
+
+    def checkWavefrontPhotonenergy(self):
+        if self.wf_use_harmonic == 0:
+            congruence.checkStrictlyPositiveNumber(self.wf_harmonic_number, "Wavefront Propagation Harmonic Number")
+        else:
+            congruence.checkStrictlyPositiveNumber(self.wf_photon_energy, "Wavefront Propagation Photon Energy")
+
+    def checkFluxSpecificFields(self):
+        congruence.checkStrictlyPositiveNumber(self.spe_initial_UR_harmonic, "Flux Initial Harmonic")
+        congruence.checkStrictlyPositiveNumber(self.spe_final_UR_harmonic, "Flux Final Harmonic")
+        congruence.checkGreaterOrEqualThan(self.spe_final_UR_harmonic, self.spe_initial_UR_harmonic, "Flux Final Harmonic", "Flux Initial Harmonic")
+        congruence.checkStrictlyPositiveNumber(self.spe_longitudinal_integration_precision_parameter, "Flux Longitudinal integration precision parameter")
+        congruence.checkStrictlyPositiveNumber(self.spe_azimuthal_integration_precision_parameter, "Flux Azimuthal integration precision parameter")
 
     def run_calculation_flux(self, srw_source, tickets, progress_bar_value=50):
         wf_parameters = SourceWavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
@@ -116,11 +146,11 @@ class SRWUndulator(SRWSource, WidgetDecorator):
                                                                                                               use_terminating_terms=self.spe_use_terminating_terms,
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
 
-        e, i = srw_source.get_flux(source_wavefront_parameters=wf_parameters,
-                                   flux_precision_parameters=FluxPrecisionParameters(initial_UR_harmonic=self.spe_initial_UR_harmonic,
-                                                                                     final_UR_harmonic=self.spe_final_UR_harmonic,
-                                                                                     longitudinal_integration_precision_parameter=self.spe_longitudinal_integration_precision_parameter,
-                                                                                     azimuthal_integration_precision_parameter=self.spe_azimuthal_integration_precision_parameter))
+        e, i = srw_source.get_undulator_flux(source_wavefront_parameters=wf_parameters,
+                                             flux_precision_parameters=FluxPrecisionParameters(initial_UR_harmonic=self.spe_initial_UR_harmonic,
+                                                                                               final_UR_harmonic=self.spe_final_UR_harmonic,
+                                                                                               longitudinal_integration_precision_parameter=self.spe_longitudinal_integration_precision_parameter,
+                                                                                               azimuthal_integration_precision_parameter=self.spe_azimuthal_integration_precision_parameter))
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
 

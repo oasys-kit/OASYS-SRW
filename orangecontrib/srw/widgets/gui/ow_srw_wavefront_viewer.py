@@ -119,7 +119,7 @@ class SRWWavefrontViewer(SRWWidget):
                 SRWPlot.set_conversion_active(self.getConversionActive())
 
                 variables = self.getVariablesToPlot()
-                titles = self.getTitles()
+                titles = self.getTitles(with_um=True)
                 xtitles = self.getXTitles()
                 ytitles = self.getYTitles()
                 xums = self.getXUM()
@@ -158,8 +158,11 @@ class SRWWavefrontViewer(SRWWidget):
     def getVariablesToPlot(self):
         return [[1, 2], [1, 2], -1]
 
-    def getTitles(self):
-        return ["Intensity", "Power", "Flux"]
+    def getTitles(self, with_um=False):
+        if with_um: return ["Intensity [ph/s/.1%bw/mm^2]",
+                            "Power Density [W/mm^2], " + self.getCalculatedTotalPowerString(),
+                            "Flux [ph/s/.1%bw]"]
+        else: return ["Intensity", "Power Density", "Flux"]
 
     def getXTitles(self):
         return ["X [mm]", "X [mm]", "Energy [eV]"]
@@ -175,6 +178,9 @@ class SRWWavefrontViewer(SRWWidget):
 
     def getConversionActive(self):
         return True
+
+    def getCalculatedTotalPowerString(self):
+        return ""
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)

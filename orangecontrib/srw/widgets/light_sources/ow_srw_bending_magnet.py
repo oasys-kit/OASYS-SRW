@@ -69,8 +69,8 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
     def get_automatic_sr_method(self):
         return 2
 
-    def get_source_length(self, srw_source):
-        return srw_source.get_magnetic_structure()._length
+    def get_source_length(self):
+        return self.length
 
     def run_calculation_flux(self, srw_source, tickets, progress_bar_value=50):
         wf_parameters = SourceWavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
@@ -95,8 +95,10 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
 
         self.progressBarSet(progress_bar_value)
 
-    def checkSpecificFields(self):
-        pass
+    def checkLightSourceSpecificFields(self):
+        congruence.checkStrictlyPositiveNumber(self.magnetic_radius, "Magnetic Radius")
+        congruence.checkStrictlyPositiveNumber(self.magnetic_field, "Magnetic Field")
+        congruence.checkStrictlyPositiveNumber(self.length, "Length")
 
     def receive_syned_data(self, data):
         if not data is None:
