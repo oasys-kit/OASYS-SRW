@@ -56,7 +56,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     shape = Setting(0)
     surface_shape = Setting(0)
 
-    input_wavefront = None
+    input_srw_data = None
+
     wavefront_to_plot = None
 
     def __init__(self):
@@ -120,7 +121,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         try:
             self.progressBarInit()
 
-            if self.input_wavefront is None: raise Exception("No Input Wavefront")
+            if self.input_srw_data is None: raise Exception("No Input Data")
 
             self.check_data()
 
@@ -136,7 +137,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             propagation_elements.add_beamline_element(beamline_element)
 
-            propagation_parameters = PropagationParameters(wavefront=self.input_wavefront.duplicate(),
+            propagation_parameters = PropagationParameters(wavefront=self.input_srw_data._srw_wavefront.duplicate(),
                                                            propagation_elements = propagation_elements)
 
             self.set_additional_parameters(propagation_parameters)
@@ -153,7 +154,11 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.do_plot_results()
             self.progressBarFinished()
 
-            self.send("GenericWavefront2D", output_wavefront)
+            output_beamline = self.input_srw_data._srw_beamline.duplicate()
+            output_beamline.append_beamline_element(beamline_element)
+
+            self.send("SRWData", SRWData(srw_beamline=output_beamline,
+                                         srw_wavefront=output_wavefront))
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
 
@@ -168,11 +173,11 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     def get_optical_element(self):
         raise NotImplementedError()
 
-    def set_input(self, wavefront):
-        if not wavefront is None:
-            self.input_wavefront = wavefront
+    def set_input(self, srw_data):
+        if not srw_data is None:
+            self.input_srw_data = srw_data
 
-            if self.is_automatic_execution:
+            if self.is_automatic_run:
                 self.propagate_wavefront()
 
     def initializeTabs(self):
