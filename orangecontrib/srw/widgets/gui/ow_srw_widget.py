@@ -10,6 +10,9 @@ from PyQt5.QtCore import QRect
 
 from oasys.widgets.gui import ConfirmDialog
 
+
+
+
 class SRWWidget(widget.OWWidget):
 
     want_main_area=1
