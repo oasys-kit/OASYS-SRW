@@ -10,8 +10,6 @@ from oasys.util.oasys_util import EmittingStream
 
 from syned.widget.widget_decorator import WidgetDecorator
 
-import syned.storage_ring.magnetic_structures.insertion_device as synedid
-
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
 
@@ -86,8 +84,9 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
                                                                                                               number_of_points_for_trajectory_calculation=self.spe_number_of_points_for_trajectory_calculation,
                                                                                                               use_terminating_terms=self.spe_use_terminating_terms,
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
+        srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
-        e, i = srw_source.get_flux(source_wavefront_parameters=wf_parameters)
+        e, i = srw_source.srw_wavefront()
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
 
@@ -100,7 +99,7 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
 
     def receive_syned_data(self, data):
         if not data is None:
-            if not data._light_source is None and isinstance(data._light_source._magnetic_structure, synedid.InsertionDevice):
+            if not data._light_source is None and isinstance(data._light_source._magnetic_structure, BendingMagnet):
                 light_source = data._light_source
 
                 self.source_name = light_source._name
@@ -115,10 +114,9 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
                 self.electron_beam_divergence_h = xp
                 self.electron_beam_divergence_v = yp
 
-                self.K_horizontal = light_source._magnetic_structure._K_horizontal
-                self.K_vertical = light_source._magnetic_structure._K_vertical
-                self.period_length = light_source._magnetic_structure._period_length
-                self.number_of_periods = light_source._magnetic_structure._number_of_periods
+                self.magnetic_field = light_source._magnetic_structure._magnetic_field
+                self.magnetic_radius = light_source._magnetic_structure._radius
+                self.length = light_source._magnetic_structure._length
             else:
                 raise ValueError("Syned data not correct")
 
