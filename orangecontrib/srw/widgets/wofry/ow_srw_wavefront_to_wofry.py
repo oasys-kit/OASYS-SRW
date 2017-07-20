@@ -39,7 +39,7 @@ class OWToWofryWavefront2d(widget.OWWidget):
         self.setGeometry(QRect(round(geom.width()*0.05),
                                round(geom.height()*0.05),
                                round(min(geom.width()*0.98, self.CONTROL_AREA_WIDTH+10)),
-                               round(min(geom.height()*0.95, 220))))
+                               round(min(geom.height()*0.95, 100))))
 
         self.setFixedHeight(self.geometry().height())
         self.setFixedWidth(self.geometry().width())
