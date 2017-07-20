@@ -16,6 +16,7 @@ from syned.beamline.beamline_element import BeamlineElement
 
 from wofry.propagator.propagator import PropagationManager, PropagationElements, PropagationParameters
 from wofrysrw.propagator.propagators2D.srw_fresnel import FresnelSRW
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters
 
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
@@ -57,9 +58,37 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     shape = Setting(0)
     surface_shape = Setting(0)
 
-    input_srw_data = None
+    drift_auto_resize_before_propagation                         = Setting(0)
+    drift_auto_resize_after_propagation                          = Setting(0)
+    drift_relative_precision_for_propagation_with_autoresizing   = Setting(1.0)
+    drift_allow_semianalytical_treatment_of_quadratic_phase_term = Setting(0)
+    drift_do_any_resizing_on_fourier_side_using_fft              = Setting(0)
+    drift_horizontal_range_modification_factor_at_resizing       = Setting(1.0)
+    drift_horizontal_resolution_modification_factor_at_resizing  = Setting(1.0)
+    drift_vertical_range_modification_factor_at_resizing         = Setting(1.0)
+    drift_vertical_resolution_modification_factor_at_resizing    = Setting(1.0)
+    drift_type_of_wavefront_shift_before_resizing                = Setting(0)
+    drift_new_horizontal_wavefront_center_position_after_shift   = Setting(0)
+    drift_new_vertical_wavefront_center_position_after_shift     = Setting(0)
 
+    oe_auto_resize_before_propagation                         = Setting(0)
+    oe_auto_resize_after_propagation                          = Setting(0)
+    oe_relative_precision_for_propagation_with_autoresizing   = Setting(1.0)
+    oe_allow_semianalytical_treatment_of_quadratic_phase_term = Setting(0)
+    oe_do_any_resizing_on_fourier_side_using_fft              = Setting(0)
+    oe_horizontal_range_modification_factor_at_resizing       = Setting(2.0)
+    oe_horizontal_resolution_modification_factor_at_resizing  = Setting(5.0)
+    oe_vertical_range_modification_factor_at_resizing         = Setting(6.0)
+    oe_vertical_resolution_modification_factor_at_resizing    = Setting(3.0)
+    oe_type_of_wavefront_shift_before_resizing                = Setting(0)
+    oe_new_horizontal_wavefront_center_position_after_shift   = Setting(0)
+    oe_new_vertical_wavefront_center_position_after_shift     = Setting(0)
+
+    input_srw_data = None
     wavefront_to_plot = None
+
+    TABS_AREA_HEIGHT = 618
+    CONTROL_AREA_WIDTH = 405
 
     def __init__(self):
         super().__init__()
@@ -91,12 +120,14 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         gui.separator(self.controlArea)
 
+        self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
+
         self.tabs_setting = oasysgui.tabWidget(self.controlArea)
         self.tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
-        self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-10)
+        self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
 
         self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "O.E. Setting")
-        self.tab_pro = oasysgui.createTabPage(self.tabs_setting, "Propagation Setting")
+        self.tab_pro = oasysgui.createTabPage(self.tabs_setting, "Wavefront Propagation Setting")
 
         oasysgui.lineEdit(self.tab_bas, self, "oe_name", "O.E. Name", labelWidth=260, valueType=str, orientation="horizontal")
 
@@ -108,6 +139,73 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
         self.draw_specific_box()
+
+        self.tabs_prop_setting = oasysgui.tabWidget(self.tab_pro)
+
+        self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space")
+        self.tab_oe = oasysgui.createTabPage(self.tabs_prop_setting, "Optical Element")
+        
+        # DRIFT SPACE
+        
+        gui.comboBox(self.tab_drift, self, "drift_auto_resize_before_propagation", label="Auto Resize Before Propagation",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.comboBox(self.tab_drift, self, "drift_auto_resize_after_propagation", label="Auto Resize After Propagation",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing", labelWidth=280, valueType=float, orientation="horizontal")
+
+        gui.comboBox(self.tab_drift, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.comboBox(self.tab_drift, self, "drift_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        
+        # not yet used by SRW
+        #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=280, valueType=int, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
+
+
+        # DRIFT SPACE
+        
+        gui.comboBox(self.tab_oe, self, "oe_auto_resize_before_propagation", label="Auto Resize Before Propagation",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.comboBox(self.tab_oe, self, "oe_auto_resize_after_propagation", label="Auto Resize After Propagation",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing", labelWidth=280, valueType=float, orientation="horizontal")
+
+        gui.comboBox(self.tab_oe, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.comboBox(self.tab_oe, self, "oe_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        
+        # not yet used by SRW
+        #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=280, valueType=int, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
+
 
     def draw_specific_box(self):
         raise NotImplementedError()
@@ -202,7 +300,37 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             raise e
 
     def set_additional_parameters(self, propagation_parameters):
-        raise NotImplementedError()
+        propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_parameters",
+                                                         WavefrontPropagationParameters(
+                                                             auto_resize_before_propagation                         = self.drift_auto_resize_before_propagation,
+                                                             auto_resize_after_propagation                          = self.drift_auto_resize_after_propagation,
+                                                             relative_precision_for_propagation_with_autoresizing   = self.drift_relative_precision_for_propagation_with_autoresizing,
+                                                             allow_semianalytical_treatment_of_quadratic_phase_term = self.drift_allow_semianalytical_treatment_of_quadratic_phase_term,
+                                                             do_any_resizing_on_fourier_side_using_fft              = self.drift_do_any_resizing_on_fourier_side_using_fft,
+                                                             horizontal_range_modification_factor_at_resizing       = self.drift_horizontal_range_modification_factor_at_resizing,
+                                                             horizontal_resolution_modification_factor_at_resizing  = self.drift_horizontal_resolution_modification_factor_at_resizing ,
+                                                             vertical_range_modification_factor_at_resizing         = self.drift_vertical_range_modification_factor_at_resizing,
+                                                             vertical_resolution_modification_factor_at_resizing    = self.drift_vertical_resolution_modification_factor_at_resizing ,
+                                                             type_of_wavefront_shift_before_resizing                = self.drift_type_of_wavefront_shift_before_resizing,
+                                                             new_horizontal_wavefront_center_position_after_shift   = self.drift_new_horizontal_wavefront_center_position_after_shift,
+                                                             new_vertical_wavefront_center_position_after_shift     = self.drift_new_vertical_wavefront_center_position_after_shift
+                                                         ))
+
+        propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters",
+                                                         WavefrontPropagationParameters(
+                                                             auto_resize_before_propagation                         = self.oe_auto_resize_before_propagation,
+                                                             auto_resize_after_propagation                          = self.oe_auto_resize_after_propagation,
+                                                             relative_precision_for_propagation_with_autoresizing   = self.oe_relative_precision_for_propagation_with_autoresizing,
+                                                             allow_semianalytical_treatment_of_quadratic_phase_term = self.oe_allow_semianalytical_treatment_of_quadratic_phase_term,
+                                                             do_any_resizing_on_fourier_side_using_fft              = self.oe_do_any_resizing_on_fourier_side_using_fft,
+                                                             horizontal_range_modification_factor_at_resizing       = self.oe_horizontal_range_modification_factor_at_resizing,
+                                                             horizontal_resolution_modification_factor_at_resizing  = self.oe_horizontal_resolution_modification_factor_at_resizing ,
+                                                             vertical_range_modification_factor_at_resizing         = self.oe_vertical_range_modification_factor_at_resizing,
+                                                             vertical_resolution_modification_factor_at_resizing    = self.oe_vertical_resolution_modification_factor_at_resizing ,
+                                                             type_of_wavefront_shift_before_resizing                = self.oe_type_of_wavefront_shift_before_resizing,
+                                                             new_horizontal_wavefront_center_position_after_shift   = self.oe_new_horizontal_wavefront_center_position_after_shift,
+                                                             new_vertical_wavefront_center_position_after_shift     = self.oe_new_vertical_wavefront_center_position_after_shift
+                                                         ))
 
     def get_optical_element(self):
         raise NotImplementedError()

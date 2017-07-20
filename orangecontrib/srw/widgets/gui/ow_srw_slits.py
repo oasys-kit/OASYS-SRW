@@ -5,12 +5,8 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
-
 from syned.beamline.optical_elements.absorbers.slit import Slit
 from syned.beamline.shape import Rectangle, Ellipse
-
-from wofrysrw.beamline.optical_elements.absorbers.srw_slit import SRWSlit
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
@@ -71,10 +67,6 @@ class OWSRWSlits(OWSRWOpticalElement):
 
     def get_srw_object(self, boundary_shape):
         raise NotImplementedError
-
-    def set_additional_parameters(self, propagation_parameters):
-        propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_parameters", WavefrontPropagationParameters())
-        propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters", WavefrontPropagationParameters(0, 0, 1., 1, 0, 2., 5., 6., 3., 0, 0, 0))
 
     def check_data(self):
         super().check_data()
