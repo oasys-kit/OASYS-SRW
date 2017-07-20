@@ -1,4 +1,4 @@
-import numpy
+import numpy, decimal
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel
 from matplotlib.patches import FancyArrowPatch, ArrowStyle
@@ -182,7 +182,7 @@ class SRWPlot:
 
             self.plot_canvas.replot()
 
-            self.info_box.total.setText("{:4.3f}".format(ticket['total']))
+            self.info_box.total.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
 
@@ -306,7 +306,7 @@ class SRWPlot:
             self.plot_canvas._histoVPlot.replot()
             self.plot_canvas.replot()
 
-            self.info_box.total.setText("{:4.3f}".format(ticket['total']))
+            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(ticket['total'])))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm_h'] * factor1))
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)

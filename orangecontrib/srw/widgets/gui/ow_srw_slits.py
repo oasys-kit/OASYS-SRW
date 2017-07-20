@@ -5,19 +5,16 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
-from orangecontrib.wofry.widgets.gui.ow_optical_element import OWWOOpticalElement
 
 from syned.beamline.optical_elements.absorbers.slit import Slit
 from syned.beamline.shape import Rectangle, Ellipse
 
-from wofry.elements.optical_elements.absorbers.slit import WOSlit
+from wofrysrw.beamline.optical_elements.absorbers.srw_slit import SRWSlit
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters
 
-class OWWOSlit(OWWOOpticalElement):
+from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
-    name = "Slit"
-    description = "Wofry: Slit"
-    icon = "icons/slit.png"
-    priority = 2
+class OWSRWSlits(OWSRWOpticalElement):
 
     horizontal_shift = Setting(0.0)
     vertical_shift = Setting(0.0)
@@ -34,7 +31,7 @@ class OWWOSlit(OWWOOpticalElement):
 
         self.shape_box = oasysgui.widgetBox(self.tab_bas, "Shape", addSpace=True, orientation="vertical")
 
-        gui.comboBox(self.shape_box, self, "shape", label="Slit Shape", labelWidth=350,
+        gui.comboBox(self.shape_box, self, "shape", label="Shape", labelWidth=350,
                      items=["Rectangle", "Circle"],
                      callback=self.set_Shape,
                      sendSelectedValue=False, orientation="horizontal")
@@ -58,7 +55,6 @@ class OWWOSlit(OWWOOpticalElement):
         self.circle_box.setVisible(self.shape == 1)
 
     def get_optical_element(self):
-
         if self.shape == 0:
             boundary_shape = Rectangle(x_left=-0.5*self.width + self.horizontal_shift,
                                        x_right=0.5*self.width + self.horizontal_shift,
@@ -71,7 +67,14 @@ class OWWOSlit(OWWOOpticalElement):
                                      maj_ax_left=-0.5*self.radius + self.vertical_shift,
                                      maj_ax_right=0.5*self.radius + self.vertical_shift)
 
-        return WOSlit(boundary_shape=boundary_shape)
+        return self.get_srw_object(boundary_shape=boundary_shape)
+
+    def get_srw_object(self, boundary_shape):
+        raise NotImplementedError
+
+    def set_additional_parameters(self, propagation_parameters):
+        propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_parameters", WavefrontPropagationParameters())
+        propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters", WavefrontPropagationParameters(0, 0, 1., 1, 0, 2., 5., 6., 3., 0, 0, 0))
 
     def check_data(self):
         super().check_data()
@@ -84,7 +87,6 @@ class OWWOSlit(OWWOOpticalElement):
             congruence.checkStrictlyPositiveNumber(self.height, "Height")
         elif self.shape == 1:
             congruence.checkStrictlyPositiveNumber(self.radius, "Radius")
-
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:

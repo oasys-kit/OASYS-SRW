@@ -60,15 +60,16 @@ class SRWWavefrontViewer(SRWWidget):
 
         titles = self.getTitles()
         self.tab = []
+        self.plot_canvas = []
 
         for title in self.getTitles():
             self.tab.append(oasysgui.createTabPage(self.tabs, title))
+            self.plot_canvas.append(None)
 
         for tab in self.tab:
             tab.setFixedHeight(self.IMAGE_HEIGHT)
             tab.setFixedWidth(self.IMAGE_WIDTH)
 
-        self.plot_canvas = [None, None, None]
 
         self.tabs.setCurrentIndex(current_tab)
 
@@ -129,10 +130,13 @@ class SRWWavefrontViewer(SRWWidget):
                 try:
                     if self.view_type == 0:
                         self.plot_2D(tickets[0], progressBarValue + 4,  variables[0][0], variables[0][1], plot_canvas_index=0, title=titles[0], xtitle=xtitles[0], ytitle=ytitles[0], xum=xums[0], yum=yums[0])
-                        if (len(tickets)) >= 2:
-                            self.plot_2D(tickets[1], progressBarValue + 8,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
-                        if (len(tickets)) == 3:
-                            self.plot_1D(tickets[2], progressBarValue + 20, variables[2],                  plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2] )
+                        self.plot_2D(tickets[1], progressBarValue + 4,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
+                        self.plot_2D(tickets[2], progressBarValue + 4,  variables[2][0], variables[2][1], plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2], yum=yums[2])
+
+                        if (len(tickets)) >= 4:
+                            self.plot_2D(tickets[3], progressBarValue + 4,  variables[3][0], variables[3][1], plot_canvas_index=3, title=titles[3], xtitle=xtitles[3], ytitle=ytitles[3], xum=xums[3], yum=yums[3])
+                        if (len(tickets)) == 5:
+                            self.plot_1D(tickets[4], progressBarValue + 16, variables[4],                  plot_canvas_index=4, title=titles[4], xtitle=xtitles[4], ytitle=ytitles[4], xum=xums[4] )
 
 
                 except Exception as e:
@@ -159,25 +163,27 @@ class SRWWavefrontViewer(SRWWidget):
         self.initializeTabs()
 
     def getVariablesToPlot(self):
-        return [[1, 2], [1, 2], -1]
+        return [[1, 2], [1, 2], [1, 2], [1, 2], -1]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity [ph/s/.1%bw/mm^2]",
+        if with_um: return ["Intensity SE [ph/s/.1%bw/mm^2]",
+                            "Phase SE [rad]",
+                            "Intensity ME [ph/s/.1%bw/mm^2]",
                             "Power Density [W/mm^2], " + self.getCalculatedTotalPowerString(),
                             "Flux [ph/s/.1%bw]"]
-        else: return ["Intensity", "Power Density", "Flux"]
+        else: return ["Intensity SE", "Phase SE", "Intensity ME", "Power Density", "Flux"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "Energy [eV]"]
+        return ["X [mm]", "X [mm]", "X [mm]", "X [mm]", "Energy [eV]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw]"]
+        return ["Y [mm]", "Y [mm]", "Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "Energy [eV]"]
+        return ["X [mm]", "X [mm]", "X [mm]", "X [mm]", "Energy [eV]"]
 
     def getYUM(self):
-        return ["Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw]"]
+        return ["Y [mm]", "Y [mm]", "Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw]"]
 
     def getConversionActive(self):
         return True

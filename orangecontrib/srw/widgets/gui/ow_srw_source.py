@@ -425,11 +425,25 @@ class SRWSource(SRWWavefrontViewer):
                                                                                                               use_terminating_terms=self.int_use_terminating_terms,
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.int_sampling_factor_for_adjusting_nx_ny))
 
-        e, h, v, i = srw_source.get_intensity(source_wavefront_parameters=wf_parameters)
+        srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
+
+        e, h, v, i = srw_wavefront.get_intensity(multi_electron=False)
 
         tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
 
         self.progressBarSet(progress_bar_value)
+
+        e, h, v, i = srw_wavefront.get_phase()
+
+        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
+
+        self.progressBarSet(progress_bar_value + 5)
+
+        e, h, v, i = srw_wavefront.get_intensity(multi_electron=True)
+
+        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
+
+        self.progressBarSet(progress_bar_value + 5)
 
         # POWER DENSITY
 
