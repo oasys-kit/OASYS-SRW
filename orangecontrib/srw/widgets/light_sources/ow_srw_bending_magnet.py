@@ -12,12 +12,10 @@ from syned.widget.widget_decorator import WidgetDecorator
 
 import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
-from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, WavefrontPrecisionParameters, SRWLightSource
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
-from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
-from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
 
 from syned.storage_ring.magnetic_structures.bending_magnet import BendingMagnet
@@ -73,7 +71,7 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
         return self.length
 
     def run_calculation_flux(self, srw_source, tickets, progress_bar_value=50):
-        wf_parameters = SourceWavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
+        wf_parameters = WavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
                                                   photon_energy_max = self.spe_photon_energy_max,
                                                   photon_energy_points=self.spe_photon_energy_points,
                                                   h_slit_gap = self.spe_h_slit_gap,

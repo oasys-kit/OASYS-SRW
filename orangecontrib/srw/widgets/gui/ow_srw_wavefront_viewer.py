@@ -59,11 +59,10 @@ class SRWWavefrontViewer(SRWWidget):
             self.tabs.removeTab(size-1-index)
 
         titles = self.getTitles()
+        self.tab = []
 
-        self.tab = [oasysgui.createTabPage(self.tabs, titles[0]),
-                    oasysgui.createTabPage(self.tabs, titles[1]),
-                    oasysgui.createTabPage(self.tabs, titles[2]),
-        ]
+        for title in self.getTitles():
+            self.tab.append(oasysgui.createTabPage(self.tabs, title))
 
         for tab in self.tab:
             tab.setFixedHeight(self.IMAGE_HEIGHT)
@@ -110,6 +109,8 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.progressBarSet(progressBarValue)
 
+    def show_power_density(self):
+        return True
 
     def plot_results(self, tickets = [], progressBarValue=80):
         if not self.view_type == 1:
@@ -128,7 +129,8 @@ class SRWWavefrontViewer(SRWWidget):
                 try:
                     if self.view_type == 0:
                         self.plot_2D(tickets[0], progressBarValue + 4,  variables[0][0], variables[0][1], plot_canvas_index=0, title=titles[0], xtitle=xtitles[0], ytitle=ytitles[0], xum=xums[0], yum=yums[0])
-                        self.plot_2D(tickets[1], progressBarValue + 8,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
+                        if (len(tickets)) >= 2:
+                            self.plot_2D(tickets[1], progressBarValue + 8,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
                         if (len(tickets)) == 3:
                             self.plot_1D(tickets[2], progressBarValue + 20, variables[2],                  plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2] )
 
@@ -136,6 +138,7 @@ class SRWWavefrontViewer(SRWWidget):
                 except Exception as e:
                     self.view_type_combo.setEnabled(True)
 
+                    raise e
                     raise Exception("Data not plottable: bad content\nexception: " + str(e))
 
                 self.view_type_combo.setEnabled(True)

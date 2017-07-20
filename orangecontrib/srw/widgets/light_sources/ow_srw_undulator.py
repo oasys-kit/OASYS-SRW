@@ -11,7 +11,7 @@ from syned.widget.widget_decorator import WidgetDecorator
 
 import syned.storage_ring.magnetic_structures.insertion_device as synedid
 
-from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, WavefrontPrecisionParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import FluxPrecisionParameters, SRWUndulatorLightSource
 
 from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
@@ -130,7 +130,7 @@ class SRWUndulator(SRWSource, WidgetDecorator):
         congruence.checkStrictlyPositiveNumber(self.spe_azimuthal_integration_precision_parameter, "Flux Azimuthal integration precision parameter")
 
     def run_calculation_flux(self, srw_source, tickets, progress_bar_value=50):
-        wf_parameters = SourceWavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
+        wf_parameters = WavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
                                                   photon_energy_max = self.spe_photon_energy_max,
                                                   photon_energy_points=self.spe_photon_energy_points,
                                                   h_slit_gap = self.spe_h_slit_gap,

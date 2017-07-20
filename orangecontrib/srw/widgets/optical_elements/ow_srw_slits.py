@@ -10,7 +10,7 @@ from syned.beamline.optical_elements.absorbers.slit import Slit
 from syned.beamline.shape import Rectangle, Ellipse
 
 from wofrysrw.beamline.optical_elements.absorbers.srw_slit import SRWSlit
-from wofrysrw.beamline.srw_beamline import SRWWavefrontPropagationParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
@@ -75,19 +75,8 @@ class OWSRWSlit(OWSRWOpticalElement):
         return SRWSlit(boundary_shape=boundary_shape)
 
     def set_additional_parameters(self, propagation_parameters):
-        propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_parameters", SRWWavefrontPropagationParameters())
-        propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters", SRWWavefrontPropagationParameters(0,
-                                                                                                                                      0,
-                                                                                                                                      1.,
-                                                                                                                                      1,
-                                                                                                                                      0,
-                                                                                                                                      2.,
-                                                                                                                                      5.,
-                                                                                                                                      6.,
-                                                                                                                                      3.,
-                                                                                                                                      0,
-                                                                                                                                      0,
-                                                                                                                                      0))
+        propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_parameters", WavefrontPropagationParameters())
+        propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters", WavefrontPropagationParameters(0, 0, 1., 1, 0, 2., 5., 6., 3., 0, 0, 0))
 
     def check_data(self):
         super().check_data()
@@ -100,7 +89,6 @@ class OWSRWSlit(OWSRWOpticalElement):
             congruence.checkStrictlyPositiveNumber(self.height, "Height")
         elif self.shape == 1:
             congruence.checkStrictlyPositiveNumber(self.radius, "Radius")
-
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:

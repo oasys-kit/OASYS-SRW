@@ -228,19 +228,28 @@ class SRWPlot:
             xx = ticket['bin_h']
             yy = ticket['bin_v']
 
-            nbins = ticket['nbins']
+            nbins_h = ticket['nbins_h']
+            nbins_v = ticket['nbins_v']
 
             xmin, xmax = xx.min(), xx.max()
             ymin, ymax = yy.min(), yy.max()
 
             origin = (xmin*factor1, ymin*factor2)
-            scale = (abs((xmax-xmin)/nbins)*factor1, abs((ymax-ymin)/nbins)*factor2)
+            scale = (abs((xmax-xmin)/nbins_h)*factor1, abs((ymax-ymin)/nbins_v)*factor2)
+
+            print("nbins", nbins_h, nbins_v)
+            print("MINMAXX",  xmin, xmax)
+            print("MINMAXY",  ymin, ymax)
+            print("ORIGIN", origin)
+            print("SCALE", scale)
+            print("DIO BOIA", ticket['histogram'][int(nbins_h/2)][int(nbins_v/2)])
+
 
             # PyMCA inverts axis!!!! histogram must be calculated reversed
             data_to_plot = []
-            for y_index in range(0, nbins):
+            for y_index in range(0, nbins_v):
                 x_values = []
-                for x_index in range(0, nbins):
+                for x_index in range(0, nbins_h):
                     x_values.append(ticket['histogram'][x_index][y_index])
 
                 data_to_plot.append(x_values)
@@ -379,7 +388,8 @@ class SRWPlot:
     @classmethod
     def get_ticket_2D(cls, x_array, y_array, z_array):
         ticket = {'error':0}
-        ticket['nbins'] = len(x_array)
+        ticket['nbins_h'] = len(x_array)
+        ticket['nbins_v'] = len(y_array)
 
         xrange = [x_array.min(), x_array.max() ]
         yrange = [y_array.min(), y_array.max() ]

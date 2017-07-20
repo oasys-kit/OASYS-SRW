@@ -14,7 +14,8 @@ from oasys.util.oasys_util import EmittingStream
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
-from wofrysrw.storage_ring.srw_light_source import SourceWavefrontParameters, WavefrontPrecisionParameters, PowerDensityPrecisionParameters, SRWLightSource
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
+from wofrysrw.storage_ring.srw_light_source import PowerDensityPrecisionParameters, SRWLightSource
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
@@ -320,7 +321,7 @@ class SRWSource(SRWWavefrontViewer):
         except Exception as exception:
             QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-            #raise exception
+            raise exception
 
         self.progressBarFinished()
 
@@ -408,7 +409,7 @@ class SRWSource(SRWWavefrontViewer):
         pass
 
     def run_calculation_intensity_power(self, srw_source, tickets, progress_bar_value=30):
-        wf_parameters = SourceWavefrontParameters(photon_energy_min = self.int_photon_energy_min,
+        wf_parameters = WavefrontParameters(photon_energy_min = self.int_photon_energy_min,
                                                   photon_energy_max = self.int_photon_energy_max,
                                                   photon_energy_points=self.int_photon_energy_points,
                                                   h_slit_gap = self.int_h_slit_gap,
@@ -432,7 +433,7 @@ class SRWSource(SRWWavefrontViewer):
 
         # POWER DENSITY
 
-        wf_parameters = SourceWavefrontParameters(photon_energy_min = self.int_photon_energy_min,
+        wf_parameters = WavefrontParameters(photon_energy_min = self.int_photon_energy_min,
                                                   photon_energy_max = self.int_photon_energy_max,
                                                   photon_energy_points=self.int_photon_energy_points,
                                                   h_slit_gap = self.int_h_slit_gap,
@@ -449,11 +450,11 @@ class SRWSource(SRWWavefrontViewer):
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.int_sampling_factor_for_adjusting_nx_ny))
 
         h, v, p = srw_source.get_power_density(source_wavefront_parameters=wf_parameters,
-                                              power_density_precision_parameters=PowerDensityPrecisionParameters(precision_factor=self.pow_precision_factor,
-                                                                                                                 computation_method=self.pow_computation_method,
-                                                                                                                 initial_longitudinal_position=self.pow_initial_longitudinal_position,
-                                                                                                                 final_longitudinal_position=self.pow_final_longitudinal_position,
-                                                                                                                 number_of_points_for_trajectory_calculation=self.pow_number_of_points_for_trajectory_calculation))
+                                               power_density_precision_parameters=PowerDensityPrecisionParameters(precision_factor=self.pow_precision_factor,
+                                                                                                                  computation_method=self.pow_computation_method,
+                                                                                                                  initial_longitudinal_position=self.pow_initial_longitudinal_position,
+                                                                                                                  final_longitudinal_position=self.pow_final_longitudinal_position,
+                                                                                                                  number_of_points_for_trajectory_calculation=self.pow_number_of_points_for_trajectory_calculation))
 
         self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, p)
 
@@ -473,33 +474,42 @@ class SRWSource(SRWWavefrontViewer):
 
         photon_energy = self.get_photon_energy_for_wavefront_propagation(srw_source)
 
-        wf_parameters = SourceWavefrontParameters(photon_energy_min = photon_energy,
-                                                  photon_energy_max = photon_energy,
-                                                  photon_energy_points=1,
-                                                  h_slit_gap = self.wf_h_slit_gap,
-                                                  v_slit_gap = self.wf_v_slit_gap,
-                                                  h_slit_points=self.wf_h_slit_points,
-                                                  v_slit_points=self.wf_v_slit_points,
-                                                  distance = self.wf_distance,
-                                                  wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.wf_sr_method == 0 else self.get_automatic_sr_method(),
-                                                                                                              relative_precision=self.wf_relative_precision,
-                                                                                                              start_integration_longitudinal_position=self.wf_start_integration_longitudinal_position,
-                                                                                                              end_integration_longitudinal_position=self.wf_end_integration_longitudinal_position,
-                                                                                                              number_of_points_for_trajectory_calculation=self.wf_number_of_points_for_trajectory_calculation,
-                                                                                                              use_terminating_terms=self.wf_use_terminating_terms,
-                                                                                                              sampling_factor_for_adjusting_nx_ny=self.wf_sampling_factor_for_adjusting_nx_ny))
-
-
-        '''
-        from srwlib import SRWLOptC, SRWLOptD, srwl
-
-        opDrift = SRWLOptD(-self.get_source_length(srw_source)*1.01) #Drift space from lens to image plane
-        ppDrift = [0, 0, 1., 1, 0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0]
-
-        srwl.PropagElecField(wavefront, SRWLOptC([opDrift], [ppDrift]))
-        '''
+        wf_parameters = WavefrontParameters(photon_energy_min = photon_energy,
+                                            photon_energy_max = photon_energy,
+                                            photon_energy_points=1,
+                                            h_slit_gap = self.wf_h_slit_gap,
+                                            v_slit_gap = self.wf_v_slit_gap,
+                                            h_slit_points=self.wf_h_slit_points,
+                                            v_slit_points=self.wf_v_slit_points,
+                                            distance = self.wf_distance,
+                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.wf_sr_method == 0 else self.get_automatic_sr_method(),
+                                                                                                        relative_precision=self.wf_relative_precision,
+                                                                                                        start_integration_longitudinal_position=self.wf_start_integration_longitudinal_position,
+                                                                                                        end_integration_longitudinal_position=self.wf_end_integration_longitudinal_position,
+                                                                                                        number_of_points_for_trajectory_calculation=self.wf_number_of_points_for_trajectory_calculation,
+                                                                                                        use_terminating_terms=self.wf_use_terminating_terms,
+                                                                                                        sampling_factor_for_adjusting_nx_ny=self.wf_sampling_factor_for_adjusting_nx_ny))
 
         return srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
+
+        '''
+        wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
+
+        from srwlib import SRWLOptC, SRWLOptA, SRWLOptD, srwl
+
+        opDrift = SRWLOptD(1.0) #Drift space from lens to image plane
+        ppDrift = [0, 0, 1., 1, 0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0]
+
+        opA = SRWLOptA(_shape='r',
+                       _ap_or_ob='a',
+                       _Dx=0.0005,
+                       _Dy=0.0005)
+
+        srwl.PropagElecField(wavefront, SRWLOptC([opA], [ppDrift]))
+        #srwl.PropagElecField(wavefront, SRWLOptC([opA, opDrift], [ppDrift, ppDrift]))
+
+        return wavefront
+        '''
 
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
         return self.wf_photon_energy

@@ -20,6 +20,7 @@ from wofrysrw.propagator.propagators2D.srw_fresnel import FresnelSRW
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
+from orangecontrib.srw.util.srw_util import SRWPlot
 
 def initialize_propagator_2D():
     propagator = PropagationManager.Instance()
@@ -137,6 +138,25 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             propagation_elements.add_beamline_element(beamline_element)
 
+            print(self.input_srw_data._srw_wavefront.mesh.xStart,
+                  self.input_srw_data._srw_wavefront.mesh.xFin,
+                  self.input_srw_data._srw_wavefront.mesh.nx)
+
+            print(self.input_srw_data._srw_wavefront.mesh.yStart,
+                  self.input_srw_data._srw_wavefront.mesh.yFin,
+                  self.input_srw_data._srw_wavefront.mesh.ny)
+
+
+            wf = self.input_srw_data._srw_wavefront.duplicate()
+
+            print(wf.mesh.xStart,
+                  wf.mesh.xFin,
+                  wf.mesh.nx)
+
+            print(wf.mesh.yStart,
+                  wf.mesh.yFin,
+                  wf.mesh.ny)
+
             propagation_parameters = PropagationParameters(wavefront=self.input_srw_data._srw_wavefront.duplicate(),
                                                            propagation_elements = propagation_elements)
 
@@ -147,11 +167,25 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
                                                          handler_name=FresnelSRW.HANDLER_NAME)
 
+            print(output_wavefront.mesh.xStart,
+                  output_wavefront.mesh.xFin,
+                  output_wavefront.mesh.nx)
+
+            print(output_wavefront.mesh.yStart,
+                  output_wavefront.mesh.yFin,
+                  output_wavefront.mesh.ny)
 
             self.wavefront_to_plot = output_wavefront
 
+
             self.initializeTabs()
-            self.do_plot_results()
+
+            tickets = []
+
+            self.run_calculations(tickets=tickets, progress_bar_value=50)
+
+            self.plot_results(tickets, 80)
+
             self.progressBarFinished()
 
             output_beamline = self.input_srw_data._srw_beamline.duplicate()
@@ -180,44 +214,20 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             if self.is_automatic_run:
                 self.propagate_wavefront()
 
-    def initializeTabs(self):
-        size = len(self.tab)
-        indexes = range(0, size)
+    def run_calculations(self, tickets, progress_bar_value):
+        e, h, v, i = self.wavefront_to_plot.get_intensity(multi_electron=False)
 
-        for index in indexes:
-            self.tabs.removeTab(size-1-index)
+        print(h, v)
 
-        titles = ["Wavefront 2D"]
-        self.tab = []
-        self.plot_canvas = []
+        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
 
-        for index in range(0, len(titles)):
-            self.tab.append(gui.createTabPage(self.tabs, titles[index]))
-            self.plot_canvas.append(None)
+        self.progressBarSet(progress_bar_value)
 
-        for tab in self.tab:
-            tab.setFixedHeight(self.IMAGE_HEIGHT)
-            tab.setFixedWidth(self.IMAGE_WIDTH)
+        e, h, v, i = self.wavefront_to_plot.get_intensity(multi_electron=True)
 
-    def do_plot_results(self, progressBarValue=80):
-        if not self.wavefront_to_plot is None:
+        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
 
-            self.progressBarSet(progressBarValue)
-
-            titles = ["Wavefront 2D Intensity"]
-
-            self.plot_data2D(data2D=self.wavefront_to_plot.get_intensity(),
-                             dataX=self.wavefront_to_plot.get_coordinate_x(),
-                             dataY=self.wavefront_to_plot.get_coordinate_y(),
-                             progressBarValue=progressBarValue,
-                             tabs_canvas_index=0,
-                             plot_canvas_index=0,
-                             title=titles[0],
-                             xtitle="Horizontal Coordinate",
-                             ytitle="Vertical Coordinate")
-
-
-            self.progressBarFinished()
+        self.progressBarSet(progress_bar_value + 10)
 
     def receive_syned_data(self, data):
         if not data is None:
@@ -244,6 +254,22 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             except:
                 pass
 
+    def getVariablesToPlot(self):
+        return [[1, 2], [1, 2]]
 
+    def getTitles(self, with_um=False):
+        if with_um: return ["Intensity SE [ph/s/.1%bw/mm^2]", "Intensity ME [ph/s/.1%bw/mm^2]"]
+        else: return ["Intensity SE", "Intensity ME"]
 
+    def getXTitles(self):
+        return ["X [mm]", "X [mm]"]
+
+    def getYTitles(self):
+        return ["Y [mm]", "Y [mm]"]
+
+    def getXUM(self):
+        return ["X [mm]", "X [mm]"]
+
+    def getYUM(self):
+        return ["Y [mm]", "Y [mm]"]
 
