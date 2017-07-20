@@ -237,14 +237,6 @@ class SRWPlot:
             origin = (xmin*factor1, ymin*factor2)
             scale = (abs((xmax-xmin)/nbins_h)*factor1, abs((ymax-ymin)/nbins_v)*factor2)
 
-            print("nbins", nbins_h, nbins_v)
-            print("MINMAXX",  xmin, xmax)
-            print("MINMAXY",  ymin, ymax)
-            print("ORIGIN", origin)
-            print("SCALE", scale)
-            print("DIO BOIA", ticket['histogram'][int(nbins_h/2)][int(nbins_v/2)])
-
-
             # PyMCA inverts axis!!!! histogram must be calculated reversed
             data_to_plot = []
             for y_index in range(0, nbins_v):
