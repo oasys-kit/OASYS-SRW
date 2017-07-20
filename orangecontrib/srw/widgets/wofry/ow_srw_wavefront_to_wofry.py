@@ -1,8 +1,8 @@
 from orangewidget import gui
-from oasys.widgets import gui as oasysgui
 
 from oasys.widgets import widget
 
+from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import QRect
 
@@ -28,6 +28,8 @@ class OWToWofryWavefront2d(widget.OWWidget):
 
     CONTROL_AREA_WIDTH = 605
 
+    srw_data = None
+
     want_main_area = 0
 
     def __init__(self):
@@ -37,24 +39,41 @@ class OWToWofryWavefront2d(widget.OWWidget):
         self.setGeometry(QRect(round(geom.width()*0.05),
                                round(geom.height()*0.05),
                                round(min(geom.width()*0.98, self.CONTROL_AREA_WIDTH+10)),
-                               round(min(geom.height()*0.95, 100))))
+                               round(min(geom.height()*0.95, 220))))
 
-        self.setMaximumHeight(self.geometry().height())
-        self.setMaximumWidth(self.geometry().width())
+        self.setFixedHeight(self.geometry().height())
+        self.setFixedWidth(self.geometry().width())
 
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
-        main_box = oasysgui.widgetBox(self.controlArea, "SRW to Wofry Wavefront Converter", orientation="vertical", width=self.CONTROL_AREA_WIDTH-5, height=50)
+        label = gui.label(self.controlArea, self, "From SRW Wavefront To Wofry Wavefront")
+        font = QFont(label.font())
+        font.setBold(True)
+        font.setItalic(True)
+        font.setPixelSize(14)
+        label.setFont(font)
+        palette = QPalette(label.palette()) # make a copy of the palette
+        palette.setColor(QPalette.Foreground, QColor('Dark Blue'))
+        label.setPalette(palette) # assign new palette
 
-        gui.label(main_box, self, "--------------- from SRW SRWWfr to Wofry GenericWavefront2D ---------------")
+        gui.separator(self.controlArea, 10)
+
+        gui.button(self.controlArea, self, "Convert", callback=self.convert_wavefront, height=45)
+
 
     def set_input(self, input_data):
         self.setStatusMessage("")
 
         if not input_data is None:
-            try:
-                self.send("GenericWavefront2D", input_data._srw_wavefront.toGenericWavefront())
-            except Exception as exception:
-                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+            self.srw_data = input_data
 
-                #raise exception
+            self.convert_wavefront()
+
+    def convert_wavefront(self):
+        try:
+            if not self.srw_data is None:
+                self.send("GenericWavefront2D", self.srw_data._srw_wavefront.toGenericWavefront())
+        except Exception as exception:
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+            #raise exception

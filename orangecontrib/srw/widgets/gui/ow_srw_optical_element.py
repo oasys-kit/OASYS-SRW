@@ -87,7 +87,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     input_srw_data = None
     wavefront_to_plot = None
 
-    TABS_AREA_HEIGHT = 618
+    TABS_AREA_HEIGHT = 555
     CONTROL_AREA_WIDTH = 405
 
     def __init__(self):
@@ -141,10 +141,11 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.draw_specific_box()
 
         self.tabs_prop_setting = oasysgui.tabWidget(self.tab_pro)
+        self.tabs_prop_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-10)
 
-        self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space")
         self.tab_oe = oasysgui.createTabPage(self.tabs_prop_setting, "Optical Element")
-        
+        self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space")
+
         # DRIFT SPACE
         
         gui.comboBox(self.tab_drift, self, "drift_auto_resize_before_propagation", label="Auto Resize Before Propagation",
@@ -155,7 +156,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=280, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.tab_drift, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
                      items=["No", "Yes"], labelWidth=300,
@@ -165,10 +166,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
         
         # not yet used by SRW
         #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=280, valueType=int, orientation="horizontal")
@@ -186,7 +187,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=280, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.tab_oe, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
                      items=["No", "Yes"], labelWidth=300,
@@ -196,10 +197,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
         
         # not yet used by SRW
         #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=280, valueType=int, orientation="horizontal")
