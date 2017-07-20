@@ -86,7 +86,7 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
                                                                                                               sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
-        e, i = srw_source.srw_wavefront()
+        e, i = srw_wavefront.get_flux(multi_electron=True)
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
 
