@@ -54,6 +54,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     q               = Setting(0.0)
     angle_radial    = Setting(0.0)
     angle_azimuthal = Setting(0.0)
+    orientation_azimuthal = Setting(0)
 
     shape = Setting(0)
     surface_shape = Setting(0)
@@ -76,10 +77,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     oe_relative_precision_for_propagation_with_autoresizing   = Setting(1.0)
     oe_allow_semianalytical_treatment_of_quadratic_phase_term = Setting(0)
     oe_do_any_resizing_on_fourier_side_using_fft              = Setting(0)
-    oe_horizontal_range_modification_factor_at_resizing       = Setting(2.0)
-    oe_horizontal_resolution_modification_factor_at_resizing  = Setting(5.0)
-    oe_vertical_range_modification_factor_at_resizing         = Setting(6.0)
-    oe_vertical_resolution_modification_factor_at_resizing    = Setting(3.0)
+    oe_horizontal_range_modification_factor_at_resizing       = Setting(1.0)
+    oe_horizontal_resolution_modification_factor_at_resizing  = Setting(1.0)
+    oe_vertical_range_modification_factor_at_resizing         = Setting(1.0)
+    oe_vertical_resolution_modification_factor_at_resizing    = Setting(1.0)
     oe_type_of_wavefront_shift_before_resizing                = Setting(0)
     oe_new_horizontal_wavefront_center_position_after_shift   = Setting(0)
     oe_new_vertical_wavefront_center_position_after_shift     = Setting(0)
@@ -88,14 +89,16 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     wavefront_to_plot = None
 
     has_orientation_angles=True
+    azimuth_hor_vert=False
 
     TABS_AREA_HEIGHT = 555
     CONTROL_AREA_WIDTH = 405
 
-    def __init__(self, has_orientation_angles=True):
+    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False):
         super().__init__()
 
         self.has_orientation_angles=has_orientation_angles
+        self.azimuth_hor_vert=azimuth_hor_vert
 
         self.runaction = widget.OWAction("Propagate Wavefront", self)
         self.runaction.triggered.connect(self.propagate_wavefront)
@@ -142,7 +145,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         if self.has_orientation_angles:
             oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
-            oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+
+            if self.azimuth_hor_vert:
+                gui.comboBox(self.coordinates_box, self, "orientation_azimuthal", label="Orientation Along Beam Axis",
+                             items=["Horizontal", "Vertical"], labelWidth=300,
+                             sendSelectedValue=False, orientation="horizontal")
+            else:
+                oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
         self.draw_specific_box()
 
@@ -222,7 +231,11 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         congruence.checkPositiveNumber(self.q, "Distance to next Continuation Plane")
         if self.has_orientation_angles:
             congruence.checkPositiveAngle(self.angle_radial, "Incident Angle (to normal)")
-            congruence.checkPositiveAngle(self.angle_azimuthal, "Rotation along Beam Axis")
+
+            if self.azimuth_hor_vert:
+                self.angle_azimuthal = 0.0 if self.orientation_azimuthal == 0 else 90.0
+            else:
+                congruence.checkPositiveAngle(self.angle_azimuthal, "Rotation along Beam Axis")
         else:
             self.angle_radial = 0.0
             self.angle_azimuthal = 0.0
@@ -352,8 +365,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                 self.oe_name = beamline_element._optical_element._name
                 self.p = beamline_element._coordinates._p
                 self.q = beamline_element._coordinates._q
-                self.angle_azimuthal = beamline_element._coordinates._angle_azimuthal
-                self.angle_radial = beamline_element._coordinates._angle_radial
+                self.angle_azimuthal = numpy.degrees(beamline_element._coordinates._angle_azimuthal)
+                self.angle_radial = numpy.degrees(beamline_element._coordinates._angle_radial)
 
                 self.receive_specific_syned_data(beamline_element._optical_element)
             else:
