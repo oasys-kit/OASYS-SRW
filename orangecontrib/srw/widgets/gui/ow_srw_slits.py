@@ -20,8 +20,7 @@ class OWSRWSlits(OWSRWOpticalElement):
     radius = Setting(0.0)
 
     def __init__(self):
-        super().__init__()
-
+        super().__init__(has_orientation_angles=False)
 
     def draw_specific_box(self):
 
@@ -99,7 +98,6 @@ class OWSRWSlits(OWSRWOpticalElement):
 
                     self.horizontal_shift = optical_element._boundary_shape._min_ax_left + 0.5*self.radius
                     self.vertical_shift = optical_element._boundary_shape._maj_ax_bottom + 0.5*self.radius
-
             else:
                 raise Exception("Syned Data not correct: Optical Element is not a Slit")
         else:

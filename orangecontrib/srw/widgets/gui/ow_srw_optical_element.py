@@ -87,11 +87,15 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     input_srw_data = None
     wavefront_to_plot = None
 
+    has_orientation_angles=True
+
     TABS_AREA_HEIGHT = 555
     CONTROL_AREA_WIDTH = 405
 
-    def __init__(self):
+    def __init__(self, has_orientation_angles=True):
         super().__init__()
+
+        self.has_orientation_angles=has_orientation_angles
 
         self.runaction = widget.OWAction("Propagate Wavefront", self)
         self.runaction.triggered.connect(self.propagate_wavefront)
@@ -135,8 +139,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         oasysgui.lineEdit(self.coordinates_box, self, "p", "Distance from previous Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.coordinates_box, self, "q", "Distance to next Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+
+        if self.has_orientation_angles:
+            oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
         self.draw_specific_box()
 
@@ -214,8 +220,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     def check_data(self):
         congruence.checkPositiveNumber(self.p, "Distance from previous Continuation Plane")
         congruence.checkPositiveNumber(self.q, "Distance to next Continuation Plane")
-        congruence.checkPositiveAngle(self.angle_radial, "Incident Angle (to normal)")
-        congruence.checkPositiveAngle(self.angle_azimuthal, "Rotation along Beam Axis")
+        if self.has_orientation_angles:
+            congruence.checkPositiveAngle(self.angle_radial, "Incident Angle (to normal)")
+            congruence.checkPositiveAngle(self.angle_azimuthal, "Rotation along Beam Axis")
+        else:
+            self.angle_radial = 0.0
+            self.angle_azimuthal = 0.0
 
     def propagate_wavefront(self):
         try:
@@ -237,25 +247,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             propagation_elements.add_beamline_element(beamline_element)
 
-            print(self.input_srw_data._srw_wavefront.mesh.xStart,
-                  self.input_srw_data._srw_wavefront.mesh.xFin,
-                  self.input_srw_data._srw_wavefront.mesh.nx)
-
-            print(self.input_srw_data._srw_wavefront.mesh.yStart,
-                  self.input_srw_data._srw_wavefront.mesh.yFin,
-                  self.input_srw_data._srw_wavefront.mesh.ny)
-
-
-            wf = self.input_srw_data._srw_wavefront.duplicate()
-
-            print(wf.mesh.xStart,
-                  wf.mesh.xFin,
-                  wf.mesh.nx)
-
-            print(wf.mesh.yStart,
-                  wf.mesh.yFin,
-                  wf.mesh.ny)
-
             propagation_parameters = PropagationParameters(wavefront=self.input_srw_data._srw_wavefront.duplicate(),
                                                            propagation_elements = propagation_elements)
 
@@ -266,16 +257,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
                                                          handler_name=FresnelSRW.HANDLER_NAME)
 
-            print(output_wavefront.mesh.xStart,
-                  output_wavefront.mesh.xFin,
-                  output_wavefront.mesh.nx)
-
-            print(output_wavefront.mesh.yStart,
-                  output_wavefront.mesh.yFin,
-                  output_wavefront.mesh.ny)
-
             self.wavefront_to_plot = output_wavefront
-
 
             self.initializeTabs()
 

@@ -70,7 +70,6 @@ class SRWWavefrontViewer(SRWWidget):
             tab.setFixedHeight(self.IMAGE_HEIGHT)
             tab.setFixedWidth(self.IMAGE_WIDTH)
 
-
         self.tabs.setCurrentIndex(current_tab)
 
 
