@@ -7,7 +7,7 @@ from oasys.widgets import congruence
 
 from syned.beamline.optical_elements.ideal_elements.lens import IdealLens
 
-from wofrysrw.beamline.optical_elements.ideal_elements.srw_idel_lens import SRWIdealLens
+from wofrysrw.beamline.optical_elements.ideal_elements.srw_ideal_lens import SRWIdealLens
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
