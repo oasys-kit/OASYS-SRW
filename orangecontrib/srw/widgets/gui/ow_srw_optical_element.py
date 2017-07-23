@@ -293,7 +293,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.setStatusMessage("")
             self.progressBarFinished()
 
-            raise e
+            #raise e
 
     def set_additional_parameters(self, propagation_parameters):
         propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_parameters",
