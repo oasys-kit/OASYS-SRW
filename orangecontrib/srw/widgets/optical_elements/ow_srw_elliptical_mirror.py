@@ -40,11 +40,10 @@ class OWSRWEllipticalMirror(OWSRWMirror):
         if not isinstance(optical_element._surface_shape, Ellipsoid):
             raise Exception("Syned Data not correct: Mirror Surface Shape is not Elliptical")
 
-        #TODO: calculation of p and q from ellipse axis
+        p, q = optical_element._surface_shape.get_p_q(numpy.radians(90-self.angle_radial))
 
-        # p^2/(maj/2)^2 + q^2/(min/2)^2 = 1
-        # p + q = maj
-
+        self.distance_from_first_focus_to_mirror_center = numpy.round(p, 6)
+        self.distance_from_mirror_center_to_second_focus = numpy.round(q, 6)
 
     def check_data(self):
         super().check_data()

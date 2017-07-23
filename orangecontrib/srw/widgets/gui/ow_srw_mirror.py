@@ -16,6 +16,8 @@ class OWSRWMirror(OWSRWOpticalElement):
 
     tangential_size                    = Setting(1.2)
     sagittal_size                      = Setting(0.01)
+    horizontal_position_of_mirror_center = Setting(0.0)
+    vertical_position_of_mirror_center = Setting(0.0)
 
     has_height_profile = Setting(0)
     height_profile_data_file           = Setting("mirror.dat")
@@ -30,6 +32,8 @@ class OWSRWMirror(OWSRWOpticalElement):
 
         oasysgui.lineEdit(self.filter_box, self, "tangential_size", "Tangential Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.filter_box, self, "sagittal_size", "Sagittal_Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.filter_box, self, "horizontal_position_of_mirror_center", "Horizontal position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.filter_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.filter_box, self, "has_height_profile", label="Use Height Error Profile",
                      items=["No", "Yes"], labelWidth=300,
@@ -82,8 +86,11 @@ class OWSRWMirror(OWSRWOpticalElement):
             if isinstance(optical_element, Mirror):
                 boundaries = optical_element._boundary_shape.get_boundaries()
 
-                self.tangential_size=boundaries[3]-boundaries[2]
-                self.sagittal_size=boundaries[1]-boundaries[0]
+                self.tangential_size=round(abs(boundaries[3] - boundaries[2]), 6)
+                self.sagittal_size=round(abs(boundaries[1] - boundaries[0]), 6)
+
+                self.vertical_position_of_mirror_center = round(0.5*(boundaries[3] + boundaries[2]), 6)
+                self.horizontal_position_of_mirror_center = round(0.5*(boundaries[1] + boundaries[0]), 6)
 
                 self.receive_shape_specific_syned_data(optical_element)
             else:
