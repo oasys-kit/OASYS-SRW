@@ -12,13 +12,14 @@ from syned.widget.widget_decorator import WidgetDecorator
 
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
+from wofrysrw.storage_ring.magnetic_structures.srw_bending_magnet import SRWBendingMagnet
 
 from orangecontrib.srw.util.srw_util import SRWPlot
-from orangecontrib.srw.widgets.gui.ow_srw_source import SRWSource
+from orangecontrib.srw.widgets.gui.ow_srw_source import OWSRWSource
 
 from syned.storage_ring.magnetic_structures.bending_magnet import BendingMagnet
 
-class SRWBendingMagnet(SRWSource, WidgetDecorator):
+class OWSRWBendingMagnet(OWSRWSource, WidgetDecorator):
 
     name = "SRW Bending Magnet"
     description = "SRW Source: Bending Magnet"
@@ -46,18 +47,16 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
         gui.rubber(self.mainArea)
 
 
-    def get_srw_source(self):
+    def get_srw_source(self, electron_beam):
+
+        self.magnetic_radius = BendingMagnet.calculate_magnetic_radius(self.magnetic_field, electron_beam.electron_energy_in_GeV) if self.magnetic_radius == 0.0 else self.magnetic_radius
+        self.magnetic_field = BendingMagnet.calculate_magnetic_field(self.magnetic_radius, electron_beam.electron_energy_in_GeV) if self.magnetic_field == 0.0 else self.magnetic_field
+
         return SRWBendingMagnetLightSource(name=self.source_name,
-                                           electron_energy_in_GeV=self.electron_energy_in_GeV,
-                                           electron_energy_spread=self.electron_energy_spread,
-                                           ring_current=self.ring_current,
-                                           electron_beam_size_h=self.electron_beam_size_h,
-                                           electron_beam_size_v=self.electron_beam_size_v,
-                                           electron_beam_divergence_h=self.electron_beam_divergence_h,
-                                           electron_beam_divergence_v=self.electron_beam_divergence_v,
-                                           magnetic_radius=self.magnetic_radius,
-                                           magnetic_field=self.magnetic_field,
-                                           length=self.length)
+                                           electron_beam=electron_beam,
+                                           bending_magnet_magnetic_structure=SRWBendingMagnet(self.magnetic_radius,
+                                                                                              self.magnetic_field,
+                                                                                              self.length))
 
     def print_specific_infos(self, srw_source):
         pass
@@ -97,36 +96,26 @@ class SRWBendingMagnet(SRWSource, WidgetDecorator):
         congruence.checkStrictlyPositiveNumber(self.magnetic_field, "Magnetic Field")
         congruence.checkStrictlyPositiveNumber(self.length, "Length")
 
-    def receive_syned_data(self, data):
-        if not data is None:
-            if not data._light_source is None and isinstance(data._light_source._magnetic_structure, BendingMagnet):
-                light_source = data._light_source
 
-                self.source_name = light_source._name
-                self.electron_energy_in_GeV = light_source._electron_beam._energy_in_GeV
-                self.electron_energy_spread = light_source._electron_beam._energy_spread
-                self.ring_current = light_source._electron_beam._current
+    def receive_specific_syned_data(self, data):
+        if isinstance(data._light_source._magnetic_structure, BendingMagnet):
+            light_source = data._light_source
 
-                x, xp, y, yp = light_source._electron_beam.get_sigmas_all()
-
-                self.electron_beam_size_h = x
-                self.electron_beam_size_v = y
-                self.electron_beam_divergence_h = xp
-                self.electron_beam_divergence_v = yp
-
-                self.magnetic_field = light_source._magnetic_structure._magnetic_field
-                self.magnetic_radius = light_source._magnetic_structure._radius
-                self.length = light_source._magnetic_structure._length
-            else:
-                raise ValueError("Syned data not correct")
+            self.magnetic_field = light_source._magnetic_structure._magnetic_field
+            self.magnetic_radius = light_source._magnetic_structure._radius
+            self.length = light_source._magnetic_structure._length
+        else:
+            raise ValueError("Syned data not correct")
 
     def calculateMagneticField(self):
         if self.magnetic_radius > 0:
-           self.magnetic_field=BendingMagnet.calculate_magnetic_field(self.magnetic_radius, self.electron_energy_in_GeV)
+           self.magnetic_field=BendingMagnet.calculate_magnetic_field(self.magnetic_radius,
+                                                                      self.electron_energy_in_GeV)
 
     def calculateMagneticRadius(self):
         if self.magnetic_field > 0:
-           self.magnetic_radius=BendingMagnet.calculate_magnetic_radius(self.magnetic_field, self.electron_energy_in_GeV)
+           self.magnetic_radius=BendingMagnet.calculate_magnetic_radius(self.magnetic_field,
+                                                                        self.electron_energy_in_GeV)
 
 
 if __name__ == "__main__":

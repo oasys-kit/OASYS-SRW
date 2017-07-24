@@ -14,13 +14,16 @@ from oasys.util.oasys_util import EmittingStream
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
+from syned.storage_ring.light_source import ElectronBeam, LightSource
+
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.srw_light_source import PowerDensityPrecisionParameters, SRWLightSource
+from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 
-class SRWSource(SRWWavefrontViewer):
+class OWSRWSource(SRWWavefrontViewer):
 
     maintainer = "Luca Rebuffi"
     maintainer_email = "luca.rebuffi(@at@)elettra.eu"
@@ -43,6 +46,15 @@ class SRWSource(SRWWavefrontViewer):
     electron_beam_size_v = Setting(2.784e-6)
     electron_beam_divergence_h = Setting(0.2525e-9)
     electron_beam_divergence_v = Setting(0.8352e-11)
+
+    moment_xx           = Setting(0.0)
+    moment_xxp          = Setting(0.0)
+    moment_xpxp         = Setting(0.0)
+    moment_yy           = Setting(0.0)
+    moment_yyp          = Setting(0.0)
+    moment_ypyp         = Setting(0.0)
+
+    type_of_properties = Setting(0)
 
     wf_photon_energy = Setting(0.0)
     wf_h_slit_gap = Setting(0.0001)
@@ -145,15 +157,35 @@ class SRWSource(SRWWavefrontViewer):
 
         oasysgui.lineEdit(self.tab_source, self, "source_name", "Light Source Name", labelWidth=260, valueType=str, orientation="horizontal")
 
-        left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam/Machine Parameters", addSpace=True, orientation="vertical")
+        left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam/Machine Parameters", addSpace=True, orientation="vertical", height=310)
 
         oasysgui.lineEdit(left_box_1, self, "electron_energy_in_GeV", "Energy [GeV]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "electron_energy_spread", "Energy Spread", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "ring_current", "Ring Current [A]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_size_h", "Horizontal Beam Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_size_v", "Vertical Beam Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_divergence_h", "Horizontal Beam Divergence [rad]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_divergence_v", "Vertical Beam Divergence", labelWidth=260, valueType=float, orientation="horizontal")
+
+        gui.comboBox(left_box_1, self, "type_of_properties", label="Electron Beam Properties", labelWidth=350,
+                     items=["From 2nd Moments", "From Size/Divergence"],
+                     callback=self.set_TypeOfProperties,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        self.left_box_2_1 = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="vertical", height=160)
+
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xx", "Moment xx   [m^2]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xxp", "Moment xxp  [m.rad]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xpxp", "Moment xpxp [rad^2]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_yy", "Moment yy   [m^2]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_yyp", "Moment yyp  [m.rad]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_ypyp", "Moment ypyp [rad^2]", labelWidth=260, valueType=float, orientation="horizontal")
+
+
+        self.left_box_2_2 = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="vertical", height=160)
+
+        oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_size_h",       "Horizontal Beam Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_size_v",       "Vertical Beam Size [m]",  labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_divergence_h", "Horizontal Beam Divergence [rad]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_divergence_v", "Vertical Beam Divergence [rad]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.set_TypeOfProperties()
 
         self.tab_plots = oasysgui.createTabPage(self.tabs_setting, "Wavefront Setting")
 
@@ -275,6 +307,12 @@ class SRWSource(SRWWavefrontViewer):
 
         self.build_flux_precision_tab(tabs_precision)
 
+        gui.rubber(self.controlArea)
+
+    def set_TypeOfProperties(self):
+        self.left_box_2_1.setVisible(self.type_of_properties==0)
+        self.left_box_2_2.setVisible(self.type_of_properties==1)
+
     def build_wf_photon_energy_box(self, box):
         oasysgui.lineEdit(box, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
 
@@ -288,7 +326,7 @@ class SRWSource(SRWWavefrontViewer):
         try:
             self.checkFields()
 
-            srw_source = self.get_srw_source()
+            srw_source = self.get_srw_source(self.get_electron_beam())
 
             self.progressBarSet(10)
 
@@ -325,6 +363,39 @@ class SRWSource(SRWWavefrontViewer):
 
         self.progressBarFinished()
 
+    def get_electron_beam(self):
+        electron_beam = SRWElectronBeam(energy_in_GeV=self.electron_energy_in_GeV,
+                                        energy_spread=self.electron_energy_spread,
+                                        current=self.ring_current)
+        if self.type_of_properties == 0:
+            electron_beam._moment_xx = self.moment_xx
+            electron_beam._moment_xxp = self.moment_xxp
+            electron_beam._moment_xpxp = self.moment_xpxp
+            electron_beam._moment_yy = self.moment_yy
+            electron_beam._moment_yyp = self.moment_yyp
+            electron_beam._moment_ypyp = self.moment_ypyp
+
+            x, xp, y, yp = electron_beam.get_sigmas_all()
+
+            self.electron_beam_size_h = x
+            self.electron_beam_size_v = y
+            self.electron_beam_divergence_h = xp
+            self.electron_beam_divergence_v = yp
+        else:
+            electron_beam.set_sigmas_all(sigma_x=self.electron_beam_size_h,
+                                         sigma_y=self.electron_beam_size_v,
+                                         sigma_xp=self.electron_beam_divergence_h,
+                                         sigma_yp=self.electron_beam_divergence_v)
+
+            self.moment_xx = electron_beam._moment_xx
+            self.moment_xpxp = electron_beam._moment_xpxp
+            self.moment_yy = electron_beam._moment_yy
+            self.moment_ypyp = electron_beam._moment_ypyp
+        return electron_beam
+
+    def get_srw_source(self, electron_beam=ElectronBeam()):
+        raise NotImplementedError()
+
     def getCalculatedTotalPowerString(self):
         if self.calculated_total_power == 0:
             return ""
@@ -336,16 +407,26 @@ class SRWSource(SRWWavefrontViewer):
         congruence.checkStrictlyPositiveNumber(self.electron_energy_in_GeV, "Energy")
         congruence.checkPositiveNumber(self.electron_energy_spread, "Energy Spread")
         congruence.checkStrictlyPositiveNumber(self.ring_current, "Ring Current")
-        congruence.checkPositiveNumber(self.electron_beam_size_h, "Horizontal Beam Size")
-        congruence.checkPositiveNumber(self.electron_beam_size_v, "Vertical Beam Size")
-        congruence.checkPositiveNumber(self.electron_beam_divergence_h, "Horizontal Beam Divergence")
-        congruence.checkPositiveNumber(self.electron_beam_divergence_v, "Vetical Beam Divergence")
+
+        if self.type_of_properties == 0:
+            congruence.checkPositiveNumber(self.moment_xx   , "Moment xx")
+            congruence.checkPositiveNumber(self.moment_xxp  , "Moment xxp")
+            congruence.checkPositiveNumber(self.moment_xpxp , "Moment xpxp")
+            congruence.checkPositiveNumber(self.moment_yy   , "Moment yy")
+            congruence.checkPositiveNumber(self.moment_yyp  , "Moment yyp")
+            congruence.checkPositiveNumber(self.moment_ypyp , "Moment ypyp")
+        else:
+            congruence.checkPositiveNumber(self.electron_beam_size_h       , "Horizontal Beam Size")
+            congruence.checkPositiveNumber(self.electron_beam_divergence_h , "Vertical Beam Size")
+            congruence.checkPositiveNumber(self.electron_beam_size_v       , "Horizontal Beam Divergence")
+            congruence.checkPositiveNumber(self.electron_beam_divergence_v , "Vertical Beam Divergence")
 
         self.checkLightSourceSpecificFields()
 
         # WAVEFRONT
 
         self.checkWavefrontPhotonenergy()
+
         congruence.checkStrictlyPositiveNumber(self.wf_h_slit_gap, "Wavefront Propagation H Slit Gap")
         congruence.checkStrictlyPositiveNumber(self.wf_v_slit_gap, "Wavefront Propagation V Slit Gap")
         congruence.checkStrictlyPositiveNumber(self.wf_h_slit_points, "Wavefront Propagation H Slit Points")
@@ -410,14 +491,14 @@ class SRWSource(SRWWavefrontViewer):
 
     def run_calculation_intensity_power(self, srw_source, tickets, progress_bar_value=30):
         wf_parameters = WavefrontParameters(photon_energy_min = self.int_photon_energy_min,
-                                                  photon_energy_max = self.int_photon_energy_max,
-                                                  photon_energy_points=self.int_photon_energy_points,
-                                                  h_slit_gap = self.int_h_slit_gap,
-                                                  v_slit_gap = self.int_v_slit_gap,
-                                                  h_slit_points=self.int_h_slit_points,
-                                                  v_slit_points=self.int_v_slit_points,
-                                                  distance = self.int_distance,
-                                                  wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.int_sr_method == 0 else self.get_automatic_sr_method(),
+                                            photon_energy_max = self.int_photon_energy_max,
+                                            photon_energy_points=self.int_photon_energy_points,
+                                            h_slit_gap = self.int_h_slit_gap,
+                                            v_slit_gap = self.int_v_slit_gap,
+                                            h_slit_points=self.int_h_slit_points,
+                                            v_slit_points=self.int_v_slit_points,
+                                            distance = self.int_distance,
+                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.int_sr_method == 0 else self.get_automatic_sr_method(),
                                                                                                               relative_precision=self.int_relative_precision,
                                                                                                               start_integration_longitudinal_position=self.int_start_integration_longitudinal_position,
                                                                                                               end_integration_longitudinal_position=self.int_end_integration_longitudinal_position,
@@ -448,14 +529,14 @@ class SRWSource(SRWWavefrontViewer):
         # POWER DENSITY
 
         wf_parameters = WavefrontParameters(photon_energy_min = self.int_photon_energy_min,
-                                                  photon_energy_max = self.int_photon_energy_max,
-                                                  photon_energy_points=self.int_photon_energy_points,
-                                                  h_slit_gap = self.int_h_slit_gap,
-                                                  v_slit_gap = self.int_v_slit_gap,
-                                                  h_slit_points=self.int_h_slit_points,
-                                                  v_slit_points=self.int_v_slit_points,
-                                                  distance = self.int_distance,
-                                                  wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.int_sr_method == 0 else self.get_automatic_sr_method(),
+                                            photon_energy_max = self.int_photon_energy_max,
+                                            photon_energy_points=self.int_photon_energy_points,
+                                            h_slit_gap = self.int_h_slit_gap,
+                                            v_slit_gap = self.int_v_slit_gap,
+                                            h_slit_points=self.int_h_slit_points,
+                                            v_slit_points=self.int_v_slit_points,
+                                            distance = self.int_distance,
+                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.int_sr_method == 0 else self.get_automatic_sr_method(),
                                                                                                               relative_precision=self.int_relative_precision,
                                                                                                               start_integration_longitudinal_position=self.int_start_integration_longitudinal_position,
                                                                                                               end_integration_longitudinal_position=self.int_end_integration_longitudinal_position,
@@ -506,25 +587,6 @@ class SRWSource(SRWWavefrontViewer):
 
         return srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
-        '''
-        wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
-
-        from srwlib import SRWLOptC, SRWLOptA, SRWLOptD, srwl
-
-        opDrift = SRWLOptD(1.0) #Drift space from lens to image plane
-        ppDrift = [0, 0, 1., 1, 0, 1.0, 1.0, 1.0, 1.0, 0, 0, 0]
-
-        opA = SRWLOptA(_shape='r',
-                       _ap_or_ob='a',
-                       _Dx=0.0005,
-                       _Dy=0.0005)
-
-        srwl.PropagElecField(wavefront, SRWLOptC([opA], [ppDrift]))
-        #srwl.PropagElecField(wavefront, SRWLOptC([opA, opDrift], [ppDrift, ppDrift]))
-
-        return wavefront
-        '''
-
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
         return self.wf_photon_energy
 
@@ -532,4 +594,40 @@ class SRWSource(SRWWavefrontViewer):
         return round(self.get_source_length()*1.01, 6)
 
     def get_source_length(self):
+        raise NotImplementedError()
+
+
+    def receive_syned_data(self, data):
+        if not data is None:
+            if not data._light_source is None and isinstance(data._light_source, LightSource):
+                light_source = data._light_source
+
+                self.source_name = light_source._name
+                self.electron_energy_in_GeV = light_source._electron_beam._energy_in_GeV
+                self.electron_energy_spread = light_source._electron_beam._energy_spread
+                self.ring_current = light_source._electron_beam._current
+
+                self.moment_xx = light_source._electron_beam._moment_xx
+                self.moment_xxp = light_source._electron_beam._moment_xxp
+                self.moment_xpxp = light_source._electron_beam._moment_xpxp
+                self.moment_yy = light_source._electron_beam._moment_yy
+                self.moment_yyp = light_source._electron_beam._moment_yyp
+                self.moment_ypyp = light_source._electron_beam._moment_ypyp
+
+                x, xp, y, yp = light_source._electron_beam.get_sigmas_all()
+
+                self.electron_beam_size_h = x
+                self.electron_beam_size_v = y
+                self.electron_beam_divergence_h = xp
+                self.electron_beam_divergence_v = yp
+
+                self.type_of_properties = 0
+
+                self.set_TypeOfProperties()
+
+                self.receive_specific_syned_data(data)
+            else:
+                raise ValueError("Syned data not correct")
+
+    def receive_specific_syned_data(self, data):
         raise NotImplementedError()
