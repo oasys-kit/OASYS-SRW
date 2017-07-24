@@ -7,8 +7,6 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
-from syned.widget.widget_decorator import WidgetDecorator
-
 from syned.storage_ring.magnetic_structures.undulator import Undulator
 
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
@@ -18,7 +16,7 @@ from wofrysrw.storage_ring.magnetic_structures.srw_undulator import SRWUndulator
 from orangecontrib.srw.widgets.gui.ow_srw_source import OWSRWSource
 from orangecontrib.srw.util.srw_util import SRWPlot
 
-class OWSRWUndulator(OWSRWSource, WidgetDecorator):
+class OWSRWUndulator(OWSRWSource):
 
     name = "SRW Undulator"
     description = "SRW Source: Undulator"
@@ -30,8 +28,6 @@ class OWSRWUndulator(OWSRWSource, WidgetDecorator):
     K_vertical = Setting(1.5)
     period_length = Setting(0.02)
     number_of_periods = Setting(75)
-
-    inputs = WidgetDecorator.syned_input_data()
 
     wf_use_harmonic = Setting(0)
     wf_harmonic_number = Setting(1)

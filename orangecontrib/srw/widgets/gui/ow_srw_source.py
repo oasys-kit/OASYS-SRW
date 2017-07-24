@@ -23,12 +23,16 @@ from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 
-class OWSRWSource(SRWWavefrontViewer):
+from syned.widget.widget_decorator import WidgetDecorator
+
+class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     maintainer = "Luca Rebuffi"
     maintainer_email = "luca.rebuffi(@at@)elettra.eu"
     category = "Sources"
     keywords = ["data", "file", "load", "read"]
+
+    inputs = WidgetDecorator.syned_input_data()
 
     outputs = [{"name":"SRWData",
                 "type":SRWData,
@@ -359,7 +363,7 @@ class OWSRWSource(SRWWavefrontViewer):
         except Exception as exception:
             QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-            raise exception
+            #raise exception
 
         self.progressBarFinished()
 
@@ -595,7 +599,6 @@ class OWSRWSource(SRWWavefrontViewer):
 
     def get_source_length(self):
         raise NotImplementedError()
-
 
     def receive_syned_data(self, data):
         if not data is None:

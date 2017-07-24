@@ -1,14 +1,11 @@
 import sys
 
-from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QApplication
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
-
-from syned.widget.widget_decorator import WidgetDecorator
 
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
@@ -19,14 +16,12 @@ from orangecontrib.srw.widgets.gui.ow_srw_source import OWSRWSource
 
 from syned.storage_ring.magnetic_structures.bending_magnet import BendingMagnet
 
-class OWSRWBendingMagnet(OWSRWSource, WidgetDecorator):
+class OWSRWBendingMagnet(OWSRWSource):
 
     name = "SRW Bending Magnet"
     description = "SRW Source: Bending Magnet"
     icon = "icons/bending_magnet.png"
     priority = 1
-
-    inputs = WidgetDecorator.syned_input_data()
 
     magnetic_radius = Setting(5.56)
     magnetic_field = Setting(1.2)
@@ -96,6 +91,15 @@ class OWSRWBendingMagnet(OWSRWSource, WidgetDecorator):
         congruence.checkStrictlyPositiveNumber(self.magnetic_field, "Magnetic Field")
         congruence.checkStrictlyPositiveNumber(self.length, "Length")
 
+    def calculateMagneticField(self):
+        if self.magnetic_radius > 0:
+           self.magnetic_field=BendingMagnet.calculate_magnetic_field(self.magnetic_radius,
+                                                                      self.electron_energy_in_GeV)
+
+    def calculateMagneticRadius(self):
+        if self.magnetic_field > 0:
+           self.magnetic_radius=BendingMagnet.calculate_magnetic_radius(self.magnetic_field,
+                                                                        self.electron_energy_in_GeV)
 
     def receive_specific_syned_data(self, data):
         if isinstance(data._light_source._magnetic_structure, BendingMagnet):
@@ -106,16 +110,6 @@ class OWSRWBendingMagnet(OWSRWSource, WidgetDecorator):
             self.length = light_source._magnetic_structure._length
         else:
             raise ValueError("Syned data not correct")
-
-    def calculateMagneticField(self):
-        if self.magnetic_radius > 0:
-           self.magnetic_field=BendingMagnet.calculate_magnetic_field(self.magnetic_radius,
-                                                                      self.electron_energy_in_GeV)
-
-    def calculateMagneticRadius(self):
-        if self.magnetic_field > 0:
-           self.magnetic_radius=BendingMagnet.calculate_magnetic_radius(self.magnetic_field,
-                                                                        self.electron_energy_in_GeV)
 
 
 if __name__ == "__main__":
