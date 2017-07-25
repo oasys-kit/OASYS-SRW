@@ -58,6 +58,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     moment_yyp          = Setting(0.0)
     moment_ypyp         = Setting(0.0)
 
+    electron_beam_drift_distance = Setting(0.0)
+
     type_of_properties = Setting(0)
 
     wf_photon_energy = Setting(0.0)
@@ -161,7 +163,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         oasysgui.lineEdit(self.tab_source, self, "source_name", "Light Source Name", labelWidth=260, valueType=str, orientation="horizontal")
 
-        left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam/Machine Parameters", addSpace=True, orientation="vertical", height=310)
+        left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam/Machine Parameters", addSpace=True, orientation="vertical", height=350)
 
         oasysgui.lineEdit(left_box_1, self, "electron_energy_in_GeV", "Energy [GeV]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "electron_energy_spread", "Energy Spread", labelWidth=260, valueType=float, orientation="horizontal")
@@ -174,12 +176,12 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         self.left_box_2_1 = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="vertical", height=160)
 
-        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xx", "Moment xx   [m^2]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xxp", "Moment xxp  [m.rad]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xpxp", "Moment xpxp [rad^2]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_2_1, self, "moment_yy", "Moment yy   [m^2]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_2_1, self, "moment_yyp", "Moment yyp  [m.rad]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_2_1, self, "moment_ypyp", "Moment ypyp [rad^2]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xx", "Moment xx   [m^2]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xxp", "Moment xxp  [m.rad]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_xpxp", "Moment xpxp [rad^2]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_yy", "Moment yy   [m^2]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_yyp", "Moment yyp  [m.rad]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_2_1, self, "moment_ypyp", "Moment ypyp [rad^2]", labelWidth=200, valueType=float, orientation="horizontal")
 
 
         self.left_box_2_2 = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="vertical", height=160)
@@ -190,6 +192,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_divergence_v", "Vertical Beam Divergence [rad]", labelWidth=260, valueType=float, orientation="horizontal")
 
         self.set_TypeOfProperties()
+
+        oasysgui.lineEdit(left_box_1, self, "electron_beam_drift_distance", "Beam propagation distance [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
         self.tab_plots = oasysgui.createTabPage(self.tabs_setting, "Wavefront Setting")
 
@@ -346,8 +350,9 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
             tickets = []
 
-            self.run_calculation_intensity_power(srw_source, tickets)
-            self.run_calculation_flux(srw_source, tickets)
+            if self.is_do_plots():
+                self.run_calculation_intensity_power(srw_source, tickets)
+                self.run_calculation_flux(srw_source, tickets)
 
             self.setStatusMessage("Plotting Results")
 
@@ -370,7 +375,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     def get_electron_beam(self):
         electron_beam = SRWElectronBeam(energy_in_GeV=self.electron_energy_in_GeV,
                                         energy_spread=self.electron_energy_spread,
-                                        current=self.ring_current)
+                                        current=self.ring_current,
+                                        drift_distance=self.electron_beam_drift_distance)
         if self.type_of_properties == 0:
             electron_beam._moment_xx = self.moment_xx
             electron_beam._moment_xxp = self.moment_xxp
@@ -395,6 +401,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             self.moment_xpxp = electron_beam._moment_xpxp
             self.moment_yy = electron_beam._moment_yy
             self.moment_ypyp = electron_beam._moment_ypyp
+
         return electron_beam
 
     def get_srw_source(self, electron_beam=ElectronBeam()):

@@ -28,20 +28,20 @@ class OWSRWMirror(OWSRWOpticalElement):
         super().__init__(azimuth_hor_vert=True)
 
     def draw_specific_box(self):
-        self.filter_box = oasysgui.widgetBox(self.tab_bas, "Mirror Setting", addSpace=True, orientation="vertical")
+        self.mirror_box = oasysgui.widgetBox(self.tab_bas, "Mirror Setting", addSpace=False, orientation="vertical")
 
-        oasysgui.lineEdit(self.filter_box, self, "tangential_size", "Tangential Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.filter_box, self, "sagittal_size", "Sagittal_Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.filter_box, self, "horizontal_position_of_mirror_center", "Horizontal position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.filter_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.mirror_box, self, "tangential_size", "Tangential Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.mirror_box, self, "sagittal_size", "Sagittal_Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.mirror_box, self, "horizontal_position_of_mirror_center", "Horizontal position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.mirror_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
-        gui.comboBox(self.filter_box, self, "has_height_profile", label="Use Height Error Profile",
+        gui.comboBox(self.mirror_box, self, "has_height_profile", label="Use Height Error Profile",
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal", callback=self.set_HeightProfile)
 
-        self.height_profile_box_1 = oasysgui.widgetBox(self.filter_box, "", addSpace=False, orientation="vertical", height=100)
+        self.height_profile_box_1 = oasysgui.widgetBox(self.mirror_box, "", addSpace=False, orientation="vertical", height=100)
 
-        self.height_profile_box_2 = oasysgui.widgetBox(self.filter_box, "", addSpace=False, orientation="vertical", height=100)
+        self.height_profile_box_2 = oasysgui.widgetBox(self.mirror_box, "", addSpace=False, orientation="vertical", height=100)
 
         file_box =  oasysgui.widgetBox(self.height_profile_box_2, "", addSpace=False, orientation="horizontal")
 

@@ -1,11 +1,3 @@
-import numpy
-
-from orangewidget import gui
-from orangewidget.settings import Setting
-from oasys.widgets import gui as oasysgui
-from oasys.widgets import congruence
-
-from syned.beamline.optical_elements.mirrors.mirror import Mirror
 from syned.beamline.shape import Plane
 
 from wofrysrw.beamline.optical_elements.mirrors.srw_plane_mirror import SRWPlaneMirror

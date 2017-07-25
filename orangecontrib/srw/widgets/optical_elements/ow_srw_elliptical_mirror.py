@@ -1,11 +1,9 @@
 import numpy
 
-from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
-from syned.beamline.optical_elements.mirrors.mirror import Mirror
 from syned.beamline.shape import Ellipsoid
 
 from wofrysrw.beamline.optical_elements.mirrors.srw_elliptical_mirror import SRWEllipticalMirror
@@ -32,8 +30,8 @@ class OWSRWEllipticalMirror(OWSRWMirror):
     def draw_specific_box(self):
         super().draw_specific_box()
 
-        oasysgui.lineEdit(self.filter_box, self, "distance_from_first_focus_to_mirror_center", "1st focus to mirror center distance (p) [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.filter_box, self, "distance_from_mirror_center_to_second_focus", "Mirror center to 2nd focus distance (q) [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.mirror_box, self, "distance_from_first_focus_to_mirror_center", "1st focus to mirror center distance (p) [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.mirror_box, self, "distance_from_mirror_center_to_second_focus", "Mirror center to 2nd focus distance (q) [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
 
     def receive_shape_specific_syned_data(self, optical_element):

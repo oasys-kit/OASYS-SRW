@@ -17,7 +17,7 @@ class SRWWavefrontViewer(SRWWidget):
     IMAGE_HEIGHT = 545
 
     want_main_area=1
-    view_type=Setting(0)
+    view_type=Setting(1)
 
     plotted_tickets=None
 
@@ -33,7 +33,7 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.view_type_combo = gui.comboBox(view_box_1, self, "view_type", label="Plot Results",
                                             labelWidth=220,
-                                            items=["Yes", "No"],
+                                            items=["No", "Yes"],
                                             callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
         self.tab = []
         self.tabs = oasysgui.tabWidget(plot_tab)
@@ -112,8 +112,12 @@ class SRWWavefrontViewer(SRWWidget):
     def show_power_density(self):
         return True
 
+    def is_do_plots(self):
+        return self.view_type == 1
+
+
     def plot_results(self, tickets = [], progressBarValue=80):
-        if not self.view_type == 1:
+        if self.is_do_plots():
             if not tickets is None:
                 self.view_type_combo.setEnabled(False)
 

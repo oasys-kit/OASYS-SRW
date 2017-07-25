@@ -9,7 +9,7 @@ class OWSRWScreen(OWSRWOpticalElement):
     name = "Screen"
     description = "SRW: Screen"
     icon = "icons/screen.png"
-    priority = 6
+    priority = 20
 
     def __init__(self):
         super().__init__(has_orientation_angles=False)
