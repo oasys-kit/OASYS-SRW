@@ -30,6 +30,7 @@ class OWSRWGrating(OWSRWOpticalElement):
     grooving_density_2                 = Setting(0.0) # groove density polynomial coefficient a2 [lines/mm^3]
     grooving_density_3                 = Setting(0.0) # groove density polynomial coefficient a3 [lines/mm^4]
     grooving_density_4                 = Setting(0.0)  # groove density polynomial coefficient a4 [lines/mm^5]
+    grooving_angle                     = Setting(0.0)  # angle between the groove direction and the sagittal direction of the substrate
 
     def __init__(self):
         super().__init__(azimuth_hor_vert=True)
@@ -71,6 +72,8 @@ class OWSRWGrating(OWSRWOpticalElement):
         self.set_HeightProfile()
         
         oasysgui.lineEdit(self.grooving_box, self, "diffraction_order", "Diffraction order", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_angle", "Angle between groove direction and\nsagittal direction of the substrate [deg]", labelWidth=260, valueType=float, orientation="horizontal")
+
         oasysgui.lineEdit(self.grooving_box, self, "grooving_density_0", "Groove density [lines/mm]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.grooving_box, self, "grooving_density_1", "Groove den. poly. coeff. a1 [lines/mm^2]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.grooving_box, self, "grooving_density_2", "Groove den. poly. coeff. a2 [lines/mm^3]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -101,11 +104,12 @@ class OWSRWGrating(OWSRWOpticalElement):
         grating.grooving_density_2=self.grooving_density_2
         grating.grooving_density_3=self.grooving_density_3
         grating.grooving_density_4=self.grooving_density_4
+        grating.grazing_angle=numpy.radians(self.grooving_angle)
 
         return grating
 
     def get_grating_instance(self):
-        return SRWGrating()
+        raise NotImplementedError()
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
@@ -118,7 +122,7 @@ class OWSRWGrating(OWSRWOpticalElement):
                 self.vertical_position_of_mirror_center = round(0.5*(boundaries[3] + boundaries[2]), 6)
                 self.horizontal_position_of_mirror_center = round(0.5*(boundaries[1] + boundaries[0]), 6)
                 
-                self.grooving_density_0=optical_element._ruling
+                self.grooving_density_0=optical_element._ruling*1e-3
                 
                 self.receive_shape_specific_syned_data(optical_element)
             else:
@@ -140,3 +144,4 @@ class OWSRWGrating(OWSRWOpticalElement):
             congruence.checkFile(self.height_profile_data_file)
 
         congruence.checkPositiveNumber(self.diffraction_order, "Diffraction Order")
+        congruence.checkStrictlyPositiveNumber(self.grooving_density_0, "Groove density")

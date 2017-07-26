@@ -79,7 +79,7 @@ class OWSRWMirror(OWSRWOpticalElement):
         return mirror
         
     def get_mirror_instance(self):
-        return SRWMirror()
+        raise NotImplementedError()
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:

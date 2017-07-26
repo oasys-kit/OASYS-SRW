@@ -187,10 +187,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
         
         # not yet used by SRW
         #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
@@ -218,10 +218,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "X range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "X resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "Y range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "Y resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
         
         # not yet used by SRW
         #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
