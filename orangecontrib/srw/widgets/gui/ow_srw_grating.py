@@ -104,7 +104,7 @@ class OWSRWGrating(OWSRWOpticalElement):
         grating.grooving_density_2=self.grooving_density_2
         grating.grooving_density_3=self.grooving_density_3
         grating.grooving_density_4=self.grooving_density_4
-        grating.grazing_angle=numpy.radians(self.grooving_angle)
+        grating.grooving_angle=numpy.radians(self.grooving_angle)
 
         return grating
 
