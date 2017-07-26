@@ -23,9 +23,14 @@ class OWSRWUndulator(OWSRWSource):
     icon = "icons/undulator.png"
     priority = 2
 
+    magnetic_field_from = Setting(0)
+
+    B_horizontal = Setting(0.0)
+    B_vertical = Setting(1.5)
 
     K_horizontal = Setting(0.0)
     K_vertical = Setting(1.5)
+
     period_length = Setting(0.02)
     number_of_periods = Setting(75)
 
@@ -44,10 +49,22 @@ class OWSRWUndulator(OWSRWSource):
 
         left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical")
 
-        oasysgui.lineEdit(left_box_2, self, "K_horizontal", "Horizontal K", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_2, self, "K_vertical", "Vertical K", labelWidth=260, valueType=float, orientation="horizontal")
+        gui.comboBox(left_box_2, self, "magnetic_field_from", label="Magnetic Field", labelWidth=350,
+                     items=["From K", "From B"],
+                     callback=self.set_MagneticField,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        self.magnetic_field_box_1 = oasysgui.widgetBox(left_box_2, "", addSpace=False, orientation="vertical")
+        self.magnetic_field_box_2 = oasysgui.widgetBox(left_box_2, "", addSpace=False, orientation="vertical")
+
+        oasysgui.lineEdit(self.magnetic_field_box_1, self, "K_horizontal", "Horizontal K", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_1, self, "K_vertical", "Vertical K", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_2, self, "B_horizontal", "Horizontal B (T)", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_2, self, "B_vertical", "Vertical B (T)", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "period_length", "Period Length [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "number_of_periods", "Number of Periods", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.set_MagneticField()
 
         gui.rubber(self.controlArea)
         gui.rubber(self.mainArea)
@@ -56,8 +73,8 @@ class OWSRWUndulator(OWSRWSource):
     def build_wf_photon_energy_box(self, box):
 
         gui.comboBox(box, self, "wf_use_harmonic", label="Energy Setting",
-                                            items=["Harmonic", "Other"], labelWidth=260,
-                                            callback=self.set_WFUseHarmonic, sendSelectedValue=False, orientation="horizontal")
+                     items=["Harmonic", "Other"], labelWidth=260,
+                     callback=self.set_WFUseHarmonic, sendSelectedValue=False, orientation="horizontal")
 
         self.use_harmonic_box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=30)
         oasysgui.lineEdit(self.use_harmonic_box_1, self, "wf_harmonic_number", "Harmonic #", labelWidth=260, valueType=int, orientation="horizontal")
@@ -76,17 +93,30 @@ class OWSRWUndulator(OWSRWSource):
         oasysgui.lineEdit(tab_flu, self, "spe_azimuthal_integration_precision_parameter", "Azimuthal integration precision param.", labelWidth=260, valueType=int, orientation="horizontal")
 
 
+    def set_MagneticField(self):
+        self.magnetic_field_box_1.setVisible(self.magnetic_field_from==0)
+        self.magnetic_field_box_2.setVisible(self.magnetic_field_from==1)
+
     def set_WFUseHarmonic(self):
         self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
         self.use_harmonic_box_2.setVisible(self.wf_use_harmonic==1)
 
     def get_srw_source(self, electron_beam):
+
+        if self.magnetic_field_from == 0:
+            undulator_magnetic_structure=SRWUndulator(K_vertical=self.K_vertical,
+                                                      K_horizontal=self.K_horizontal,
+                                                      period_length=self.period_length,
+                                                      number_of_periods=self.number_of_periods)
+        else:
+            undulator_magnetic_structure=SRWUndulator(period_length=self.period_length,
+                                                      number_of_periods=self.number_of_periods)
+            undulator_magnetic_structure.set_K_vertical_from_magnetic_field(self.B_vertical)
+            undulator_magnetic_structure.set_K_horizontal_from_magnetic_field(self.B_horizontal)
+
         return SRWUndulatorLightSource(name=self.source_name,
                                        electron_beam=electron_beam,
-                                       undulator_magnetic_structure=SRWUndulator(self.K_vertical,
-                                                                                 self.K_horizontal,
-                                                                                 self.period_length,
-                                                                                 int(self.number_of_periods))
+                                       undulator_magnetic_structure=undulator_magnetic_structure
                                        )
 
     def print_specific_infos(self, srw_source):
@@ -103,12 +133,17 @@ class OWSRWUndulator(OWSRWSource):
         return self.period_length*self.number_of_periods
 
     def checkLightSourceSpecificFields(self):
-        congruence.checkPositiveNumber(self.K_horizontal, "Horizontal K")
-        congruence.checkPositiveNumber(self.K_vertical, "Vertical K")
+        if self.magnetic_field_from == 0:
+            congruence.checkPositiveNumber(self.K_horizontal, "Horizontal K")
+            congruence.checkPositiveNumber(self.K_vertical, "Vertical K")
+        else:
+            congruence.checkPositiveNumber(self.B_horizontal, "Horizontal B")
+            congruence.checkPositiveNumber(self.B_vertical, "Vertical B")
+
         congruence.checkStrictlyPositiveNumber(self.period_length, "Period Length")
         congruence.checkStrictlyPositiveNumber(self.number_of_periods, "Number of Periods")
 
-    def checkWavefrontPhotonenergy(self):
+    def checkWavefrontPhotonEnergy(self):
         if self.wf_use_harmonic == 0:
             congruence.checkStrictlyPositiveNumber(self.wf_harmonic_number, "Wavefront Propagation Harmonic Number")
         else:
@@ -154,8 +189,11 @@ class OWSRWUndulator(OWSRWSource):
 
             self.K_horizontal = light_source._magnetic_structure._K_horizontal
             self.K_vertical = light_source._magnetic_structure._K_vertical
+            self.magnetic_field_from = 0
             self.period_length = light_source._magnetic_structure._period_length
             self.number_of_periods = light_source._magnetic_structure._number_of_periods
+
+            self.set_MagneticField()
         else:
             raise ValueError("Syned data not correct")
 

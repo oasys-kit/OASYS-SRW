@@ -131,21 +131,19 @@ class SRWWavefrontViewer(SRWWidget):
                 yums = self.getYUM()
 
                 try:
-                    if self.view_type == 0:
-                        self.plot_2D(tickets[0], progressBarValue + 4,  variables[0][0], variables[0][1], plot_canvas_index=0, title=titles[0], xtitle=xtitles[0], ytitle=ytitles[0], xum=xums[0], yum=yums[0])
-                        self.plot_2D(tickets[1], progressBarValue + 4,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
-                        self.plot_2D(tickets[2], progressBarValue + 4,  variables[2][0], variables[2][1], plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2], yum=yums[2])
+                    self.plot_2D(tickets[0], progressBarValue + 4,  variables[0][0], variables[0][1], plot_canvas_index=0, title=titles[0], xtitle=xtitles[0], ytitle=ytitles[0], xum=xums[0], yum=yums[0])
+                    self.plot_2D(tickets[1], progressBarValue + 4,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
+                    self.plot_2D(tickets[2], progressBarValue + 4,  variables[2][0], variables[2][1], plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2], yum=yums[2])
 
-                        if (len(tickets)) >= 4:
-                            self.plot_2D(tickets[3], progressBarValue + 4,  variables[3][0], variables[3][1], plot_canvas_index=3, title=titles[3], xtitle=xtitles[3], ytitle=ytitles[3], xum=xums[3], yum=yums[3])
-                        if (len(tickets)) == 5:
-                            self.plot_1D(tickets[4], progressBarValue + 16, variables[4],                  plot_canvas_index=4, title=titles[4], xtitle=xtitles[4], ytitle=ytitles[4], xum=xums[4] )
+                    if (len(tickets)) >= 4:
+                        self.plot_2D(tickets[3], progressBarValue + 4,  variables[3][0], variables[3][1], plot_canvas_index=3, title=titles[3], xtitle=xtitles[3], ytitle=ytitles[3], xum=xums[3], yum=yums[3])
+                    if (len(tickets)) == 5:
+                        self.plot_1D(tickets[4], progressBarValue + 16, variables[4],                  plot_canvas_index=4, title=titles[4], xtitle=xtitles[4], ytitle=ytitles[4], xum=xums[4] )
 
 
                 except Exception as e:
                     self.view_type_combo.setEnabled(True)
 
-                    raise e
                     raise Exception("Data not plottable: bad content\nexception: " + str(e))
 
                 self.view_type_combo.setEnabled(True)

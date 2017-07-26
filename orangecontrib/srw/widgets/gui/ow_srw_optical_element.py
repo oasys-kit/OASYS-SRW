@@ -16,7 +16,7 @@ from syned.beamline.beamline_element import BeamlineElement
 
 from wofry.propagator.propagator import PropagationManager, PropagationElements, PropagationParameters
 from wofrysrw.propagator.propagators2D.srw_fresnel import FresnelSRW
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
 
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
@@ -85,6 +85,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     oe_new_horizontal_wavefront_center_position_after_shift   = Setting(0)
     oe_new_vertical_wavefront_center_position_after_shift     = Setting(0)
 
+    oe_orientation_of_the_output_optical_axis_vector_x = Setting(0.0)
+    oe_orientation_of_the_output_optical_axis_vector_y = Setting(0.0)
+    oe_orientation_of_the_output_optical_axis_vector_z = Setting(0.0)
+    oe_orientation_of_the_horizontal_base_vector_x     = Setting(0.0)
+    oe_orientation_of_the_horizontal_base_vector_y     = Setting(0.0)
+
     input_srw_data = None
     wavefront_to_plot = None
 
@@ -147,8 +153,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
             if self.azimuth_hor_vert:
-                gui.comboBox(self.coordinates_box, self, "orientation_azimuthal", label="Orientation Along Beam Axis",
-                             items=["Horizontal", "Vertical"], labelWidth=300,
+                gui.comboBox(self.coordinates_box, self, "orientation_azimuthal", label="Orientation of central normal vector",
+                             items=["Up", "Down", "Left", "Right"], labelWidth=300,
                              sendSelectedValue=False, orientation="horizontal")
             else:
                 oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
@@ -171,25 +177,25 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.tab_drift, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
-                     items=["No", "Yes"], labelWidth=300,
+                     items=["No", "Yes", "(2)", "(3)", "(4)"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
         gui.comboBox(self.tab_drift, self, "drift_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=300, valueType=float, orientation="horizontal")
         
         # not yet used by SRW
-        #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=280, valueType=int, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
 
 
         # DRIFT SPACE
@@ -202,7 +208,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.tab_oe, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
                      items=["No", "Yes"], labelWidth=300,
@@ -212,15 +218,23 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "Horizontal range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "Horizontal resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "Vertical range modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "Vertical resolution modification factor\nat resizing (1.0 means no modification)", labelWidth=280, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "X range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "X resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "Y range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "Y resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
         
         # not yet used by SRW
-        #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=280, valueType=int, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=280, valueType=float, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+        
+        oe_optional_box = oasysgui.widgetBox(self.tab_oe, "Optional", addSpace=False, orientation="vertical")
+        
+        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
 
 
     def draw_specific_box(self):
@@ -229,11 +243,19 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     def check_data(self):
         congruence.checkPositiveNumber(self.p, "Distance from previous Continuation Plane")
         congruence.checkPositiveNumber(self.q, "Distance to next Continuation Plane")
+
         if self.has_orientation_angles:
             congruence.checkPositiveAngle(self.angle_radial, "Incident Angle (to normal)")
 
             if self.azimuth_hor_vert:
-                self.angle_azimuthal = 0.0 if self.orientation_azimuthal == 0 else 90.0
+                if self.orientation_azimuthal == 0:
+                    self.angle_azimuthal = 0.0
+                elif self.orientation_azimuthal == 1:
+                    self.angle_azimuthal = 180.0
+                elif self.orientation_azimuthal == 2:
+                    self.angle_azimuthal = 90.0
+                elif self.orientation_azimuthal == 3:
+                    self.angle_azimuthal = 270.0
             else:
                 congruence.checkPositiveAngle(self.angle_azimuthal, "Rotation along Beam Axis")
         else:
@@ -328,6 +350,24 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                                                              new_vertical_wavefront_center_position_after_shift     = self.oe_new_vertical_wavefront_center_position_after_shift
                                                          ))
 
+        if self.has_oe_wavefront_propagation_optional_parameters():
+            propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_optional_parameters",
+                                                             WavefrontPropagationOptionalParameters(
+                                                                 orientation_of_the_output_optical_axis_vector_x = self.oe_orientation_of_the_output_optical_axis_vector_x,
+                                                                 orientation_of_the_output_optical_axis_vector_y = self.oe_orientation_of_the_output_optical_axis_vector_y,
+                                                                 orientation_of_the_output_optical_axis_vector_z = self.oe_orientation_of_the_output_optical_axis_vector_z,
+                                                                 orientation_of_the_horizontal_base_vector_x     = self.oe_orientation_of_the_horizontal_base_vector_x,
+                                                                 orientation_of_the_horizontal_base_vector_y     = self.oe_orientation_of_the_horizontal_base_vector_y
+                                                             ))
+
+    def has_oe_wavefront_propagation_optional_parameters(self):
+        return self.oe_orientation_of_the_output_optical_axis_vector_x != 0.0 or \
+               self.oe_orientation_of_the_output_optical_axis_vector_y != 0.0 or \
+               self.oe_orientation_of_the_output_optical_axis_vector_z != 0.0 or \
+               self.oe_orientation_of_the_horizontal_base_vector_x     != 0.0 or \
+               self.oe_orientation_of_the_horizontal_base_vector_y     != 0.0
+
+
     def get_optical_element(self):
         raise NotImplementedError()
 
@@ -365,8 +405,25 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                 self.oe_name = beamline_element._optical_element._name
                 self.p = beamline_element._coordinates._p
                 self.q = beamline_element._coordinates._q
-                self.angle_azimuthal = numpy.degrees(beamline_element._coordinates._angle_azimuthal)
-                self.angle_radial = numpy.degrees(beamline_element._coordinates._angle_radial)
+
+                if self.has_orientation_angles:
+                    self.angle_azimuthal = numpy.degrees(beamline_element._coordinates._angle_azimuthal)
+                    self.angle_radial = numpy.degrees(beamline_element._coordinates._angle_radial)
+
+                if self.azimuth_hor_vert:
+                    if self.angle_azimuthal == 0.0:
+                        self.orientation_azimuthal = 0
+                    elif self.angle_azimuthal == 180.0:
+                        self.orientation_azimuthal = 1
+                    elif self.angle_azimuthal == 90.0:
+                        self.orientation_azimuthal = 2
+                    elif self.angle_azimuthal == 270.0:
+                        self.orientation_azimuthal == 3
+                    else:
+                        raise Exception("Syned Data not correct: Orientation of central normal vector not recognized")
+                else:
+                    self.angle_azimuthal = 0.0
+                    self.angle_radial    = 0.0
 
                 self.receive_specific_syned_data(beamline_element._optical_element)
             else:

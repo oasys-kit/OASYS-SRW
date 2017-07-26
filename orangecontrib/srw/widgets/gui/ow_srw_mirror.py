@@ -70,7 +70,7 @@ class OWSRWMirror(OWSRWOpticalElement):
         mirror.name=self.oe_name
         mirror.tangential_size=self.tangential_size
         mirror.sagittal_size=self.sagittal_size
-        mirror.grazing_angle=numpy.radians(self.angle_radial)
+        mirror.grazing_angle=numpy.radians(90-self.angle_radial)
         mirror.orientation_of_reflection_plane=self.orientation_azimuthal
         mirror.height_profile_data_file=self.height_profile_data_file if self.has_height_profile else None
         mirror.height_profile_data_file_dimension=self.height_profile_data_file_dimension + 1

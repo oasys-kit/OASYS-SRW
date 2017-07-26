@@ -25,7 +25,7 @@ class OWSRWGrating(OWSRWOpticalElement):
     height_amplification_coefficient   = Setting(1.0)
 
     diffraction_order                  = Setting(1)
-    grooving_density_0                 = Setting(800) # groove density [lines/mm] (coefficient a0 in the polynomial groove density: a0 + a1*y + a2*y^2 + a3*y^3 + a4*y^4)
+    grooving_density_0                 = Setting(800.0) # groove density [lines/mm] (coefficient a0 in the polynomial groove density: a0 + a1*y + a2*y^2 + a3*y^3 + a4*y^4)
     grooving_density_1                 = Setting(0.0) # groove density polynomial coefficient a1 [lines/mm^2]
     grooving_density_2                 = Setting(0.0) # groove density polynomial coefficient a2 [lines/mm^3]
     grooving_density_3                 = Setting(0.0) # groove density polynomial coefficient a3 [lines/mm^4]
@@ -85,13 +85,12 @@ class OWSRWGrating(OWSRWOpticalElement):
         self.height_profile_box_2.setVisible(self.has_height_profile==1)
 
     def get_optical_element(self):
-
         grating = self.get_grating_instance()
 
         grating.name=self.oe_name
         grating.tangential_size=self.tangential_size
         grating.sagittal_size=self.sagittal_size
-        grating.grazing_angle=numpy.radians(self.angle_radial)
+        grating.grazing_angle=numpy.radians(90-self.angle_radial)
         grating.orientation_of_reflection_plane=self.orientation_azimuthal
         grating.height_profile_data_file=self.height_profile_data_file if self.has_height_profile else None
         grating.height_profile_data_file_dimension=self.height_profile_data_file_dimension + 1

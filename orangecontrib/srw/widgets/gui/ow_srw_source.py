@@ -385,6 +385,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             electron_beam._moment_yyp = self.moment_yyp
             electron_beam._moment_ypyp = self.moment_ypyp
 
+            print("QUI")
+
             x, xp, y, yp = electron_beam.get_sigmas_all()
 
             self.electron_beam_size_h = x
@@ -421,10 +423,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         if self.type_of_properties == 0:
             congruence.checkPositiveNumber(self.moment_xx   , "Moment xx")
-            congruence.checkPositiveNumber(self.moment_xxp  , "Moment xxp")
             congruence.checkPositiveNumber(self.moment_xpxp , "Moment xpxp")
             congruence.checkPositiveNumber(self.moment_yy   , "Moment yy")
-            congruence.checkPositiveNumber(self.moment_yyp  , "Moment yyp")
             congruence.checkPositiveNumber(self.moment_ypyp , "Moment ypyp")
         else:
             congruence.checkPositiveNumber(self.electron_beam_size_h       , "Horizontal Beam Size")
@@ -436,7 +436,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         # WAVEFRONT
 
-        self.checkWavefrontPhotonenergy()
+        self.checkWavefrontPhotonEnergy()
 
         congruence.checkStrictlyPositiveNumber(self.wf_h_slit_gap, "Wavefront Propagation H Slit Gap")
         congruence.checkStrictlyPositiveNumber(self.wf_v_slit_gap, "Wavefront Propagation V Slit Gap")
@@ -494,7 +494,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         raise NotImplementedError()
 
 
-    def checkWavefrontPhotonenergy(self):
+    def checkWavefrontPhotonEnergy(self):
         congruence.checkStrictlyPositiveNumber(self.wf_photon_energy, "Wavefront Propagation Photon Energy")
 
     def checkFluxSpecificFields(self):
