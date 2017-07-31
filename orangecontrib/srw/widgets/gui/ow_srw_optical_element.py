@@ -72,6 +72,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     drift_new_horizontal_wavefront_center_position_after_shift   = Setting(0)
     drift_new_vertical_wavefront_center_position_after_shift     = Setting(0)
 
+    drift_orientation_of_the_output_optical_axis_vector_x = Setting(0.0)
+    drift_orientation_of_the_output_optical_axis_vector_y = Setting(0.0)
+    drift_orientation_of_the_output_optical_axis_vector_z = Setting(0.0)
+    drift_orientation_of_the_horizontal_base_vector_x     = Setting(0.0)
+    drift_orientation_of_the_horizontal_base_vector_y     = Setting(0.0)
+
     oe_auto_resize_before_propagation                         = Setting(0)
     oe_auto_resize_after_propagation                          = Setting(0)
     oe_relative_precision_for_propagation_with_autoresizing   = Setting(1.0)
@@ -197,6 +203,14 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         #oasysgui.lineEdit(self.tab_drift, self, "drift_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
         #oasysgui.lineEdit(self.tab_drift, self, "drift_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
 
+        drift_optional_box = oasysgui.widgetBox(self.tab_drift, "Optional", addSpace=False, orientation="vertical")
+
+        oasysgui.lineEdit(drift_optional_box, self, "drift_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(drift_optional_box, self, "drift_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(drift_optional_box, self, "drift_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(drift_optional_box, self, "drift_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(drift_optional_box, self, "drift_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+
 
         # DRIFT SPACE
         
@@ -211,7 +225,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.tab_oe, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
-                     items=["No", "Yes"], labelWidth=300,
+                     items=["No", "Yes", "(2)", "(3)", "(4)"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
         gui.comboBox(self.tab_oe, self, "oe_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
@@ -334,6 +348,16 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                                                              new_vertical_wavefront_center_position_after_shift     = self.drift_new_vertical_wavefront_center_position_after_shift
                                                          ))
 
+        if self.has_drift_wavefront_propagation_optional_parameters():
+            propagation_parameters.set_additional_parameters("srw_drift_wavefront_propagation_optional_parameters",
+                                                             WavefrontPropagationOptionalParameters(
+                                                                 orientation_of_the_output_optical_axis_vector_x = self.drift_orientation_of_the_output_optical_axis_vector_x,
+                                                                 orientation_of_the_output_optical_axis_vector_y = self.drift_orientation_of_the_output_optical_axis_vector_y,
+                                                                 orientation_of_the_output_optical_axis_vector_z = self.drift_orientation_of_the_output_optical_axis_vector_z,
+                                                                 orientation_of_the_horizontal_base_vector_x     = self.drift_orientation_of_the_horizontal_base_vector_x,
+                                                                 orientation_of_the_horizontal_base_vector_y     = self.drift_orientation_of_the_horizontal_base_vector_y
+                                                             ))
+
         propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters",
                                                          WavefrontPropagationParameters(
                                                              auto_resize_before_propagation                         = self.oe_auto_resize_before_propagation,
@@ -367,6 +391,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                self.oe_orientation_of_the_horizontal_base_vector_x     != 0.0 or \
                self.oe_orientation_of_the_horizontal_base_vector_y     != 0.0
 
+    def has_drift_wavefront_propagation_optional_parameters(self):
+        return self.drift_orientation_of_the_output_optical_axis_vector_x != 0.0 or \
+               self.drift_orientation_of_the_output_optical_axis_vector_y != 0.0 or \
+               self.drift_orientation_of_the_output_optical_axis_vector_z != 0.0 or \
+               self.drift_orientation_of_the_horizontal_base_vector_x     != 0.0 or \
+               self.drift_orientation_of_the_horizontal_base_vector_y     != 0.0
 
     def get_optical_element(self):
         raise NotImplementedError()
