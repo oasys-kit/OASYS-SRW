@@ -1,7 +1,10 @@
 import numpy
 
-from PyQt5.QtGui import QPalette, QColor, QFont
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPalette, QColor, QFont, QPixmap
+from PyQt5.QtWidgets import QMessageBox, QDialogButtonBox, QDialog, QGridLayout, QLabel, QSizePolicy
+
+import orangecanvas.resources as resources
 
 from orangewidget import gui
 from orangewidget import widget
@@ -185,9 +188,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
-        gui.comboBox(self.tab_drift, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
-                     items=["No", "Yes", "(2)", "(3)", "(4)"], labelWidth=300,
+        propagator_box = oasysgui.widgetBox(self.tab_drift, "", addSpace=False, orientation="horizontal")
+
+        gui.comboBox(propagator_box, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
+                     items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
                      sendSelectedValue=False, orientation="horizontal")
+
+        gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
 
         gui.comboBox(self.tab_drift, self, "drift_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
                      items=["No", "Yes"], labelWidth=300,
@@ -224,9 +231,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
-        gui.comboBox(self.tab_oe, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Allow semianalytical treatment of quadratic\nphase term",
-                     items=["No", "Yes", "(2)", "(3)", "(4)"], labelWidth=300,
+        propagator_box = oasysgui.widgetBox(self.tab_oe, "", addSpace=False, orientation="horizontal")
+
+        gui.comboBox(propagator_box, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
+                     items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
                      sendSelectedValue=False, orientation="horizontal")
+
+        gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
 
         gui.comboBox(self.tab_oe, self, "oe_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
                      items=["No", "Yes"], labelWidth=300,
@@ -250,6 +261,41 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
 
+    class PropagatorInfoDialog(QDialog):
+
+        usage_path = resources.package_dirname("orangecontrib.srw.widgets.gui") + "/misc/propagator_info.png"
+
+        def __init__(self, parent=None):
+            QDialog.__init__(self, parent)
+            self.setWindowTitle('Propagator Info')
+
+            self.setMinimumHeight(180)
+            self.setMinimumWidth(340)
+
+            usage_box = oasysgui.widgetBox(self, "", addSpace=True, orientation="vertical")
+
+            label = QLabel("")
+            label.setAlignment(Qt.AlignCenter)
+            label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            label.setPixmap(QPixmap(self.usage_path))
+
+            usage_box.layout().addWidget(label)
+
+            bbox = QDialogButtonBox(QDialogButtonBox.Ok)
+
+            bbox.accepted.connect(self.accept)
+
+            usage_box.layout().addWidget(bbox)
+
+
+    def show_propagator_info(self):
+        try:
+            dialog = OWSRWOpticalElement.PropagatorInfoDialog(parent=self)
+            dialog.show()
+        except Exception as exception:
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+            raise exception
 
     def draw_specific_box(self):
         raise NotImplementedError()
