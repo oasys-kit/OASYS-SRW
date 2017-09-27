@@ -76,7 +76,7 @@ class SRWWavefrontViewer(SRWWidget):
     def set_PlotQuality(self):
         self.progressBarInit()
 
-        if not self.plotted_tickets is None:
+        if not self.plotted_tickets==None:
             try:
                 self.initializeTabs()
 
@@ -135,6 +135,12 @@ class SRWWavefrontViewer(SRWWidget):
                     self.plot_2D(tickets[1], progressBarValue + 4,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
                     self.plot_2D(tickets[2], progressBarValue + 4,  variables[2][0], variables[2][1], plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2], yum=yums[2])
 
+                    if (len(tickets)) >= 4:
+                        self.plot_2D(tickets[3], progressBarValue + 4,  variables[3][0], variables[3][1], plot_canvas_index=3, title=titles[3], xtitle=xtitles[3], ytitle=ytitles[3], xum=xums[3], yum=yums[3])
+                    if (len(tickets)) == 5:
+                        self.plot_1D(tickets[4], progressBarValue + 16, variables[4],                  plot_canvas_index=4, title=titles[4], xtitle=xtitles[4], ytitle=ytitles[4], xum=xums[4] )
+
+
                 except Exception as e:
                     self.view_type_combo.setEnabled(True)
 
@@ -158,28 +164,33 @@ class SRWWavefrontViewer(SRWWidget):
         self.initializeTabs()
 
     def getVariablesToPlot(self):
-        return [[1, 2], [1, 2], [1, 2]]
+        return [[1, 2], [1, 2], [1, 2], [1, 2], -1]
 
     def getTitles(self, with_um=False):
         if with_um: return ["Intensity SE [ph/s/.1%bw/mm^2]",
                             "Phase SE [rad]",
-                            "Intensity ME [ph/s/.1%bw/mm^2]"]
-        else: return ["Intensity SE", "Phase SE", "Intensity ME (Convolution)"]
+                            "Intensity ME [ph/s/.1%bw/mm^2]",
+                            "Power Density [W/mm^2], " + self.getCalculatedTotalPowerString(),
+                            "Flux [ph/s/.1%bw]"]
+        else: return ["Intensity SE", "Phase SE", "Intensity ME (Convolution)", "Power Density", "Flux"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [mm]", "X [mm]", "X [mm]", "X [mm]", "Energy [eV]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [mm]", "Y [mm]", "Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [mm]", "X [mm]", "X [mm]", "X [mm]", "Energy [eV]"]
 
     def getYUM(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [mm]", "Y [mm]", "Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw]"]
 
     def getConversionActive(self):
         return True
+
+    def getCalculatedTotalPowerString(self):
+        return ""
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)

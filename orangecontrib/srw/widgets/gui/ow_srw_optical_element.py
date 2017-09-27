@@ -465,13 +465,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
 
-        self.progressBarSet(progress_bar_value + 5)
-
-        e, h, v, i = self.wavefront_to_plot.get_intensity(multi_electron=True)
-
-        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
-
-        self.progressBarSet(progress_bar_value + 5)
+        self.progressBarSet(progress_bar_value + 10)
 
     def receive_syned_data(self, data):
         if not data is None:
@@ -519,17 +513,17 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         return [[1, 2], [1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity SE [ph/s/.1%bw/mm^2]", "Phase SE [rad]", "Intensity ME [ph/s/.1%bw/mm^2]"]
-        else: return ["Intensity SE", "Phase SE", "Intensity ME"]
+        if with_um: return ["Intensity SE [ph/s/.1%bw/mm^2]", "Phase SE [rad]"]
+        else: return ["Intensity SE", "Phase SE"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [mm]", "X [mm]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [mm]", "Y [mm]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [mm]", "X [mm]"]
 
     def getYUM(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [mm]", "Y [mm]"]
