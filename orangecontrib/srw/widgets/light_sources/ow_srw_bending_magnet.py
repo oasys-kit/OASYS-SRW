@@ -41,6 +41,8 @@ class OWSRWBendingMagnet(OWSRWSource):
         gui.rubber(self.controlArea)
         gui.rubber(self.mainArea)
 
+    def get_default_initial_z(self):
+        return -0.5*self.length # initial Longitudinal Coordinate
 
     def get_srw_source(self, electron_beam):
 

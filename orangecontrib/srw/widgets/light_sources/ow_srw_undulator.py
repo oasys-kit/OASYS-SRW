@@ -101,6 +101,9 @@ class OWSRWUndulator(OWSRWSource):
         self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
         self.use_harmonic_box_2.setVisible(self.wf_use_harmonic==1)
 
+    def get_default_initial_z(self):
+        return -0.5*self.period_length*(self.number_of_periods + 4) # initial Longitudinal Coordinate (set before the ID)
+
     def get_srw_source(self, electron_beam):
 
         if self.magnetic_field_from == 0:

@@ -1,6 +1,6 @@
 __author__ = 'labx'
 
-import os, sys
+import os, sys, numpy
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -11,10 +11,11 @@ from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
 
-from orangecontrib.srw.util.srw_objects import SRWData
-from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
-
+from syned.beamline.beamline import Beamline
+from syned.beamline.optical_elements.absorbers.slit import Slit
 from syned.storage_ring.light_source import ElectronBeam, LightSource
+from syned.widget.widget_decorator import WidgetDecorator
+from syned.beamline.shape import Rectangle
 
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.srw_light_source import PowerDensityPrecisionParameters, SRWLightSource
@@ -22,8 +23,8 @@ from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
-
-from syned.widget.widget_decorator import WidgetDecorator
+from orangecontrib.srw.util.srw_objects import SRWData
+from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
 class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
@@ -33,6 +34,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     keywords = ["data", "file", "load", "read"]
 
     inputs = WidgetDecorator.syned_input_data()
+    inputs.append(("SynedData#2", Beamline, "receive_syned_data"))
 
     outputs = [{"name":"SRWData",
                 "type":SRWData,
@@ -51,16 +53,21 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     electron_beam_divergence_h = Setting(0.2525e-9)
     electron_beam_divergence_v = Setting(0.8352e-11)
 
-    moment_xx           = Setting(0.0)
+    moment_x = Setting(0.0)
+    moment_y = Setting(0.0)
+    moment_z = Setting(0.0)
+    moment_xp = Setting(0.0)
+    moment_yp = Setting(0.0)
+
+    moment_xx           = Setting((0.05545e-3)**2)
     moment_xxp          = Setting(0.0)
-    moment_xpxp         = Setting(0.0)
-    moment_yy           = Setting(0.0)
+    moment_xpxp         = Setting((0.2525e-9)**2)
+    moment_yy           = Setting((2.784e-6)**2)
     moment_yyp          = Setting(0.0)
-    moment_ypyp         = Setting(0.0)
+    moment_ypyp         = Setting((0.8352e-11)**2)
 
-    electron_beam_drift_distance = Setting(0.0)
-
-    type_of_properties = Setting(0)
+    type_of_properties = Setting(1)
+    type_of_initialization = Setting(0)
 
     wf_photon_energy = Setting(0.0)
     wf_h_slit_gap = Setting(0.0001)
@@ -94,8 +101,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     int_use_terminating_terms = Setting(1)
     int_sampling_factor_for_adjusting_nx_ny = Setting(0.0)
 
-
-    pow_precision_factor = Setting(1.5)  
+    pow_precision_factor = Setting(1.5)
     pow_computation_method = Setting(1) 
     pow_initial_longitudinal_position = Setting(0.0)
     pow_final_longitudinal_position = Setting(0.0) 
@@ -163,18 +169,24 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         oasysgui.lineEdit(self.tab_source, self, "source_name", "Light Source Name", labelWidth=260, valueType=str, orientation="horizontal")
 
-        left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam/Machine Parameters", addSpace=True, orientation="vertical", height=350)
+        left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam Parameters", addSpace=True, orientation="vertical", height=350)
 
         oasysgui.lineEdit(left_box_1, self, "electron_energy_in_GeV", "Energy [GeV]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "electron_energy_spread", "Energy Spread", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "ring_current", "Ring Current [A]", labelWidth=260, valueType=float, orientation="horizontal")
 
-        gui.comboBox(left_box_1, self, "type_of_properties", label="Electron Beam Properties", labelWidth=350,
+        tab_electron = oasysgui.tabWidget(left_box_1)
+
+        tab_beam = oasysgui.createTabPage(tab_electron, "Beam")
+        tab_traj = oasysgui.createTabPage(tab_electron, "Trajectory")
+
+
+        gui.comboBox(tab_beam, self, "type_of_properties", label="Electron Beam Properties", labelWidth=350,
                      items=["From 2nd Moments", "From Size/Divergence"],
                      callback=self.set_TypeOfProperties,
                      sendSelectedValue=False, orientation="horizontal")
 
-        self.left_box_2_1 = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="vertical", height=160)
+        self.left_box_2_1 = oasysgui.widgetBox(tab_beam, "", addSpace=False, orientation="vertical", height=160)
 
         oasysgui.lineEdit(self.left_box_2_1, self, "moment_xx", "Moment xx   [m^2]", labelWidth=200, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.left_box_2_1, self, "moment_xxp", "Moment xxp  [m.rad]", labelWidth=200, valueType=float, orientation="horizontal")
@@ -183,8 +195,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(self.left_box_2_1, self, "moment_yyp", "Moment yyp  [m.rad]", labelWidth=200, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.left_box_2_1, self, "moment_ypyp", "Moment ypyp [rad^2]", labelWidth=200, valueType=float, orientation="horizontal")
 
-
-        self.left_box_2_2 = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="vertical", height=160)
+        self.left_box_2_2 = oasysgui.widgetBox(tab_beam, "", addSpace=False, orientation="vertical", height=160)
 
         oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_size_h",       "Horizontal Beam Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_size_v",       "Vertical Beam Size [m]",  labelWidth=260, valueType=float, orientation="horizontal")
@@ -193,7 +204,27 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         self.set_TypeOfProperties()
 
-        oasysgui.lineEdit(left_box_1, self, "electron_beam_drift_distance", "Beam propagation distance [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        gui.comboBox(tab_traj, self, "type_of_initialization", label="Trajectory Initialization", labelWidth=140,
+                     items=["At Zero Point", "At Fixed Position", "Sampled from Phase Space"],
+                     callback=self.set_TypeOfInitialization,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        self.left_box_3_1 = oasysgui.widgetBox(tab_traj, "", addSpace=False, orientation="vertical", height=160)
+        self.left_box_3_2 = oasysgui.widgetBox(tab_traj, "", addSpace=False, orientation="vertical", height=160)
+
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_x", "x0 [m]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_y", "y0 [m]", labelWidth=200, valueType=float, orientation="horizontal")
+
+        box = oasysgui.widgetBox(self.left_box_3_1, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(box, self, "moment_z", "z0 [m]", labelWidth=160, valueType=float, orientation="horizontal")
+        gui.button(box, self, "Auto", width=35, callback=self.set_z0Default)
+
+
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_xp", "xp0 [rad]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_yp", "yp0 [rad]", labelWidth=200, valueType=float, orientation="horizontal")
+
+        self.set_TypeOfInitialization()
 
         self.tab_plots = oasysgui.createTabPage(self.tabs_setting, "Wavefront Setting")
 
@@ -321,6 +352,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.left_box_2_1.setVisible(self.type_of_properties==0)
         self.left_box_2_2.setVisible(self.type_of_properties==1)
 
+    def set_TypeOfInitialization(self):
+        self.left_box_3_1.setVisible(self.type_of_initialization==1)
+        self.left_box_3_2.setVisible(self.type_of_initialization!=1)
+
     def build_wf_photon_energy_box(self, box):
         oasysgui.lineEdit(box, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
 
@@ -373,10 +408,15 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.progressBarFinished()
 
     def get_electron_beam(self):
-        electron_beam = SRWElectronBeam(energy_in_GeV=self.electron_energy_in_GeV,
-                                        energy_spread=self.electron_energy_spread,
-                                        current=self.ring_current,
-                                        drift_distance=self.electron_beam_drift_distance)
+        if self.type_of_initialization == 1:
+            electron_beam = SRWElectronBeam(energy_in_GeV=self.electron_energy_in_GeV + numpy.random.normal(self.electron_energy_spread*self.electron_energy_in_GeV),
+                                            energy_spread=self.electron_energy_spread,
+                                            current=self.ring_current)
+        else:
+            electron_beam = SRWElectronBeam(energy_in_GeV=self.electron_energy_in_GeV,
+                                            energy_spread=self.electron_energy_spread,
+                                            current=self.ring_current)
+
         if self.type_of_properties == 0:
             electron_beam._moment_xx = self.moment_xx
             electron_beam._moment_xxp = self.moment_xxp
@@ -384,8 +424,6 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             electron_beam._moment_yy = self.moment_yy
             electron_beam._moment_yyp = self.moment_yyp
             electron_beam._moment_ypyp = self.moment_ypyp
-
-            print("QUI")
 
             x, xp, y, yp = electron_beam.get_sigmas_all()
 
@@ -404,7 +442,32 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             self.moment_yy = electron_beam._moment_yy
             self.moment_ypyp = electron_beam._moment_ypyp
 
+        if self.type_of_initialization == 0: # zero
+            self.moment_x = 0.0
+            self.moment_y = 0.0
+            self.moment_z = self.get_default_initial_z()
+            self.moment_xp = 0.0
+            self.moment_yp = 0.0
+        elif self.type_of_initialization == 2: # sampled
+            self.moment_x = numpy.random.normal(0.0, self.electron_beam_size_h)
+            self.moment_y = numpy.random.normal(0.0, self.electron_beam_size_v)
+            self.moment_z = self.get_default_initial_z()
+            self.moment_xp = numpy.random.normal(0.0, self.electron_beam_divergence_h)
+            self.moment_yp = numpy.random.normal(0.0, self.electron_beam_divergence_v)
+
+        electron_beam._moment_x = self.moment_x
+        electron_beam._moment_y = self.moment_y
+        electron_beam._moment_z = self.moment_z
+        electron_beam._moment_xp = self.moment_xp
+        electron_beam._moment_yp = self.moment_yp
+
         return electron_beam
+
+    def set_z0Default(self):
+        self.moment_z = self.get_default_initial_z()
+
+    def get_default_initial_z(self):
+        return NotImplementedError()
 
     def get_srw_source(self, electron_beam=ElectronBeam()):
         raise NotImplementedError()
@@ -609,7 +672,26 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     def receive_syned_data(self, data):
         if not data is None:
-            if not data._light_source is None and isinstance(data._light_source, LightSource):
+            if data.get_beamline_elements_number() > 0:
+                slit_element = data.get_beamline_element_at(0)
+                slit = slit_element.get_optical_element()
+                coordinates = slit_element.get_coordinates()
+
+                if isinstance(slit, Slit) and isinstance(slit.get_boundary_shape(), Rectangle):
+                    rectangle = slit.get_boundary_shape()
+
+                    self.wf_h_slit_gap = rectangle._x_right - rectangle._x_left
+                    self.wf_v_slit_gap = rectangle._y_top - rectangle._y_bottom
+                    self.wf_distance = coordinates.p()
+
+                    self.int_h_slit_gap = rectangle._x_right - rectangle._x_left
+                    self.int_v_slit_gap = rectangle._y_top - rectangle._y_bottom
+                    self.int_distance = coordinates.p()
+
+                    self.spe_h_slit_gap = rectangle._x_right - rectangle._x_left
+                    self.spe_v_slit_gap = rectangle._y_top - rectangle._y_bottom
+                    self.spe_distance = coordinates.p()
+            elif not data._light_source is None and isinstance(data._light_source, LightSource):
                 light_source = data._light_source
 
                 self.source_name = light_source._name
