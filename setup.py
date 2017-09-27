@@ -50,6 +50,7 @@ PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
 PACKAGE_DATA = {
     "orangecontrib.srw.widgets.light_sources":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.optical_elements":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.srw.widgets.tools":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.wofry":["icons/*.png", "icons/*.jpg"],
 }
 
@@ -60,6 +61,7 @@ ENTRY_POINTS = {
     'oasys.widgets' : (
         "SRW Light Sources = orangecontrib.srw.widgets.light_sources",
         "SRW Optical Elements = orangecontrib.srw.widgets.optical_elements",
+        "SRW Tools = orangecontrib.srw.widgets.tools",
         "SRW Wofry = orangecontrib.srw.widgets.wofry",
     ),
 }

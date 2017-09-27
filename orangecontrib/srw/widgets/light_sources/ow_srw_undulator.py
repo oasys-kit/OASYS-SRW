@@ -47,7 +47,7 @@ class OWSRWUndulator(OWSRWSource):
     def __init__(self):
         super().__init__()
 
-        left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical")
+        left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical", height=200)
 
         gui.comboBox(left_box_2, self, "magnetic_field_from", label="Magnetic Field", labelWidth=350,
                      items=["From K", "From B"],

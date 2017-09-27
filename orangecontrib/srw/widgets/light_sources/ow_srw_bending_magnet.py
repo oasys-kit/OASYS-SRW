@@ -32,7 +32,7 @@ class OWSRWBendingMagnet(OWSRWSource):
     def __init__(self):
         super().__init__()
 
-        left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical")
+        left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical", height=200)
 
         oasysgui.lineEdit(left_box_2, self, "magnetic_radius", "Magnetic Radius [m]", labelWidth=260, valueType=float, orientation="horizontal", callback=self.calculateMagneticField)
         oasysgui.lineEdit(left_box_2, self, "magnetic_field", "Magnetic Field [T]", labelWidth=260, valueType=float, orientation="horizontal", callback=self.calculateMagneticRadius)

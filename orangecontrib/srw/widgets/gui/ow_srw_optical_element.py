@@ -510,7 +510,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                 pass
 
     def getVariablesToPlot(self):
-        return [[1, 2], [1, 2], [1, 2]]
+        return [[1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
         if with_um: return ["Intensity SE [ph/s/.1%bw/mm^2]", "Phase SE [rad]"]

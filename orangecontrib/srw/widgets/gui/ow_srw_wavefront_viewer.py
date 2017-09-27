@@ -1,5 +1,5 @@
 import sys
-
+import numpy
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtWidgets import QApplication
@@ -7,8 +7,9 @@ from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 
-from orangecontrib.srw.util.srw_util import SRWPlot
+from silx.gui.plot.StackView import StackViewMainWindow
 
+from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
 class SRWWavefrontViewer(SRWWidget):
@@ -76,28 +77,22 @@ class SRWWavefrontViewer(SRWWidget):
     def set_PlotQuality(self):
         self.progressBarInit()
 
-        if not self.plotted_tickets is None:
-            try:
-                self.initializeTabs()
+        if self.is_do_plots():
+            if not self.plotted_tickets is None:
+                try:
+                    self.initializeTabs()
 
-                self.plot_results(self.plotted_tickets, 80)
-            except Exception as exception:
-                QtWidgets.QMessageBox.critical(self, "Error",
-                                           str(exception),
-                    QtWidgets.QMessageBox.Ok)
+                    self.plot_results(self.plotted_tickets, 80)
+                except Exception as exception:
+                    QtWidgets.QMessageBox.critical(self, "Error",
+                                               str(exception),
+                        QtWidgets.QMessageBox.Ok)
 
-                #raise exception
-                
+                    raise exception
+        else:
+            self.initializeTabs()
+
         self.progressBarFinished()
-
-    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum=""):
-        if self.plot_canvas[plot_canvas_index] is None:
-            self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed2DWidget()
-            self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
-
-        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum)
-
-        self.progressBarSet(progressBarValue)
 
 
     def plot_1D(self, ticket, progressBarValue, var, plot_canvas_index, title, xtitle, ytitle, xum=""):
@@ -109,39 +104,89 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.progressBarSet(progressBarValue)
 
+
+    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum=""):
+        if self.plot_canvas[plot_canvas_index] is None:
+            self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed2DWidget()
+            self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
+
+        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum)
+
+        self.progressBarSet(progressBarValue)
+
+    def plot_3D(self, data3D, dataE, dataX, dataY, progressBarValue, plot_canvas_index,  title, xtitle, ytitle, xum="", yum=""):
+        if self.plot_canvas[plot_canvas_index] is None:
+            self.plot_canvas[plot_canvas_index] = StackViewMainWindow()
+            self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
+
+        xmin = numpy.min(dataX)
+        xmax = numpy.max(dataX)
+        ymin = numpy.min(dataY)
+        ymax = numpy.max(dataY)
+
+        stepX = dataX[1]-dataX[0]
+        stepY = dataY[1]-dataY[0]
+        if len(dataE) > 1: stepE = dataE[1]-dataE[0]
+        else: stepE = 1.0
+
+        if stepE == 0.0: stepE = 1.0
+        if stepX == 0.0: stepX = 1.0
+        if stepY == 0.0: stepY = 1.0
+
+        dim0_calib = (dataE[0],stepE)
+        dim1_calib = (ymin, stepY)
+        dim2_calib = (xmin, stepX)
+
+        data_to_plot = numpy.swapaxes(data3D, 1, 2)
+
+        colormap = {"name":"temperature", "normalization":"linear", "autoscale":True, "vmin":0, "vmax":0, "colors":256}
+
+        self.plot_canvas[plot_canvas_index].setGraphTitle(title)
+        self.plot_canvas[plot_canvas_index].setLabels(["Photon Energy [eV]",ytitle,xtitle])
+        self.plot_canvas[plot_canvas_index].setColormap(colormap=colormap)
+        self.plot_canvas[plot_canvas_index].setStack(numpy.array(data_to_plot),
+                                                     calibrations=[dim0_calib, dim1_calib, dim2_calib] )
+
+
     def show_power_density(self):
         return True
 
     def is_do_plots(self):
         return self.view_type == 1
 
-
     def plot_results(self, tickets = [], progressBarValue=80):
         if self.is_do_plots():
             if not tickets is None:
-                self.view_type_combo.setEnabled(False)
+                if not len(tickets) == 0:
+                    self.view_type_combo.setEnabled(False)
 
-                SRWPlot.set_conversion_active(self.getConversionActive())
+                    SRWPlot.set_conversion_active(self.getConversionActive())
 
-                variables = self.getVariablesToPlot()
-                titles = self.getTitles(with_um=True)
-                xtitles = self.getXTitles()
-                ytitles = self.getYTitles()
-                xums = self.getXUM()
-                yums = self.getYUM()
+                    variables = self.getVariablesToPlot()
+                    titles = self.getTitles(with_um=True)
+                    xtitles = self.getXTitles()
+                    ytitles = self.getYTitles()
+                    xums = self.getXUM()
+                    yums = self.getYUM()
 
-                try:
-                    self.plot_2D(tickets[0], progressBarValue + 4,  variables[0][0], variables[0][1], plot_canvas_index=0, title=titles[0], xtitle=xtitles[0], ytitle=ytitles[0], xum=xums[0], yum=yums[0])
-                    self.plot_2D(tickets[1], progressBarValue + 4,  variables[1][0], variables[1][1], plot_canvas_index=1, title=titles[1], xtitle=xtitles[1], ytitle=ytitles[1], xum=xums[1], yum=yums[1])
-                    self.plot_2D(tickets[2], progressBarValue + 4,  variables[2][0], variables[2][1], plot_canvas_index=2, title=titles[2], xtitle=xtitles[2], ytitle=ytitles[2], xum=xums[2], yum=yums[2])
+                    progress = (100 - progressBarValue) / len(tickets)
 
-                except Exception as e:
+                    try:
+                        for i in range(0, len(tickets)):
+                            if type(tickets[i]) is tuple:
+                                if len(tickets[i]) == 4:
+                                    self.plot_3D(tickets[i][0], tickets[i][1], tickets[i][2], tickets[i][3], progressBarValue + (i+1)*progress, plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i])
+                            else:
+                                if len(variables[i]) == 1:
+                                    self.plot_1D(tickets[i], progressBarValue + (i+1)*progress, variables[i],                     plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i])
+                                else:
+                                    self.plot_2D(tickets[i], progressBarValue + (i+1)*progress, variables[i][0], variables[i][1], plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i])
+                    except Exception as e:
+                        self.view_type_combo.setEnabled(True)
+
+                        raise Exception("Data not plottable: bad content\nexception: " + str(e))
+
                     self.view_type_combo.setEnabled(True)
-
-                    raise Exception("Data not plottable: bad content\nexception: " + str(e))
-
-                self.view_type_combo.setEnabled(True)
-
             else:
                 raise Exception("Nothing to Plot")
 
