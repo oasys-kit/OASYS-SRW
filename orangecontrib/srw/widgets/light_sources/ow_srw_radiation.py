@@ -83,7 +83,7 @@ class OWSRWRadiation(SRWWavefrontViewer):
     CONTROL_AREA_WIDTH = 405
 
     def __init__(self, show_automatic_box=False):
-        super().__init__(show_automatic_box=show_automatic_box)
+        super().__init__(show_automatic_box=show_automatic_box, show_view_box=False)
 
         self.general_options_box.setVisible(False)
 
@@ -153,11 +153,6 @@ class OWSRWRadiation(SRWWavefrontViewer):
         oasysgui.lineEdit(tab_prop, self, "int_sampling_factor_for_adjusting_nx_ny", "Sampling factor for adjusting nx/ny", labelWidth=260, valueType=int, orientation="horizontal")
 
         gui.rubber(self.controlArea)
-
-        self.view_type = 1
-        self.view_type_combo.setEnabled(False)
-
-        self.set_PlotQuality()
 
     def calculateRadiation(self):
         if not self.received_light_source is None:

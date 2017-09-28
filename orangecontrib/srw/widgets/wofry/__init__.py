@@ -18,4 +18,4 @@ BACKGROUND = "#b8bcdb"
 
 ICON = "icons/wofry.png"
 
-PRIORITY = 203
+PRIORITY = 204

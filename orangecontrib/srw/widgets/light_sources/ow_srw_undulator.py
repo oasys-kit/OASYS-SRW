@@ -110,8 +110,7 @@ class OWSRWUndulator(OWSRWSource):
                                        )
 
     def print_specific_infos(self, srw_source):
-        print("1st Harmonic Energy", srw_source.get_resonance_energy())
-        print(srw_source.get_photon_source_properties(harmonic=1).to_info())
+        print("1st Harmonic Energy", srw_source.get_resonance_energy(), "\n")
 
     def get_automatic_sr_method(self):
         return 1

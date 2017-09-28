@@ -22,7 +22,7 @@ from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
-from orangecontrib.srw.util.srw_objects import SRWData
+from orangecontrib.srw.util.srw_objects import SRWData, SRWTriggerOut
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
 class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
@@ -34,6 +34,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     inputs = WidgetDecorator.syned_input_data()
     inputs.append(("SynedData#2", Beamline, "receive_syned_data"))
+    inputs.append(("Trigger", SRWTriggerOut, "sendNewWavefront"))
 
     outputs = [{"name":"SRWData",
                 "type":SRWData,
@@ -248,8 +249,6 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
             sys.stdout = EmittingStream(textWritten=self.writeStdOut)
 
-            print(srw_source.get_electron_beam().get_electron_beam_geometrical_properties().to_info())
-
             self.print_specific_infos(srw_source)
 
             self.progressBarSet(20)
@@ -261,12 +260,12 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
             tickets = []
 
-            self.setStatusMessage("Plotting Results")
-
             if self.is_do_plots():
+                self.setStatusMessage("Plotting Results")
+
                 self.run_calculation_intensity(wavefront, tickets)
 
-            self.plot_results(tickets)
+                self.plot_results(tickets)
 
             self.setStatusMessage("")
 
@@ -278,6 +277,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             #raise exception
 
         self.progressBarFinished()
+
+    def sendNewWavefront(self, trigger):
+        if trigger and trigger.new_wavefront == True:
+            self.runSRWSource()
 
     def get_electron_beam(self):
         if self.type_of_initialization == 2:
@@ -334,13 +337,13 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         electron_beam._moment_xp = self.moment_xp
         electron_beam._moment_yp = self.moment_yp
 
-        print("\nElectron Trajectory Initialization:")
+        print("\n", "Electron Trajectory Initialization:")
         print("X0: ", electron_beam._moment_x)
         print("Y0: ", electron_beam._moment_y)
         print("Z0: ", electron_beam._moment_z)
         print("XP0: ", electron_beam._moment_xp)
         print("YP0: ", electron_beam._moment_yp)
-        print("E0: ", electron_beam._energy_in_GeV)
+        print("E0: ", electron_beam._energy_in_GeV, "\n")
 
         return electron_beam
 
@@ -354,7 +357,6 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         raise NotImplementedError()
 
     def checkFields(self):
-
         congruence.checkStrictlyPositiveNumber(self.electron_energy_in_GeV, "Energy")
         congruence.checkPositiveNumber(self.electron_energy_spread, "Energy Spread")
         congruence.checkStrictlyPositiveNumber(self.ring_current, "Ring Current")
@@ -371,6 +373,14 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             congruence.checkPositiveNumber(self.electron_beam_divergence_v , "Vertical Beam Divergence")
 
         self.checkLightSourceSpecificFields()
+
+        if self.type_of_initialization == 2:
+            congruence.checkNumber(self.moment_x   , "x0")
+            congruence.checkNumber(self.moment_xp , "xp0")
+            congruence.checkNumber(self.moment_y   , "y0")
+            congruence.checkNumber(self.moment_yp , "yp0")
+            congruence.checkNumber(self.moment_z , "z0")
+
 
         # WAVEFRONT
 

@@ -21,7 +21,7 @@ from wofry.propagator.propagator import PropagationManager, PropagationElements,
 from wofrysrw.propagator.propagators2D.srw_fresnel import FresnelSRW
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
 
-from orangecontrib.srw.util.srw_objects import SRWData
+from orangecontrib.srw.util.srw_objects import SRWData, SRWTriggerIn
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
 from orangecontrib.srw.util.srw_util import SRWPlot
@@ -47,7 +47,11 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     outputs = [{"name":"SRWData",
                 "type":SRWData,
                 "doc":"SRW Optical Element Data",
-                "id":"data"}]
+                "id":"data"},
+               {"name":"Trigger",
+                "type": SRWTriggerIn,
+                "doc":"Feedback signal to start a new beam simulation",
+                "id":"Trigger"}]
 
     inputs = [("SRWData", SRWData, "set_input"),
               WidgetDecorator.syned_input_data()[0]]
@@ -369,6 +373,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             self.send("SRWData", SRWData(srw_beamline=output_beamline,
                                          srw_wavefront=output_wavefront))
+            self.send("Trigger", SRWTriggerIn(new_wavefront=True))
+
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
 
