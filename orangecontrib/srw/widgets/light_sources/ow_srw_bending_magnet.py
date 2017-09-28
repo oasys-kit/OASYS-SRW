@@ -64,30 +64,6 @@ class OWSRWBendingMagnet(OWSRWSource):
     def get_source_length(self):
         return self.length
 
-    def run_calculation_flux(self, srw_source, tickets, progress_bar_value=50):
-        wf_parameters = WavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
-                                                  photon_energy_max = self.spe_photon_energy_max,
-                                                  photon_energy_points=self.spe_photon_energy_points,
-                                                  h_slit_gap = self.spe_h_slit_gap,
-                                                  v_slit_gap = self.spe_v_slit_gap,
-                                                  h_slit_points=10,
-                                                  v_slit_points=10,
-                                                  distance = self.spe_distance,
-                                                  wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.spe_sr_method == 0 else self.get_automatic_sr_method(),
-                                                                                                              relative_precision=self.spe_relative_precision,
-                                                                                                              start_integration_longitudinal_position=self.spe_start_integration_longitudinal_position,
-                                                                                                              end_integration_longitudinal_position=self.spe_end_integration_longitudinal_position,
-                                                                                                              number_of_points_for_trajectory_calculation=self.spe_number_of_points_for_trajectory_calculation,
-                                                                                                              use_terminating_terms=self.spe_use_terminating_terms,
-                                                                                                              sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
-        srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
-
-        e, i = srw_wavefront.get_flux(multi_electron=True)
-
-        tickets.append(SRWPlot.get_ticket_1D(e, i))
-
-        self.progressBarSet(progress_bar_value)
-
     def checkLightSourceSpecificFields(self):
         congruence.checkStrictlyPositiveNumber(self.magnetic_radius, "Magnetic Radius")
         congruence.checkStrictlyPositiveNumber(self.magnetic_field, "Magnetic Field")

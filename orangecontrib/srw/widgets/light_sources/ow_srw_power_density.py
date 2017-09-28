@@ -26,16 +26,16 @@ from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
-class OWSRWRadiation(SRWWavefrontViewer):
+class OWSRWPowerDensity(SRWWavefrontViewer):
 
     maintainer = "Luca Rebuffi"
     maintainer_email = "luca.rebuffi(@at@)elettra.eu"
     category = "Source"
     keywords = ["data", "file", "load", "read"]
-    name = "SRW Source Radiation"
-    description = "SRW Source: Radiation"
-    icon = "icons/radiation.png"
-    priority = 3
+    name = "SRW Source Power Density"
+    description = "SRW Source: Power Density"
+    icon = "icons/power_density.png"
+    priority = 4
 
     inputs = [("SRWData", SRWData, "receive_srw_data")]
 
@@ -61,22 +61,17 @@ class OWSRWRadiation(SRWWavefrontViewer):
     moment_yyp          = 0.0
     moment_ypyp         = 0.0
 
-    int_photon_energy_min = Setting(0.0)
-    int_photon_energy_max = Setting(0.0)
-    int_photon_energy_points=Setting(1)
     int_h_slit_gap = Setting(0.0001)
     int_v_slit_gap =Setting( 0.0001)
     int_h_slit_points=Setting(100)
     int_v_slit_points=Setting(100)
     int_distance = Setting(1.0)
 
-    int_sr_method = Setting(1)  
-    int_relative_precision = Setting(0.01) 
-    int_start_integration_longitudinal_position = Setting(0.0) 
-    int_end_integration_longitudinal_position = Setting(0.0) 
-    int_number_of_points_for_trajectory_calculation = Setting(50000)
-    int_use_terminating_terms = Setting(1)
-    int_sampling_factor_for_adjusting_nx_ny = Setting(0.0)
+    pow_precision_factor = Setting(1.5)
+    pow_computation_method = Setting(1) 
+    pow_initial_longitudinal_position = Setting(0.0)
+    pow_final_longitudinal_position = Setting(0.0) 
+    pow_number_of_points_for_trajectory_calculation = Setting(20000)
 
     calculated_total_power = 0.0
 
@@ -92,7 +87,7 @@ class OWSRWRadiation(SRWWavefrontViewer):
 
         button_box = oasysgui.widgetBox(self.controlArea, "", addSpace=False, orientation="horizontal")
 
-        button = gui.button(button_box, self, "Calculate Radiation", callback=self.calculateRadiation)
+        button = gui.button(button_box, self, "Calculate Power Density", callback=self.calculateRadiation)
         font = QFont(button.font())
         font.setBold(True)
         button.setFont(font)
@@ -121,13 +116,10 @@ class OWSRWRadiation(SRWWavefrontViewer):
 
         # INTENSITY/POWER  -------------------------------------------
 
-        tab_convolution = oasysgui.createTabPage(self.tabs_setting, "Radiation")
+        tab_convolution = oasysgui.createTabPage(self.tabs_setting, "Power Density")
 
         int_box = oasysgui.widgetBox(tab_convolution, "Wavefront Parameters", addSpace=True, orientation="vertical")
     
-        oasysgui.lineEdit(int_box, self, "int_photon_energy_min", "Photon Energy Min [eV]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(int_box, self, "int_photon_energy_max", "Photon Energy Max [eV]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(int_box, self, "int_photon_energy_points", "Photon Energy Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(int_box, self, "int_h_slit_gap", "H Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(int_box, self, "int_v_slit_gap", "V Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(int_box, self, "int_h_slit_points", "H Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
@@ -138,22 +130,17 @@ class OWSRWRadiation(SRWWavefrontViewer):
 
         tabs_precision = oasysgui.tabWidget(pre_box)
 
-        tab_prop = oasysgui.createTabPage(tabs_precision, "Propagation")
+        tab_pow = oasysgui.createTabPage(tabs_precision, "Power Density")
 
-        gui.comboBox(tab_prop, self, "int_sr_method", label="Calculation Method",
-                     items=["Manual", "Auto"], labelWidth=260,
+        oasysgui.lineEdit(tab_pow, self, "pow_precision_factor", "Precision Factor", labelWidth=260, valueType=float, orientation="horizontal")
+
+        gui.comboBox(tab_pow, self, "pow_computation_method", label="Computation Method",
+                     items=["Near Field", "Far Field"], labelWidth=260,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(tab_prop, self, "int_relative_precision", "Relative Precision", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(tab_prop, self, "int_start_integration_longitudinal_position", "Longitudinal pos. to start integration [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(tab_prop, self, "int_end_integration_longitudinal_position", "Longitudinal pos. to finish integration [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(tab_prop, self, "int_number_of_points_for_trajectory_calculation", "Number of points for trajectory calculation", labelWidth=260, valueType=int, orientation="horizontal")
-
-        gui.comboBox(tab_prop, self, "int_use_terminating_terms", label="Use \"terminating terms\"or not",
-                     items=["No", "Yes"], labelWidth=260,
-                     sendSelectedValue=False, orientation="horizontal")
-
-        oasysgui.lineEdit(tab_prop, self, "int_sampling_factor_for_adjusting_nx_ny", "Sampling factor for adjusting nx/ny", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(tab_pow, self, "pow_initial_longitudinal_position", "Initial longitudinal position [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(tab_pow, self, "pow_final_longitudinal_position", "Final longitudinal position [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(tab_pow, self, "pow_number_of_points_for_trajectory_calculation", "Number of points for trajectory calculation", labelWidth=260, valueType=int, orientation="horizontal")
 
         gui.rubber(self.controlArea)
 
@@ -252,12 +239,6 @@ class OWSRWRadiation(SRWWavefrontViewer):
         else:
             return "Total: " + str(int(self.calculated_total_power)) + " W"
 
-    def get_automatic_sr_method(self):
-        if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-            return 2
-        elif isinstance(self.received_light_source, SRWUndulatorLightSource):
-            return 1
-
     def get_minimum_propagation_distance(self):
         return round(self.get_source_length()*1.01, 6)
 
@@ -271,11 +252,6 @@ class OWSRWRadiation(SRWWavefrontViewer):
 
         # INTENSITY/POWER
 
-        congruence.checkStrictlyPositiveNumber(self.int_photon_energy_min, "Photon Energy Min")
-        congruence.checkStrictlyPositiveNumber(self.int_photon_energy_max, "Photon Energy Max")
-        congruence.checkGreaterOrEqualThan(self.int_photon_energy_max, self.int_photon_energy_min, "Photon Energy Max", "Photon Energy Min")
-        congruence.checkStrictlyPositiveNumber(self.int_photon_energy_points, "Photon Energy Points")
-        
         congruence.checkStrictlyPositiveNumber(self.int_h_slit_gap, "H Slit Gap")
         congruence.checkStrictlyPositiveNumber(self.int_v_slit_gap, "V Slit Gap")
         congruence.checkStrictlyPositiveNumber(self.int_h_slit_points, "H Slit Points")
@@ -283,72 +259,53 @@ class OWSRWRadiation(SRWWavefrontViewer):
         congruence.checkGreaterOrEqualThan(self.int_distance, self.get_minimum_propagation_distance(),
                                            "Distance", "Minimum Distance out of the Source: " + str(self.get_minimum_propagation_distance()))
 
-        congruence.checkStrictlyPositiveNumber(self.int_relative_precision, "Propagation - Relative Precision")
-        congruence.checkStrictlyPositiveNumber(self.int_number_of_points_for_trajectory_calculation, "Propagation - Number of points for trajectory calculation")
-        congruence.checkPositiveNumber(self.int_sampling_factor_for_adjusting_nx_ny, " Propagation - Sampling Factor for adjusting nx/ny")
+        congruence.checkStrictlyPositiveNumber(self.pow_precision_factor, "Intensity/Power Density Power - Precision Factor")
+        congruence.checkStrictlyPositiveNumber(self.pow_number_of_points_for_trajectory_calculation, "Intensity/Power Density Power - Number of points for trajectory calculation")
+
 
     def run_calculation_intensity_power(self, srw_source, tickets, progress_bar_value=30):
-        wf_parameters = WavefrontParameters(photon_energy_min = self.int_photon_energy_min,
-                                            photon_energy_max = self.int_photon_energy_max,
-                                            photon_energy_points=self.int_photon_energy_points,
+        wf_parameters = WavefrontParameters(photon_energy_min = 0.0,
+                                            photon_energy_max = 0.0,
+                                            photon_energy_points=1,
                                             h_slit_gap = self.int_h_slit_gap,
                                             v_slit_gap = self.int_v_slit_gap,
                                             h_slit_points=self.int_h_slit_points,
                                             v_slit_points=self.int_v_slit_points,
-                                            distance = self.int_distance,
-                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.int_sr_method == 0 else self.get_automatic_sr_method(),
-                                                                                                        relative_precision=self.int_relative_precision,
-                                                                                                        start_integration_longitudinal_position=self.int_start_integration_longitudinal_position,
-                                                                                                        end_integration_longitudinal_position=self.int_end_integration_longitudinal_position,
-                                                                                                        number_of_points_for_trajectory_calculation=self.int_number_of_points_for_trajectory_calculation,
-                                                                                                        use_terminating_terms=self.int_use_terminating_terms,
-                                                                                                        sampling_factor_for_adjusting_nx_ny=self.int_sampling_factor_for_adjusting_nx_ny))
+                                            distance = self.int_distance)
 
-        srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
+        h, v, p = srw_source.get_power_density(source_wavefront_parameters=wf_parameters,
+                                               power_density_precision_parameters=PowerDensityPrecisionParameters(precision_factor=self.pow_precision_factor,
+                                                                                                                  computation_method=self.pow_computation_method,
+                                                                                                                  initial_longitudinal_position=self.pow_initial_longitudinal_position,
+                                                                                                                  final_longitudinal_position=self.pow_final_longitudinal_position,
+                                                                                                                  number_of_points_for_trajectory_calculation=self.pow_number_of_points_for_trajectory_calculation))
 
-        e, h, v, i = srw_wavefront.get_intensity(multi_electron=False)
-
-        if len(e) > 1: energy_step = e[1]-e[0]
-        else: energy_step = 1.0
-
-        import scipy.constants as codata
-        pd = i.sum(axis=0)*energy_step*codata.e*1e3
-
-        tickets.append((i, e, h*1e3, v*1e3))
-        
-        self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, pd)
+        self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, p)
 
         print("TOTAL POWER: ", self.calculated_total_power, " W")
-        
-        sf = i.sum(axis=2).sum(axis=1)*(h[1]-h[0])*(v[1]-v[0])*1e6
-        
-        tickets.append(SRWPlot.get_ticket_2D(h, v, pd))
-        tickets.append(SRWPlot.get_ticket_1D(e, sf))
-        tickets.append(SRWPlot.get_ticket_1D(e, sf*codata.e*1e3))
+
+        tickets.append(SRWPlot.get_ticket_2D(h, v, p))
 
         self.progressBarSet(progress_bar_value + 10)
 
     def getVariablesToPlot(self):
-        return [[1, 2], [1, 2], [1], [1]]
+        return [[1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Flux vs E,X,Y [ph/s/.1%bw/mm^2]",
-                            "Power Density vs X,Y [W/mm^2]",
-                            "Flux vs E [ph/s/.1%bw/mm^2]",
-                            "Spectral Power vs E [W/eV]"]
-        else: return ["Flux vs E,X,Y", "Power Density vs X,Y", "Flux vs E", "Spectral Power vs E"]
+        if with_um: return ["Power Density vs X,Y [W/mm^2]"]
+        else: return ["Power Density vs X,Y"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "E [eV]", "E [eV]"]
+        return ["X [mm]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw/mm^2]", "Spectral Power [W/eV]"]
+        return ["Y [mm]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "E [eV]", "E [eV]"]
+        return ["X [mm]"]
 
     def getYUM(self):
-        return ["Y [mm]", "X [mm]", "Flux [ph/s/.1%bw/mm^2]", "Spectral Power [W/eV]"]
+        return ["Y [mm]"]
 
     def receive_srw_data(self, data):
         if not data is None:
@@ -357,9 +314,6 @@ class OWSRWRadiation(SRWWavefrontViewer):
                 received_wavefront = data._srw_wavefront
 
                 if not received_wavefront is None:
-                    self.int_photon_energy_min = received_wavefront.mesh.eStart
-                    self.int_photon_energy_max = received_wavefront.mesh.eFin
-                    self.int_photon_energy_points=received_wavefront.mesh.ne
                     self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
                     self.int_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
                     self.int_h_slit_points=received_wavefront.mesh.nx
