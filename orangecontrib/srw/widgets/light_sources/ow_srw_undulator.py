@@ -18,7 +18,7 @@ from orangecontrib.srw.util.srw_util import SRWPlot
 
 class OWSRWUndulator(OWSRWSource):
 
-    name = "SRW Undulator"
+    name = "Undulator"
     description = "SRW Source: Undulator"
     icon = "icons/undulator.png"
     priority = 2

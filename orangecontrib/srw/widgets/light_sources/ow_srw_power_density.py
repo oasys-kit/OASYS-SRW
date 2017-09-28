@@ -32,7 +32,7 @@ class OWSRWPowerDensity(SRWWavefrontViewer):
     maintainer_email = "luca.rebuffi(@at@)elettra.eu"
     category = "Source"
     keywords = ["data", "file", "load", "read"]
-    name = "SRW Source Power Density"
+    name = "Source Power Density"
     description = "SRW Source: Power Density"
     icon = "icons/power_density.png"
     priority = 4

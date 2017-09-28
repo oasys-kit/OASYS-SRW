@@ -18,7 +18,7 @@ from syned.storage_ring.magnetic_structures.bending_magnet import BendingMagnet
 
 class OWSRWBendingMagnet(OWSRWSource):
 
-    name = "SRW Bending Magnet"
+    name = "Bending Magnet"
     description = "SRW Source: Bending Magnet"
     icon = "icons/bending_magnet.png"
     priority = 1

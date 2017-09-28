@@ -10,17 +10,14 @@ from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
 
-from syned.beamline.optical_elements.absorbers.slit import Slit
-from syned.storage_ring.light_source import ElectronBeam, LightSource
-from syned.beamline.shape import Rectangle
+from syned.storage_ring.light_source import ElectronBeam
 
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
-from wofrysrw.storage_ring.srw_light_source import PowerDensityPrecisionParameters, SRWLightSource
+from wofrysrw.storage_ring.srw_light_source import SRWLightSource
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
-
-from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import FluxPrecisionParameters, SRWUndulatorLightSource
+from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
@@ -32,7 +29,7 @@ class OWSRWRadiation(SRWWavefrontViewer):
     maintainer_email = "luca.rebuffi(@at@)elettra.eu"
     category = "Source"
     keywords = ["data", "file", "load", "read"]
-    name = "SRW Source Radiation"
+    name = "Source Radiation"
     description = "SRW Source: Radiation"
     icon = "icons/radiation.png"
     priority = 3

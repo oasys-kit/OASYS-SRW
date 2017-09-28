@@ -68,7 +68,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     type_of_properties = Setting(1)
     type_of_initialization = Setting(0)
 
-    wf_photon_energy = Setting(0.0)
+    wf_photon_energy = Setting(8000.0)
     wf_h_slit_gap = Setting(0.001)
     wf_v_slit_gap =Setting( 0.001)
     wf_h_slit_points=Setting(100)
