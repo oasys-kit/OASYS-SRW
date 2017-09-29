@@ -14,7 +14,7 @@ class OWSRWScreen(OWSRWOpticalElement):
     def __init__(self):
         super().__init__(has_orientation_angles=False)
 
-        self.tabs_prop_setting.removeTab(0)
+        self.tabs_prop_setting.removeTab(1)
 
     def draw_specific_box(self):
         pass
