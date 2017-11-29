@@ -20,7 +20,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
     name = "Accumulation Point"
     description = "SRW Tools: Accumulation Point"
     icon = "icons/accumulation.png"
-    priority = 3
+    priority = 4
 
     inputs = [("SRWData", SRWData, "receive_srw_data")]
 

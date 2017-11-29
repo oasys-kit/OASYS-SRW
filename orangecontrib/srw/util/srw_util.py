@@ -423,6 +423,38 @@ class SRWPlot:
 
         return ticket
 
+#_height_prof_data: a matrix (2D array) containing the Height Profile data in [m];
+# if _ar_height_prof_x is None and _ar_height_prof_y is None: the first column in _height_prof_data is assumed to be the "longitudinal" position [m]
+# and first row the "transverse" position [m], and _height_prof_data[0][0] is not used;
+# otherwise the "longitudinal" and "transverse" positions on the surface are assumed to be given by _ar_height_prof_x, _ar_height_prof_y
+
+def write_error_profile_file(zz, xx, yy, output_file):
+    buffer = open(output_file, 'w')
+
+    # first row: x positions
+
+    first_row = "0\t"
+    for y_pos in yy:
+        first_row += str(y_pos) + "\t"
+
+    first_row += "\n"
+
+    buffer.write(first_row)
+
+    # next rows: y pos + z
+    for x_index in range(len(xx)):
+        row =  str(xx[x_index]) + "\t"
+
+        for y_index in range(len(yy)):
+            row += str(zz[y_index, x_index]) + "\t"
+
+        row += "\n"
+
+        buffer.write(row)
+
+    buffer.close()
+
+
 if __name__=="__main__":
     print(SRWPlot.get_SRW_label(1))
     print(SRWPlot.get_SRW_label(2))
