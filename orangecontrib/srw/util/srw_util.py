@@ -428,14 +428,14 @@ class SRWPlot:
 # and first row the "transverse" position [m], and _height_prof_data[0][0] is not used;
 # otherwise the "longitudinal" and "transverse" positions on the surface are assumed to be given by _ar_height_prof_x, _ar_height_prof_y
 
-def write_error_profile_file(zz, xx, yy, output_file):
+def write_error_profile_file(zz, xx, yy, output_file, separator = '\t'):
     buffer = open(output_file, 'w')
 
     # first row: x positions
 
-    first_row = "0\t"
+    first_row = "0"
     for y_pos in yy:
-        first_row += str(y_pos) + "\t"
+        first_row += separator + str(y_pos)
 
     first_row += "\n"
 
@@ -443,10 +443,10 @@ def write_error_profile_file(zz, xx, yy, output_file):
 
     # next rows: y pos + z
     for x_index in range(len(xx)):
-        row =  str(xx[x_index]) + "\t"
+        row =  str(xx[x_index])
 
         for y_index in range(len(yy)):
-            row += str(zz[y_index, x_index]) + "\t"
+            row += separator + str(zz[y_index, x_index])
 
         row += "\n"
 
