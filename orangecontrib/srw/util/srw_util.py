@@ -434,18 +434,18 @@ def write_error_profile_file(zz, xx, yy, output_file, separator = '\t'):
     # first row: x positions
 
     first_row = "0"
-    for y_pos in yy:
-        first_row += separator + str(y_pos)
+    for x_pos in xx:
+        first_row += separator + str(x_pos)
 
     first_row += "\n"
 
     buffer.write(first_row)
 
     # next rows: y pos + z
-    for x_index in range(len(xx)):
-        row =  str(xx[x_index])
+    for y_index in range(len(yy)):
+        row =  str(yy[y_index])
 
-        for y_index in range(len(yy)):
+        for x_index in range(len(xx)):
             row += separator + str(zz[y_index, x_index])
 
         row += "\n"
