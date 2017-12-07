@@ -217,16 +217,16 @@ class SRWWavefrontViewer(SRWWidget):
         else: return ["Intensity SE", "Phase SE", "Intensity ME (Convolution)"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [um]", "X [um]", "X [um]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [um]", "Y [um]", "Y [um]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [um]", "X [um]", "X [um]"]
 
     def getYUM(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [um]", "Y [um]", "Y [um]"]
 
     def getConversionActive(self):
         return True

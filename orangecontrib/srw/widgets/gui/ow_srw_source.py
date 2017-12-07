@@ -409,19 +409,19 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         e, h, v, i = srw_wavefront.get_intensity(multi_electron=False)
 
-        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
+        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
         self.progressBarSet(progress_bar_value)
 
         e, h, v, i = srw_wavefront.get_phase()
 
-        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
+        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
         self.progressBarSet(progress_bar_value + 10)
 
         e, h, v, i = srw_wavefront.get_intensity(multi_electron=True)
 
-        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
+        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
         self.progressBarSet(progress_bar_value + 10)
 

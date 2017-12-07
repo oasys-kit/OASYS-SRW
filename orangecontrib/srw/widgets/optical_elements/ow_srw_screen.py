@@ -32,7 +32,7 @@ class OWSRWScreen(OWSRWOpticalElement):
 
         e, h, v, i = self.wavefront_to_plot.get_intensity(multi_electron=True)
 
-        tickets.append(SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)]))
+        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
@@ -51,14 +51,14 @@ class OWSRWScreen(OWSRWOpticalElement):
         else: return ["Intensity SE", "Phase SE", "Intensity ME (Convolution)"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [um]", "X [um]", "X [um]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [um]", "Y [um]", "Y [um]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "X [mm]"]
+        return ["X [um]", "X [um]", "X [um]"]
 
     def getYUM(self):
-        return ["Y [mm]", "Y [mm]", "Y [mm]"]
+        return ["Y [um]", "Y [um]", "Y [um]"]
 
