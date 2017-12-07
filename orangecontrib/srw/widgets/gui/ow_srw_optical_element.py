@@ -129,15 +129,22 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
     has_orientation_angles=True
     azimuth_hor_vert=False
+    has_p = True
+    has_q = True
+    check_positive_distances = True
 
     TABS_AREA_HEIGHT = 555
     CONTROL_AREA_WIDTH = 405
 
-    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False):
+    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False, has_p=True, has_q=True, check_positive_distances=True):
         super().__init__()
 
         self.has_orientation_angles=has_orientation_angles
         self.azimuth_hor_vert=azimuth_hor_vert
+        self.has_p = has_p
+        self.has_q = has_q
+        self.check_positive_distances = check_positive_distances
+
 
         self.runaction = widget.OWAction("Propagate Wavefront", self)
         self.runaction.triggered.connect(self.propagate_wavefront)
@@ -179,8 +186,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         self.coordinates_box = oasysgui.widgetBox(self.tab_bas, "Coordinates", addSpace=True, orientation="vertical")
 
-        oasysgui.lineEdit(self.coordinates_box, self, "p", "Distance from previous Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.coordinates_box, self, "q", "Distance to next Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
+        if self.has_p:
+            oasysgui.lineEdit(self.coordinates_box, self, "p", "Distance from previous Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
+        if self.has_q:
+            oasysgui.lineEdit(self.coordinates_box, self, "q", "Distance to next Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
 
         if self.has_orientation_angles:
             oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
@@ -369,8 +378,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         raise NotImplementedError()
 
     def check_data(self):
-        congruence.checkPositiveNumber(self.p, "Distance from previous Continuation Plane")
-        congruence.checkPositiveNumber(self.q, "Distance to next Continuation Plane")
+        if self.check_positive_distances:
+            if self.has_p: congruence.checkPositiveNumber(self.p, "Distance from previous Continuation Plane")
+            if self.has_q: congruence.checkPositiveNumber(self.q, "Distance to next Continuation Plane")
+        else:
+            if self.has_p: congruence.checkNumber(self.p, "Distance from previous Continuation Plane")
+            if self.has_q: congruence.checkNumber(self.q, "Distance to next Continuation Plane")
 
         if self.has_orientation_angles:
             congruence.checkPositiveAngle(self.angle_radial, "Incident Angle (to normal)")
@@ -445,7 +458,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.setStatusMessage("")
             self.progressBarFinished()
 
-            raise e
+            #raise e
 
     def set_additional_parameters(self, propagation_parameters):
         
