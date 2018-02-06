@@ -23,8 +23,10 @@ from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationPa
 
 from orangecontrib.srw.util.srw_objects import SRWData, SRWTriggerIn
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
+from wofrysrw.beamline.optical_elements.srw_optical_element import Orientation
 
 from orangecontrib.srw.util.srw_util import SRWPlot
+
 
 def initialize_propagator_2D():
     propagator = PropagationManager.Instance()
@@ -389,13 +391,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             congruence.checkPositiveAngle(self.angle_radial, "Incident Angle (to normal)")
 
             if self.azimuth_hor_vert:
-                if self.orientation_azimuthal == 0:
+                if self.orientation_azimuthal == Orientation.UP:
                     self.angle_azimuthal = 0.0
-                elif self.orientation_azimuthal == 1:
+                elif self.orientation_azimuthal == Orientation.DOWN:
                     self.angle_azimuthal = 180.0
-                elif self.orientation_azimuthal == 2:
+                elif self.orientation_azimuthal == Orientation.LEFT:
                     self.angle_azimuthal = 90.0
-                elif self.orientation_azimuthal == 3:
+                elif self.orientation_azimuthal == Orientation.RIGHT:
                     self.angle_azimuthal = 270.0
             else:
                 congruence.checkPositiveAngle(self.angle_azimuthal, "Rotation along Beam Axis")
@@ -601,13 +603,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
                 if self.azimuth_hor_vert:
                     if self.angle_azimuthal == 0.0:
-                        self.orientation_azimuthal = 0
+                        self.orientation_azimuthal = Orientation.UP
                     elif self.angle_azimuthal == 180.0:
-                        self.orientation_azimuthal = 1
+                        self.orientation_azimuthal = Orientation.DOWN
                     elif self.angle_azimuthal == 90.0:
-                        self.orientation_azimuthal = 2
+                        self.orientation_azimuthal = Orientation.LEFT
                     elif self.angle_azimuthal == 270.0:
-                        self.orientation_azimuthal == 3
+                        self.orientation_azimuthal == Orientation.RIGHT
                     else:
                         raise Exception("Syned Data not correct: Orientation of central normal vector not recognized")
                 else:
