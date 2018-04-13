@@ -27,16 +27,3 @@ class SRWPreProcessorData:
         self.error_profile_y_dim = error_profile_y_dim
         self.error_profile_x_slope = error_profile_x_slope
         self.error_profile_y_slope = error_profile_y_slope
-
-class SRWTriggerOut:
-    def __init__(self, new_wavefront=False):
-        super().__init__()
-
-        self.new_wavefront = new_wavefront
-
-class SRWTriggerIn:
-    def __init__(self, new_wavefront=False, interrupt=False):
-        super().__init__()
-
-        self.new_wavefront = new_wavefront
-        self.interrupt = interrupt

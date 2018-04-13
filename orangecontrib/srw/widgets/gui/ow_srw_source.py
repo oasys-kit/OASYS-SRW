@@ -10,6 +10,7 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
+from oasys.util.oasys_util import TriggerIn, TriggerOut
 
 from syned.beamline.beamline import Beamline
 from syned.beamline.optical_elements.absorbers.slit import Slit
@@ -22,7 +23,7 @@ from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
 from orangecontrib.srw.util.srw_util import SRWPlot
-from orangecontrib.srw.util.srw_objects import SRWData, SRWTriggerOut
+from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
 class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
@@ -34,7 +35,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     inputs = WidgetDecorator.syned_input_data()
     inputs.append(("SynedData#2", Beamline, "receive_syned_data"))
-    inputs.append(("Trigger", SRWTriggerOut, "sendNewWavefront"))
+    inputs.append(("Trigger", TriggerOut, "sendNewWavefront"))
 
     outputs = [{"name":"SRWData",
                 "type":SRWData,
@@ -279,7 +280,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.progressBarFinished()
 
     def sendNewWavefront(self, trigger):
-        if trigger and trigger.new_wavefront == True:
+        if trigger and trigger.new_object == True:
             self.runSRWSource()
 
     def get_electron_beam(self):

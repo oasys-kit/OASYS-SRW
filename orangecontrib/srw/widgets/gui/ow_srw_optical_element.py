@@ -12,6 +12,7 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.widgets.gui import ConfirmDialog
+from oasys.util.oasys_util import TriggerIn, TriggerOut
 
 from syned.widget.widget_decorator import WidgetDecorator
 from syned.beamline.element_coordinates import ElementCoordinates
@@ -21,7 +22,7 @@ from wofry.propagator.propagator import PropagationManager, PropagationElements,
 from wofrysrw.propagator.propagators2D.srw_fresnel import FresnelSRW
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
 
-from orangecontrib.srw.util.srw_objects import SRWData, SRWTriggerIn
+from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 from wofrysrw.beamline.optical_elements.srw_optical_element import Orientation
 
@@ -51,7 +52,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                 "doc":"SRW Optical Element Data",
                 "id":"data"},
                {"name":"Trigger",
-                "type": SRWTriggerIn,
+                "type": TriggerIn,
                 "doc":"Feedback signal to start a new beam simulation",
                 "id":"Trigger"}]
 
@@ -452,7 +453,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             self.send("SRWData", SRWData(srw_beamline=output_beamline,
                                          srw_wavefront=output_wavefront))
-            self.send("Trigger", SRWTriggerIn(new_wavefront=True))
+            self.send("Trigger", TriggerIn(new_object=True))
 
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
