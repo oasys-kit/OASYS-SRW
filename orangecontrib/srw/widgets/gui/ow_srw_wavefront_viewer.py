@@ -2,12 +2,18 @@ import sys
 import numpy
 
 from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import Qt, QRect
 from PyQt5.QtWidgets import QApplication
+from PyQt5.QtGui import QPalette, QColor, QFont
+
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 
 from silx.gui.plot.StackView import StackViewMainWindow
+
+from wofry.propagator.propagator import PropagationManager, PropagationMode
+from wofrysrw.propagator.propagators2D.srw_fresnel import SRW_APPLICATION
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
@@ -29,9 +35,10 @@ class SRWWavefrontViewer(SRWWidget):
         plot_tab = oasysgui.createTabPage(self.main_tabs, "Plots")
         out_tab = oasysgui.createTabPage(self.main_tabs, "Output")
 
+        self.view_box = oasysgui.widgetBox(plot_tab, "Plotting", addSpace=False, orientation="horizontal")
+
         if show_view_box:
-            view_box = oasysgui.widgetBox(plot_tab, "Plotting", addSpace=False, orientation="horizontal")
-            view_box_1 = oasysgui.widgetBox(view_box, "", addSpace=False, orientation="vertical", width=350)
+            view_box_1 = oasysgui.widgetBox(self.view_box, "", addSpace=False, orientation="vertical", width=350)
 
             self.view_type_combo = gui.comboBox(view_box_1, self, "view_type", label="Plot Results",
                                                 labelWidth=220,
@@ -40,6 +47,22 @@ class SRWWavefrontViewer(SRWWidget):
         else:
             self.view_type = 1
             self.view_type_combo = QtWidgets.QWidget()
+
+
+        #* -------------------------------------------------------------------------------------------------------------
+        propagation_box = oasysgui.widgetBox(self.view_box, "", addSpace=False, orientation="vertical")
+
+        self.le_srw_live_propagation_mode = gui.lineEdit(propagation_box, self, "srw_live_propagation_mode", "Propagation Mode", labelWidth=150, valueType=str, orientation="horizontal")
+        self.le_srw_live_propagation_mode.setAlignment(Qt.AlignCenter)
+        self.le_srw_live_propagation_mode.setReadOnly(True)
+        font = QFont(self.le_srw_live_propagation_mode.font())
+        font.setBold(True)
+        self.le_srw_live_propagation_mode.setFont(font)
+
+        self.set_srw_live_propagation_mode()
+
+        #* -------------------------------------------------------------------------------------------------------------
+
 
         self.tab = []
         self.tabs = oasysgui.tabWidget(plot_tab)
@@ -54,6 +77,21 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.srw_output.setFixedHeight(600)
         self.srw_output.setFixedWidth(600)
+
+    def set_srw_live_propagation_mode(self):
+        self.srw_live_propagation_mode = "Element by Element" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.STEP_BY_STEP  else \
+                                          "Whole beamline at Final Screen" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.WHOLE_BEAMLINE else \
+                                          "Unknown"
+
+        palette = QPalette(self.le_srw_live_propagation_mode.palette())
+
+        color = 'dark green' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.STEP_BY_STEP  else \
+                'dark red' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.WHOLE_BEAMLINE else \
+                'black'
+
+        palette.setColor(QPalette.Text, QColor(color))
+        palette.setColor(QPalette.Base, QColor(243, 240, 140))
+        self.le_srw_live_propagation_mode.setPalette(palette)
 
 
     def initializeTabs(self):

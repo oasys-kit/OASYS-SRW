@@ -2,6 +2,8 @@ from syned.beamline.optical_elements.ideal_elements.screen import Screen
 
 from wofrysrw.beamline.optical_elements.ideal_elements.srw_screen import SRWScreen
 
+from orangewidget.settings import Setting
+
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
 from orangecontrib.srw.util.srw_util import SRWPlot
@@ -12,6 +14,8 @@ class OWSRWScreen(OWSRWOpticalElement):
     description = "SRW: Screen"
     icon = "icons/screen.png"
     priority = 20
+
+    is_final_screen = Setting(0)
 
     def __init__(self):
         super().__init__(has_orientation_angles=False)

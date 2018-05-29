@@ -71,8 +71,7 @@ class OWSRWMirror(OWSRWOpticalElement):
     def get_optical_element(self):
         
         mirror = self.get_mirror_instance()
-        
-        mirror.name=self.oe_name
+
         mirror.tangential_size=self.tangential_size
         mirror.sagittal_size=self.sagittal_size
         mirror.grazing_angle=numpy.radians(90-self.angle_radial)

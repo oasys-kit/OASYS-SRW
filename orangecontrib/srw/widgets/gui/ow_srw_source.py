@@ -44,7 +44,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     want_main_area=1
 
-    source_name = Setting("SRW Source")
+    source_name = None
 
     electron_energy_in_GeV = Setting(2.0)
     electron_energy_spread = Setting(0.0007)
@@ -128,8 +128,6 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
 
         self.tab_source = oasysgui.createTabPage(self.tabs_setting, "Light Source Setting")
-
-        oasysgui.lineEdit(self.tab_source, self, "source_name", "Light Source Name", labelWidth=260, valueType=str, orientation="horizontal")
 
         left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam Parameters", addSpace=True, orientation="vertical", height=350)
 
@@ -243,6 +241,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             self.checkFields()
 
             srw_source = self.get_srw_source(self.get_electron_beam())
+            srw_source.name = self.source_name if not self.source_name is None else self.windowTitle(),
 
             self.progressBarSet(10)
 

@@ -90,7 +90,6 @@ class OWSRWGrating(OWSRWOpticalElement):
     def get_optical_element(self):
         grating = self.get_grating_instance()
 
-        grating.name=self.oe_name
         grating.tangential_size=self.tangential_size
         grating.sagittal_size=self.sagittal_size
         grating.grazing_angle=numpy.radians(90-self.angle_radial)

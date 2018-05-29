@@ -59,16 +59,16 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     inputs = [("SRWData", SRWData, "set_input"),
               WidgetDecorator.syned_input_data()[0]]
 
-    oe_name         = Setting("")
+    oe_name         = None
     p               = Setting(0.0)
     q               = Setting(0.0)
     angle_radial    = Setting(0.0)
     angle_azimuthal = Setting(0.0)
     orientation_azimuthal = Setting(0)
+    invert_tangent_component = Setting(0)
 
     shape = Setting(0)
     surface_shape = Setting(0)
-
 
     drift_before_auto_resize_before_propagation                         = Setting(0)
     drift_before_auto_resize_after_propagation                          = Setting(0)
@@ -185,8 +185,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "O.E. Setting")
         self.tab_pro = oasysgui.createTabPage(self.tabs_setting, "Wavefront Propagation Setting")
 
-        oasysgui.lineEdit(self.tab_bas, self, "oe_name", "O.E. Name", labelWidth=260, valueType=str, orientation="horizontal")
-
         self.coordinates_box = oasysgui.widgetBox(self.tab_bas, "Coordinates", addSpace=True, orientation="vertical")
 
         if self.has_p:
@@ -200,6 +198,9 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             if self.azimuth_hor_vert:
                 gui.comboBox(self.coordinates_box, self, "orientation_azimuthal", label="Orientation of central normal vector",
                              items=["Up", "Down", "Left", "Right"], labelWidth=300,
+                             sendSelectedValue=False, orientation="horizontal")
+                gui.comboBox(self.coordinates_box, self, "invert_tangent_component", label="Invert Tangent Component",
+                             items=["No", "Yes"], labelWidth=300,
                              sendSelectedValue=False, orientation="horizontal")
             else:
                 oasysgui.lineEdit(self.coordinates_box, self, "angle_azimuthal", "Rotation along Beam Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
@@ -418,7 +419,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             propagation_elements = PropagationElements()
 
-            beamline_element = BeamlineElement(optical_element=self.get_optical_element(),
+            optical_element = self.get_optical_element()
+            optical_element.name = self.oe_name if not self.oe_name is None else self.windowTitle()
+
+            beamline_element = BeamlineElement(optical_element=optical_element,
                                                coordinates=ElementCoordinates(p=self.p,
                                                                               q=self.q,
                                                                               angle_radial=numpy.radians(self.angle_radial),

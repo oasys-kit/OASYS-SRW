@@ -10,9 +10,6 @@ from PyQt5.QtCore import QRect
 
 from oasys.widgets.gui import ConfirmDialog
 
-
-
-
 class SRWWidget(widget.OWWidget):
 
     want_main_area=1
@@ -28,6 +25,8 @@ class SRWWidget(widget.OWWidget):
 
     CONTROL_AREA_WIDTH = 405
     TABS_AREA_HEIGHT = 560
+
+    srw_live_propagation_mode = "Unknown"
 
     def __init__(self, show_automatic_box=True):
         super().__init__()

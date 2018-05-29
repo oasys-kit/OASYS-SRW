@@ -49,8 +49,7 @@ class OWSRWBendingMagnet(OWSRWSource):
         self.magnetic_radius = BendingMagnet.calculate_magnetic_radius(self.magnetic_field, electron_beam.electron_energy_in_GeV) if self.magnetic_radius == 0.0 else self.magnetic_radius
         self.magnetic_field = BendingMagnet.calculate_magnetic_field(self.magnetic_radius, electron_beam.electron_energy_in_GeV) if self.magnetic_field == 0.0 else self.magnetic_field
 
-        return SRWBendingMagnetLightSource(name=self.source_name,
-                                           electron_beam=electron_beam,
+        return SRWBendingMagnetLightSource(electron_beam=electron_beam,
                                            bending_magnet_magnetic_structure=SRWBendingMagnet(self.magnetic_radius,
                                                                                               self.magnetic_field,
                                                                                               self.length))

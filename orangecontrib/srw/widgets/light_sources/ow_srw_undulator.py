@@ -104,10 +104,8 @@ class OWSRWUndulator(OWSRWSource):
             undulator_magnetic_structure.set_K_vertical_from_magnetic_field(self.B_vertical)
             undulator_magnetic_structure.set_K_horizontal_from_magnetic_field(self.B_horizontal)
 
-        return SRWUndulatorLightSource(name=self.source_name,
-                                       electron_beam=electron_beam,
-                                       undulator_magnetic_structure=undulator_magnetic_structure
-                                       )
+        return SRWUndulatorLightSource(electron_beam=electron_beam,
+                                       undulator_magnetic_structure=undulator_magnetic_structure)
 
     def print_specific_infos(self, srw_source):
         print("1st Harmonic Energy", srw_source.get_resonance_energy(), "\n")

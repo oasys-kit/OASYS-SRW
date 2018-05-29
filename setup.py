@@ -64,6 +64,7 @@ ENTRY_POINTS = {
         "SRW Tools = orangecontrib.srw.widgets.tools",
         "SRW Wofry = orangecontrib.srw.widgets.wofry",
     ),
+    'oasys.menus' : ("srwmenu = orangecontrib.srw.menu",)
 }
 
 if __name__ == '__main__':
