@@ -7,9 +7,6 @@ from oasys.widgets import congruence
 
 from syned.beamline.optical_elements.gratings.grating import Grating
 
-from wofrysrw.beamline.optical_elements.mirrors.srw_mirror import Orientation
-from wofrysrw.beamline.optical_elements.gratings.srw_grating import SRWGrating
-
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
 class OWSRWGrating(OWSRWOpticalElement):
@@ -94,6 +91,7 @@ class OWSRWGrating(OWSRWOpticalElement):
         grating.sagittal_size=self.sagittal_size
         grating.grazing_angle=numpy.radians(90-self.angle_radial)
         grating.orientation_of_reflection_plane=self.orientation_azimuthal
+        grating.invert_tangent_component = self.invert_tangent_component == 1
         grating.height_profile_data_file=self.height_profile_data_file if self.has_height_profile else None
         grating.height_profile_data_file_dimension=self.height_profile_data_file_dimension + 1
         grating.height_amplification_coefficient=self.height_amplification_coefficient
@@ -106,6 +104,24 @@ class OWSRWGrating(OWSRWOpticalElement):
         grating.grooving_angle=numpy.radians(self.grooving_angle)
 
         return grating
+
+    def set_additional_parameters(self, propagation_parameters):
+        wavefront = propagation_parameters.get_wavefront()
+        grating = propagation_parameters.get_PropagationElements().get_propagation_element(-1).get_optical_element()
+
+        orientation_of_the_output_optical_axis_vector_x, \
+        orientation_of_the_output_optical_axis_vector_y, \
+        orientation_of_the_output_optical_axis_vector_z, \
+        orientation_of_the_horizontal_base_vector_x    , \
+        orientation_of_the_horizontal_base_vector_y     = grating.get_output_orientation_vectors(wavefront.get_photon_energy())
+
+        self.oe_orientation_of_the_output_optical_axis_vector_x = round(orientation_of_the_output_optical_axis_vector_x, 8)
+        self.oe_orientation_of_the_output_optical_axis_vector_y = round(orientation_of_the_output_optical_axis_vector_y, 8)
+        self.oe_orientation_of_the_output_optical_axis_vector_z = round(orientation_of_the_output_optical_axis_vector_z, 8)
+        self.oe_orientation_of_the_horizontal_base_vector_x     = round(orientation_of_the_horizontal_base_vector_x, 8)
+        self.oe_orientation_of_the_horizontal_base_vector_y     = round(orientation_of_the_horizontal_base_vector_y, 8)
+
+        super(OWSRWGrating, self).set_additional_parameters(propagation_parameters)
 
     def get_grating_instance(self):
         raise NotImplementedError()
