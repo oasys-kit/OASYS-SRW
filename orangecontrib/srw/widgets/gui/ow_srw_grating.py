@@ -105,15 +105,14 @@ class OWSRWGrating(OWSRWOpticalElement):
 
         return grating
 
-    def set_additional_parameters(self, propagation_parameters):
-        wavefront = propagation_parameters.get_wavefront()
-        grating = propagation_parameters.get_PropagationElements().get_propagation_element(-1).get_optical_element()
+    def set_additional_parameters(self, beamline_element, propagation_parameters, beamline):
+        grating = beamline.get_beamline_element_at(-1).get_optical_element()
 
         orientation_of_the_output_optical_axis_vector_x, \
         orientation_of_the_output_optical_axis_vector_y, \
         orientation_of_the_output_optical_axis_vector_z, \
         orientation_of_the_horizontal_base_vector_x    , \
-        orientation_of_the_horizontal_base_vector_y     = grating.get_output_orientation_vectors(wavefront.get_photon_energy())
+        orientation_of_the_horizontal_base_vector_y     = grating.get_output_orientation_vectors(self.input_srw_data.get_srw_wavefront().get_photon_energy())
 
         self.oe_orientation_of_the_output_optical_axis_vector_x = round(orientation_of_the_output_optical_axis_vector_x, 8)
         self.oe_orientation_of_the_output_optical_axis_vector_y = round(orientation_of_the_output_optical_axis_vector_y, 8)
@@ -121,7 +120,7 @@ class OWSRWGrating(OWSRWOpticalElement):
         self.oe_orientation_of_the_horizontal_base_vector_x     = round(orientation_of_the_horizontal_base_vector_x, 8)
         self.oe_orientation_of_the_horizontal_base_vector_y     = round(orientation_of_the_horizontal_base_vector_y, 8)
 
-        super(OWSRWGrating, self).set_additional_parameters(propagation_parameters)
+        super(OWSRWGrating, self).set_additional_parameters(beamline_element, propagation_parameters, beamline)
 
     def get_grating_instance(self):
         raise NotImplementedError()

@@ -123,6 +123,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     wavefront_to_plot = None
 
     has_orientation_angles=True
+    has_oe_wavefront_propagation_parameters_tab = True
     azimuth_hor_vert=False
     has_p = True
     has_q = True
@@ -131,7 +132,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     TABS_AREA_HEIGHT = 555
     CONTROL_AREA_WIDTH = 405
 
-    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False, has_p=True, has_q=True, check_positive_distances=True):
+    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False, has_p=True, has_q=True, check_positive_distances=True, has_oe_wavefront_propagation_parameters_tab=True):
         super().__init__()
 
         self.has_orientation_angles=has_orientation_angles
@@ -139,6 +140,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.has_p = has_p
         self.has_q = has_q
         self.check_positive_distances = check_positive_distances
+        self.has_oe_wavefront_propagation_parameters_tab = has_oe_wavefront_propagation_parameters_tab
 
 
         self.runaction = widget.OWAction("Propagate Wavefront", self)
@@ -203,7 +205,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.tabs_prop_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-10)
 
         self.tab_drift_before = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space Before")
-        self.tab_oe = oasysgui.createTabPage(self.tabs_prop_setting, "Optical Element")
+        if self.has_oe_wavefront_propagation_parameters_tab: self.tab_oe = oasysgui.createTabPage(self.tabs_prop_setting, "Optical Element")
         self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space After")
 
 
@@ -251,46 +253,46 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
 
         # OE
+        if self.has_oe_wavefront_propagation_parameters_tab:
+            gui.comboBox(self.tab_oe, self, "oe_auto_resize_before_propagation", label="Auto Resize Before Propagation",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.comboBox(self.tab_oe, self, "oe_auto_resize_before_propagation", label="Auto Resize Before Propagation",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(self.tab_oe, self, "oe_auto_resize_after_propagation", label="Auto Resize After Propagation",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.comboBox(self.tab_oe, self, "oe_auto_resize_after_propagation", label="Auto Resize After Propagation",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
+            propagator_box = oasysgui.widgetBox(self.tab_oe, "", addSpace=False, orientation="horizontal")
 
-        propagator_box = oasysgui.widgetBox(self.tab_oe, "", addSpace=False, orientation="horizontal")
+            gui.comboBox(propagator_box, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
+                         items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.comboBox(propagator_box, self, "oe_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
-                     items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
 
-        gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
+            gui.comboBox(self.tab_oe, self, "oe_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.comboBox(self.tab_oe, self, "oe_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_oe, self, "oe_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            # not yet used by SRW
+            #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
+            #oasysgui.lineEdit(self.tab_oe, self, "oe_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+            #oasysgui.lineEdit(self.tab_oe, self, "oe_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
 
-        # not yet used by SRW
-        #oasysgui.lineEdit(self.tab_oe, self, "oe_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_oe, self, "oe_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+            oe_optional_box = oasysgui.widgetBox(self.tab_oe, "Optional", addSpace=False, orientation="vertical")
 
-        oe_optional_box = oasysgui.widgetBox(self.tab_oe, "Optional", addSpace=False, orientation="vertical")
-
-        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(oe_optional_box, self, "oe_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
 
         # DRIFT SPACE
 
@@ -409,7 +411,17 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             # propagation to o.e.
 
-            propagation_elements = PropagationElements()
+            propagator = PropagationManager.Instance()
+            propagation_mode = propagator.get_propagation_mode(SRW_APPLICATION)
+
+            handler_name = FresnelSRWNative.HANDLER_NAME if propagation_mode == SRWPropagationMode.STEP_BY_STEP  or \
+                                                            propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE else \
+                           FresnelSRWWofry.HANDLER_NAME
+
+            input_wavefront = self.input_srw_data.get_srw_wavefront()
+            srw_beamline = self.input_srw_data.get_srw_beamline().duplicate()
+            working_srw_beamline = self.input_srw_data.get_working_srw_beamline().duplicate()
+
 
             optical_element = self.get_optical_element()
             optical_element.name = self.oe_name if not self.oe_name is None else self.windowTitle()
@@ -420,39 +432,59 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                                                                               angle_radial=numpy.radians(self.angle_radial),
                                                                               angle_azimuthal=numpy.radians(self.angle_azimuthal)))
 
-            propagation_elements.add_beamline_element(beamline_element)
+            srw_beamline.append_beamline_element(beamline_element)
+            working_srw_beamline.append_beamline_element(beamline_element)
 
-            propagation_parameters = PropagationParameters(wavefront=self.input_srw_data._srw_wavefront.duplicate(),
-                                                           propagation_elements = propagation_elements)
+            if propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE:
+                self.set_additional_parameters(beamline_element, None, srw_beamline)
+                self.set_additional_parameters(beamline_element, None, working_srw_beamline)
 
-            self.set_additional_parameters(propagation_parameters)
+                if hasattr(self, "is_final_screen") and self.is_final_screen == 1:
+                    propagation_parameters = PropagationParameters(wavefront=input_wavefront.duplicate(),
+                                                                   propagation_elements = None)
 
-            propagator = PropagationManager.Instance()
+                    propagation_parameters.set_additional_parameters("working_beamline", working_srw_beamline)
 
-            handler_name = FresnelSRWNative.HANDLER_NAME if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP  or \
-                                                            PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE else \
-                           FresnelSRWWofry.HANDLER_NAME
+                    output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
+                                                                 handler_name=handler_name)
+                    output_srw_data = SRWData(srw_beamline=srw_beamline,
+                                              srw_wavefront=output_wavefront)
+                    output_srw_data.reset_working_srw_beamline()
+                else:
+                    output_wavefront = None
 
-            output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
-                                                         handler_name=handler_name)
+                    output_srw_data = SRWData(srw_beamline=srw_beamline,
+                                              srw_wavefront=input_wavefront)
+            else:
+                propagation_elements = PropagationElements()
+                propagation_elements.add_beamline_element(beamline_element)
 
-            self.wavefront_to_plot = output_wavefront
+                propagation_parameters = PropagationParameters(wavefront=input_wavefront.duplicate(),
+                                                               propagation_elements = propagation_elements)
 
-            self.initializeTabs()
+                self.set_additional_parameters(beamline_element, propagation_parameters, srw_beamline)
 
-            tickets = []
+                output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
+                                                             handler_name=handler_name)
 
-            self.run_calculations(tickets=tickets, progress_bar_value=50)
+                output_srw_data = SRWData(srw_beamline=srw_beamline,
+                                          srw_wavefront=output_wavefront)
+
+            tickets = None
+
+            if not output_wavefront is None:
+                self.wavefront_to_plot = output_wavefront
+                self.initializeTabs()
+
+                tickets = []
+                self.run_calculations(tickets=tickets, progress_bar_value=50)
 
             self.plot_results(tickets, 80)
 
             self.progressBarFinished()
 
-            output_beamline = self.input_srw_data._srw_beamline.duplicate()
-            output_beamline.append_beamline_element(beamline_element)
+            self.send("SRWData", output_srw_data)
 
-            self.send("SRWData", SRWData(srw_beamline=output_beamline,
-                                         srw_wavefront=output_wavefront))
             self.send("Trigger", TriggerIn(new_object=True))
 
         except Exception as e:
@@ -463,87 +495,115 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             raise e
 
-    def set_additional_parameters(self, propagation_parameters):
+    def set_additional_parameters(self, beamline_element, propagation_parameters=None, beamline=None):
+        from wofrysrw.beamline.srw_beamline import Where
 
-        propagation_parameters.set_additional_parameters("srw_drift_before_wavefront_propagation_parameters",
-                                                         WavefrontPropagationParameters(
-                                                             auto_resize_before_propagation                         = self.drift_before_auto_resize_before_propagation,
-                                                             auto_resize_after_propagation                          = self.drift_before_auto_resize_after_propagation,
-                                                             relative_precision_for_propagation_with_autoresizing   = self.drift_before_relative_precision_for_propagation_with_autoresizing,
-                                                             allow_semianalytical_treatment_of_quadratic_phase_term = self.drift_before_allow_semianalytical_treatment_of_quadratic_phase_term,
-                                                             do_any_resizing_on_fourier_side_using_fft              = self.drift_before_do_any_resizing_on_fourier_side_using_fft,
-                                                             horizontal_range_modification_factor_at_resizing       = self.drift_before_horizontal_range_modification_factor_at_resizing,
-                                                             horizontal_resolution_modification_factor_at_resizing  = self.drift_before_horizontal_resolution_modification_factor_at_resizing ,
-                                                             vertical_range_modification_factor_at_resizing         = self.drift_before_vertical_range_modification_factor_at_resizing,
-                                                             vertical_resolution_modification_factor_at_resizing    = self.drift_before_vertical_resolution_modification_factor_at_resizing ,
-                                                             type_of_wavefront_shift_before_resizing                = self.drift_before_type_of_wavefront_shift_before_resizing,
-                                                             new_horizontal_wavefront_center_position_after_shift   = self.drift_before_new_horizontal_wavefront_center_position_after_shift,
-                                                             new_vertical_wavefront_center_position_after_shift     = self.drift_before_new_vertical_wavefront_center_position_after_shift
-                                                         ))
+        srw_drift_before_wavefront_propagation_parameters = None
+        srw_drift_before_wavefront_propagation_optional_parameters = None
 
-        if self.has_drift_before_wavefront_propagation_optional_parameters():
-            propagation_parameters.set_additional_parameters("srw_drift_before_wavefront_propagation_optional_parameters",
-                                                             WavefrontPropagationOptionalParameters(
-                                                                 orientation_of_the_output_optical_axis_vector_x = self.drift_before_orientation_of_the_output_optical_axis_vector_x,
-                                                                 orientation_of_the_output_optical_axis_vector_y = self.drift_before_orientation_of_the_output_optical_axis_vector_y,
-                                                                 orientation_of_the_output_optical_axis_vector_z = self.drift_before_orientation_of_the_output_optical_axis_vector_z,
-                                                                 orientation_of_the_horizontal_base_vector_x     = self.drift_before_orientation_of_the_horizontal_base_vector_x,
-                                                                 orientation_of_the_horizontal_base_vector_y     = self.drift_before_orientation_of_the_horizontal_base_vector_y
-                                                             ))
+        # DRIFT BEFORE
+        if beamline_element.get_coordinates().p() != 0:
+            srw_drift_before_wavefront_propagation_parameters = WavefrontPropagationParameters(
+                                                                 auto_resize_before_propagation                         = self.drift_before_auto_resize_before_propagation,
+                                                                 auto_resize_after_propagation                          = self.drift_before_auto_resize_after_propagation,
+                                                                 relative_precision_for_propagation_with_autoresizing   = self.drift_before_relative_precision_for_propagation_with_autoresizing,
+                                                                 allow_semianalytical_treatment_of_quadratic_phase_term = self.drift_before_allow_semianalytical_treatment_of_quadratic_phase_term,
+                                                                 do_any_resizing_on_fourier_side_using_fft              = self.drift_before_do_any_resizing_on_fourier_side_using_fft,
+                                                                 horizontal_range_modification_factor_at_resizing       = self.drift_before_horizontal_range_modification_factor_at_resizing,
+                                                                 horizontal_resolution_modification_factor_at_resizing  = self.drift_before_horizontal_resolution_modification_factor_at_resizing ,
+                                                                 vertical_range_modification_factor_at_resizing         = self.drift_before_vertical_range_modification_factor_at_resizing,
+                                                                 vertical_resolution_modification_factor_at_resizing    = self.drift_before_vertical_resolution_modification_factor_at_resizing ,
+                                                                 type_of_wavefront_shift_before_resizing                = self.drift_before_type_of_wavefront_shift_before_resizing,
+                                                                 new_horizontal_wavefront_center_position_after_shift   = self.drift_before_new_horizontal_wavefront_center_position_after_shift,
+                                                                 new_vertical_wavefront_center_position_after_shift     = self.drift_before_new_vertical_wavefront_center_position_after_shift
+                                                             )
 
-        propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters",
-                                                         WavefrontPropagationParameters(
-                                                             auto_resize_before_propagation                         = self.oe_auto_resize_before_propagation,
-                                                             auto_resize_after_propagation                          = self.oe_auto_resize_after_propagation,
-                                                             relative_precision_for_propagation_with_autoresizing   = self.oe_relative_precision_for_propagation_with_autoresizing,
-                                                             allow_semianalytical_treatment_of_quadratic_phase_term = self.oe_allow_semianalytical_treatment_of_quadratic_phase_term,
-                                                             do_any_resizing_on_fourier_side_using_fft              = self.oe_do_any_resizing_on_fourier_side_using_fft,
-                                                             horizontal_range_modification_factor_at_resizing       = self.oe_horizontal_range_modification_factor_at_resizing,
-                                                             horizontal_resolution_modification_factor_at_resizing  = self.oe_horizontal_resolution_modification_factor_at_resizing ,
-                                                             vertical_range_modification_factor_at_resizing         = self.oe_vertical_range_modification_factor_at_resizing,
-                                                             vertical_resolution_modification_factor_at_resizing    = self.oe_vertical_resolution_modification_factor_at_resizing ,
-                                                             type_of_wavefront_shift_before_resizing                = self.oe_type_of_wavefront_shift_before_resizing,
-                                                             new_horizontal_wavefront_center_position_after_shift   = self.oe_new_horizontal_wavefront_center_position_after_shift,
-                                                             new_vertical_wavefront_center_position_after_shift     = self.oe_new_vertical_wavefront_center_position_after_shift
-                                                         ))
+            if not propagation_parameters is None: propagation_parameters.set_additional_parameters("srw_drift_before_wavefront_propagation_parameters", srw_drift_before_wavefront_propagation_parameters)
 
-        if self.has_oe_wavefront_propagation_optional_parameters():
-            propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_optional_parameters",
-                                                             WavefrontPropagationOptionalParameters(
-                                                                 orientation_of_the_output_optical_axis_vector_x = self.oe_orientation_of_the_output_optical_axis_vector_x,
-                                                                 orientation_of_the_output_optical_axis_vector_y = self.oe_orientation_of_the_output_optical_axis_vector_y,
-                                                                 orientation_of_the_output_optical_axis_vector_z = self.oe_orientation_of_the_output_optical_axis_vector_z,
-                                                                 orientation_of_the_horizontal_base_vector_x     = self.oe_orientation_of_the_horizontal_base_vector_x,
-                                                                 orientation_of_the_horizontal_base_vector_y     = self.oe_orientation_of_the_horizontal_base_vector_y
-                                                             ))
+            if self.has_drift_before_wavefront_propagation_optional_parameters():
+                srw_drift_before_wavefront_propagation_optional_parameters = WavefrontPropagationOptionalParameters(
+                                                                     orientation_of_the_output_optical_axis_vector_x = self.drift_before_orientation_of_the_output_optical_axis_vector_x,
+                                                                     orientation_of_the_output_optical_axis_vector_y = self.drift_before_orientation_of_the_output_optical_axis_vector_y,
+                                                                     orientation_of_the_output_optical_axis_vector_z = self.drift_before_orientation_of_the_output_optical_axis_vector_z,
+                                                                     orientation_of_the_horizontal_base_vector_x     = self.drift_before_orientation_of_the_horizontal_base_vector_x,
+                                                                     orientation_of_the_horizontal_base_vector_y     = self.drift_before_orientation_of_the_horizontal_base_vector_y
+                                                                 )
+
+                if not propagation_parameters is None: propagation_parameters.set_additional_parameters("srw_drift_before_wavefront_propagation_optional_parameters", srw_drift_before_wavefront_propagation_optional_parameters)
+
+        if not beamline is None: beamline.append_wavefront_propagation_parameters(srw_drift_before_wavefront_propagation_parameters, srw_drift_before_wavefront_propagation_optional_parameters, Where.DRIFT_BEFORE)
+
+        # OE
+        srw_oe_wavefront_propagation_parameters = None
+        srw_oe_wavefront_propagation_optional_parameters = None
+
+        if self.has_oe_wavefront_propagation_parameters_tab:
+            srw_oe_wavefront_propagation_parameters = WavefrontPropagationParameters(
+                                                                 auto_resize_before_propagation                         = self.oe_auto_resize_before_propagation,
+                                                                 auto_resize_after_propagation                          = self.oe_auto_resize_after_propagation,
+                                                                 relative_precision_for_propagation_with_autoresizing   = self.oe_relative_precision_for_propagation_with_autoresizing,
+                                                                 allow_semianalytical_treatment_of_quadratic_phase_term = self.oe_allow_semianalytical_treatment_of_quadratic_phase_term,
+                                                                 do_any_resizing_on_fourier_side_using_fft              = self.oe_do_any_resizing_on_fourier_side_using_fft,
+                                                                 horizontal_range_modification_factor_at_resizing       = self.oe_horizontal_range_modification_factor_at_resizing,
+                                                                 horizontal_resolution_modification_factor_at_resizing  = self.oe_horizontal_resolution_modification_factor_at_resizing ,
+                                                                 vertical_range_modification_factor_at_resizing         = self.oe_vertical_range_modification_factor_at_resizing,
+                                                                 vertical_resolution_modification_factor_at_resizing    = self.oe_vertical_resolution_modification_factor_at_resizing ,
+                                                                 type_of_wavefront_shift_before_resizing                = self.oe_type_of_wavefront_shift_before_resizing,
+                                                                 new_horizontal_wavefront_center_position_after_shift   = self.oe_new_horizontal_wavefront_center_position_after_shift,
+                                                                 new_vertical_wavefront_center_position_after_shift     = self.oe_new_vertical_wavefront_center_position_after_shift
+                                                             )
 
 
-        propagation_parameters.set_additional_parameters("srw_drift_after_wavefront_propagation_parameters",
-                                                         WavefrontPropagationParameters(
-                                                             auto_resize_before_propagation                         = self.drift_auto_resize_before_propagation,
-                                                             auto_resize_after_propagation                          = self.drift_auto_resize_after_propagation,
-                                                             relative_precision_for_propagation_with_autoresizing   = self.drift_relative_precision_for_propagation_with_autoresizing,
-                                                             allow_semianalytical_treatment_of_quadratic_phase_term = self.drift_allow_semianalytical_treatment_of_quadratic_phase_term,
-                                                             do_any_resizing_on_fourier_side_using_fft              = self.drift_do_any_resizing_on_fourier_side_using_fft,
-                                                             horizontal_range_modification_factor_at_resizing       = self.drift_horizontal_range_modification_factor_at_resizing,
-                                                             horizontal_resolution_modification_factor_at_resizing  = self.drift_horizontal_resolution_modification_factor_at_resizing ,
-                                                             vertical_range_modification_factor_at_resizing         = self.drift_vertical_range_modification_factor_at_resizing,
-                                                             vertical_resolution_modification_factor_at_resizing    = self.drift_vertical_resolution_modification_factor_at_resizing ,
-                                                             type_of_wavefront_shift_before_resizing                = self.drift_type_of_wavefront_shift_before_resizing,
-                                                             new_horizontal_wavefront_center_position_after_shift   = self.drift_new_horizontal_wavefront_center_position_after_shift,
-                                                             new_vertical_wavefront_center_position_after_shift     = self.drift_new_vertical_wavefront_center_position_after_shift
-                                                         ))
+            if not propagation_parameters is None: propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_parameters", srw_oe_wavefront_propagation_parameters)
 
-        if self.has_drift_after_wavefront_propagation_optional_parameters():
-            propagation_parameters.set_additional_parameters("srw_drift_after_wavefront_propagation_optional_parameters",
-                                                             WavefrontPropagationOptionalParameters(
-                                                                 orientation_of_the_output_optical_axis_vector_x = self.drift_after_orientation_of_the_output_optical_axis_vector_x,
-                                                                 orientation_of_the_output_optical_axis_vector_y = self.drift_after_orientation_of_the_output_optical_axis_vector_y,
-                                                                 orientation_of_the_output_optical_axis_vector_z = self.drift_after_orientation_of_the_output_optical_axis_vector_z,
-                                                                 orientation_of_the_horizontal_base_vector_x     = self.drift_after_orientation_of_the_horizontal_base_vector_x,
-                                                                 orientation_of_the_horizontal_base_vector_y     = self.drift_after_orientation_of_the_horizontal_base_vector_y
-                                                             ))
+            if self.has_oe_wavefront_propagation_optional_parameters():
+                srw_oe_wavefront_propagation_optional_parameters = WavefrontPropagationOptionalParameters(
+                                                                     orientation_of_the_output_optical_axis_vector_x = self.oe_orientation_of_the_output_optical_axis_vector_x,
+                                                                     orientation_of_the_output_optical_axis_vector_y = self.oe_orientation_of_the_output_optical_axis_vector_y,
+                                                                     orientation_of_the_output_optical_axis_vector_z = self.oe_orientation_of_the_output_optical_axis_vector_z,
+                                                                     orientation_of_the_horizontal_base_vector_x     = self.oe_orientation_of_the_horizontal_base_vector_x,
+                                                                     orientation_of_the_horizontal_base_vector_y     = self.oe_orientation_of_the_horizontal_base_vector_y
+                                                                 )
 
+                if not propagation_parameters is None: propagation_parameters.set_additional_parameters("srw_oe_wavefront_propagation_optional_parameters", srw_oe_wavefront_propagation_optional_parameters)
+
+        if not beamline is None: beamline.append_wavefront_propagation_parameters(srw_oe_wavefront_propagation_parameters, srw_oe_wavefront_propagation_optional_parameters, Where.OE)
+
+        # DRIFT AFTER
+        srw_drift_after_wavefront_propagation_parameters = None
+        srw_drift_after_wavefront_propagation_optional_parameters = None
+
+        if beamline_element.get_coordinates().q():
+            srw_drift_after_wavefront_propagation_parameters = WavefrontPropagationParameters(
+                                                                 auto_resize_before_propagation                         = self.drift_auto_resize_before_propagation,
+                                                                 auto_resize_after_propagation                          = self.drift_auto_resize_after_propagation,
+                                                                 relative_precision_for_propagation_with_autoresizing   = self.drift_relative_precision_for_propagation_with_autoresizing,
+                                                                 allow_semianalytical_treatment_of_quadratic_phase_term = self.drift_allow_semianalytical_treatment_of_quadratic_phase_term,
+                                                                 do_any_resizing_on_fourier_side_using_fft              = self.drift_do_any_resizing_on_fourier_side_using_fft,
+                                                                 horizontal_range_modification_factor_at_resizing       = self.drift_horizontal_range_modification_factor_at_resizing,
+                                                                 horizontal_resolution_modification_factor_at_resizing  = self.drift_horizontal_resolution_modification_factor_at_resizing ,
+                                                                 vertical_range_modification_factor_at_resizing         = self.drift_vertical_range_modification_factor_at_resizing,
+                                                                 vertical_resolution_modification_factor_at_resizing    = self.drift_vertical_resolution_modification_factor_at_resizing ,
+                                                                 type_of_wavefront_shift_before_resizing                = self.drift_type_of_wavefront_shift_before_resizing,
+                                                                 new_horizontal_wavefront_center_position_after_shift   = self.drift_new_horizontal_wavefront_center_position_after_shift,
+                                                                 new_vertical_wavefront_center_position_after_shift     = self.drift_new_vertical_wavefront_center_position_after_shift
+                                                             )
+
+
+            if not propagation_parameters is None: propagation_parameters.set_additional_parameters("srw_drift_after_wavefront_propagation_parameters", srw_drift_after_wavefront_propagation_parameters)
+
+            if self.has_drift_after_wavefront_propagation_optional_parameters():
+                srw_drift_after_wavefront_propagation_optional_parameters = WavefrontPropagationOptionalParameters(
+                                                                     orientation_of_the_output_optical_axis_vector_x = self.drift_after_orientation_of_the_output_optical_axis_vector_x,
+                                                                     orientation_of_the_output_optical_axis_vector_y = self.drift_after_orientation_of_the_output_optical_axis_vector_y,
+                                                                     orientation_of_the_output_optical_axis_vector_z = self.drift_after_orientation_of_the_output_optical_axis_vector_z,
+                                                                     orientation_of_the_horizontal_base_vector_x     = self.drift_after_orientation_of_the_horizontal_base_vector_x,
+                                                                     orientation_of_the_horizontal_base_vector_y     = self.drift_after_orientation_of_the_horizontal_base_vector_y
+                                                                 )
+
+                if not propagation_parameters is None: propagation_parameters.set_additional_parameters("srw_drift_after_wavefront_propagation_optional_parameters", srw_drift_after_wavefront_propagation_optional_parameters)
+
+        if not beamline is None: beamline.append_wavefront_propagation_parameters(srw_drift_after_wavefront_propagation_parameters, srw_drift_after_wavefront_propagation_optional_parameters, Where.DRIFT_AFTER)
 
     def has_drift_before_wavefront_propagation_optional_parameters(self):
         return self.drift_before_orientation_of_the_output_optical_axis_vector_x != 0.0 or \

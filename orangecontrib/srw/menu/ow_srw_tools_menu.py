@@ -19,10 +19,8 @@ class SRWToolsMenu(OMenu):
         self.addContainer("Propagation Mode")
         self.addSubMenu("Element by Element (Wofry)")
         self.addSubMenu("Element by Element (SRW Native)")
-        self.addSubMenu("Whole beamline at Detector (SRW Native)")
+        self.addSubMenu("Whole beamline at Final Screen (SRW Native)")
         self.closeContainer()
-
-        PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
 
     def executeAction_1(self, action):
         try:
@@ -58,10 +56,13 @@ class SRWToolsMenu(OMenu):
 
             if hasattr(widget, "srw_live_propagation_mode"):
                 widget.set_srw_live_propagation_mode()
+
                 if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                     if not isinstance(widget, OWSRWScreen) or getattr(widget, "is_final_screen") == False:
                         widget.view_type = 0
                         widget.set_PlotQuality()
+
+                if isinstance(widget, OWSRWScreen): widget.set_is_final_screen()
 
 
     #################################################################

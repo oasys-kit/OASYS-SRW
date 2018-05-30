@@ -83,7 +83,6 @@ class SRWWavefrontViewer(SRWWidget):
 
         #* -------------------------------------------------------------------------------------------------------------
 
-
         self.tab = []
         self.tabs = oasysgui.tabWidget(plot_tab)
 
@@ -99,22 +98,23 @@ class SRWWavefrontViewer(SRWWidget):
         self.srw_output.setFixedWidth(600)
 
     def set_srw_live_propagation_mode(self):
-        self.srw_live_propagation_mode = "Element by Element (Native)" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP  else \
-                                          "Whole beamline at Final Screen (Native)" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE else \
-                                          "Element by Element (Wofry)" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP_WOFRY else \
+        propagation_mode = PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
+
+        self.srw_live_propagation_mode = "Element by Element (Native)" if              propagation_mode == SRWPropagationMode.STEP_BY_STEP  else \
+                                          "Whole beamline at Final Screen (Native)" if propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE else \
+                                          "Element by Element (Wofry)" if              propagation_mode == SRWPropagationMode.STEP_BY_STEP_WOFRY else \
                                           "Unknown"
 
         palette = QPalette(self.le_srw_live_propagation_mode.palette())
 
-        color = 'dark green' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP  else \
-                'dark red' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE else \
-                'dark blue' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP_WOFRY else \
+        color = 'dark green' if propagation_mode == SRWPropagationMode.STEP_BY_STEP  else \
+                'dark red' if   propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE else \
+                'dark blue' if  propagation_mode == SRWPropagationMode.STEP_BY_STEP_WOFRY else \
                 'black'
 
         palette.setColor(QPalette.Text, QColor(color))
         palette.setColor(QPalette.Base, QColor(243, 240, 140))
         self.le_srw_live_propagation_mode.setPalette(palette)
-
 
     def initializeTabs(self):
         current_tab = self.tabs.currentIndex()

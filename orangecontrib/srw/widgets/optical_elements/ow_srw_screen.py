@@ -1,11 +1,14 @@
 from syned.beamline.optical_elements.ideal_elements.screen import Screen
 
 from wofrysrw.beamline.optical_elements.ideal_elements.srw_screen import SRWScreen
+from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
+from wofrysrw.propagator.propagators2D.srw_fresnel_native import SRW_APPLICATION
+from wofry.propagator.propagator import PropagationManager
 
 from orangewidget.settings import Setting
+from orangewidget import gui
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
-
 from orangecontrib.srw.util.srw_util import SRWPlot
 
 class OWSRWScreen(OWSRWOpticalElement):
@@ -18,9 +21,20 @@ class OWSRWScreen(OWSRWOpticalElement):
     is_final_screen = Setting(0)
 
     def __init__(self):
-        super().__init__(has_orientation_angles=False)
+        super().__init__(has_orientation_angles=False, has_oe_wavefront_propagation_parameters_tab=False)
 
-        self.tabs_prop_setting.removeTab(1)
+        self.cb_is_final_screen = gui.comboBox(self.tab_bas, self, "is_final_screen", label="Show Propagation Result", items=["No", "Yes"],
+                                               labelWidth=300, sendSelectedValue=False, orientation="horizontal", callback=self.set_is_final_screen)
+
+        self.set_is_final_screen()
+
+    def set_is_final_screen(self):
+        propagation_mode = PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
+
+        self.cb_is_final_screen.setEnabled(propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE)
+
+        self.view_type = self.is_final_screen
+        self.set_PlotQuality()
 
     def draw_specific_box(self):
         pass
