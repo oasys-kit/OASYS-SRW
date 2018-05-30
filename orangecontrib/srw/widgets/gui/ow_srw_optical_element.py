@@ -19,8 +19,10 @@ from syned.beamline.element_coordinates import ElementCoordinates
 from syned.beamline.beamline_element import BeamlineElement
 
 from wofry.propagator.propagator import PropagationManager, PropagationElements, PropagationParameters
-from wofrysrw.propagator.propagators2D.srw_fresnel import FresnelSRW
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
+from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
+from wofrysrw.propagator.propagators2D.srw_fresnel_native import FresnelSRWNative, SRW_APPLICATION
+from wofrysrw.propagator.propagators2D.srw_fresnel_wofry import FresnelSRWWofry
 
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
@@ -28,16 +30,6 @@ from wofrysrw.beamline.optical_elements.srw_optical_element import Orientation
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 
-
-def initialize_propagator_2D():
-    propagator = PropagationManager.Instance()
-
-    propagator.add_propagator(FresnelSRW())
-
-try:
-    initialize_propagator_2D()
-except:
-    pass
 
 class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
@@ -437,8 +429,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             propagator = PropagationManager.Instance()
 
+            handler_name = FresnelSRWNative.HANDLER_NAME if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP  or \
+                                                            PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE else \
+                           FresnelSRWWofry.HANDLER_NAME
+
             output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
-                                                         handler_name=FresnelSRW.HANDLER_NAME)
+                                                         handler_name=handler_name)
 
             self.wavefront_to_plot = output_wavefront
 

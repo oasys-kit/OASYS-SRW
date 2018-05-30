@@ -12,11 +12,31 @@ from oasys.widgets import gui as oasysgui
 
 from silx.gui.plot.StackView import StackViewMainWindow
 
-from wofry.propagator.propagator import PropagationManager, PropagationMode
-from wofrysrw.propagator.propagators2D.srw_fresnel import SRW_APPLICATION
+from wofry.propagator.propagator import PropagationManager, WavefrontDimension
+from wofrysrw.propagator.propagators2D.srw_fresnel_native import FresnelSRWNative, SRW_APPLICATION
+from wofrysrw.propagator.propagators2D.srw_fresnel_wofry import FresnelSRWWofry
+from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
+
+def initialize_propagator_2D():
+    propagation_manager = PropagationManager.Instance()
+
+    if not propagation_manager.is_initialized(SRW_APPLICATION):
+        if not propagation_manager.has_propagator(FresnelSRWNative.HANDLER_NAME, WavefrontDimension.TWO): propagation_manager.add_propagator(FresnelSRWNative())
+        if not propagation_manager.has_propagator(FresnelSRWWofry.HANDLER_NAME, WavefrontDimension.TWO): propagation_manager.add_propagator(FresnelSRWWofry())
+
+        propagation_manager.set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
+
+        propagation_manager.set_initialized(True)
+try:
+    initialize_propagator_2D()
+except Exception as e:
+    print("Error while initializing propagators", str(e))
+
+    raise e
+
 
 class SRWWavefrontViewer(SRWWidget):
 
@@ -79,14 +99,16 @@ class SRWWavefrontViewer(SRWWidget):
         self.srw_output.setFixedWidth(600)
 
     def set_srw_live_propagation_mode(self):
-        self.srw_live_propagation_mode = "Element by Element" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.STEP_BY_STEP  else \
-                                          "Whole beamline at Final Screen" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.WHOLE_BEAMLINE else \
+        self.srw_live_propagation_mode = "Element by Element (Native)" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP  else \
+                                          "Whole beamline at Final Screen (Native)" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE else \
+                                          "Element by Element (Wofry)" if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP_WOFRY else \
                                           "Unknown"
 
         palette = QPalette(self.le_srw_live_propagation_mode.palette())
 
-        color = 'dark green' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.STEP_BY_STEP  else \
-                'dark red' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.WHOLE_BEAMLINE else \
+        color = 'dark green' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP  else \
+                'dark red' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE else \
+                'dark blue' if PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.STEP_BY_STEP_WOFRY else \
                 'black'
 
         palette.setColor(QPalette.Text, QColor(color))

@@ -3,8 +3,9 @@ __author__ = 'labx'
 from orangecanvas.scheme.link import SchemeLink
 from oasys.menus.menu import OMenu
 
-from wofry.propagator.propagator import PropagationManager, PropagationMode
-from wofrysrw.propagator.propagators2D.srw_fresnel import SRW_APPLICATION
+from wofry.propagator.propagator import PropagationManager
+from wofrysrw.propagator.propagators2D.srw_fresnel_native import SRW_APPLICATION
+from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
 
 from orangecontrib.srw.util.srw_util import showWarningMessage, showCriticalMessage
 from orangecontrib.srw.widgets.optical_elements.ow_srw_screen import OWSRWScreen
@@ -16,16 +17,17 @@ class SRWToolsMenu(OMenu):
 
         self.openContainer()
         self.addContainer("Propagation Mode")
-        self.addSubMenu("Element by Element")
-        self.addSubMenu("Whole beamline at Detector")
+        self.addSubMenu("Element by Element (Wofry)")
+        self.addSubMenu("Element by Element (SRW Native)")
+        self.addSubMenu("Whole beamline at Detector (SRW Native)")
         self.closeContainer()
 
-        PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, PropagationMode.STEP_BY_STEP)
+        PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
 
     def executeAction_1(self, action):
         try:
-            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, PropagationMode.STEP_BY_STEP)
-            showWarningMessage("Propagation Mode: Element by Element")
+            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP_WOFRY)
+            showWarningMessage("Propagation Mode: Element by Element (Wofry)")
 
             self.set_srw_live_propagation_mode()
         except Exception as exception:
@@ -33,8 +35,17 @@ class SRWToolsMenu(OMenu):
 
     def executeAction_2(self, action):
         try:
-            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, PropagationMode.WHOLE_BEAMLINE)
-            showWarningMessage("Propagation Mode: Whole beamline at Final Screen")
+            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
+            showWarningMessage("Propagation Mode: Element by Element (SRW Native)")
+
+            self.set_srw_live_propagation_mode()
+        except Exception as exception:
+            showCriticalMessage(exception.args[0])
+
+    def executeAction_3(self, action):
+        try:
+            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.WHOLE_BEAMLINE)
+            showWarningMessage("Propagation Mode: Whole beamline at Final Screen (SRW Native)")
 
             self.set_srw_live_propagation_mode()
         except Exception as exception:
@@ -47,7 +58,7 @@ class SRWToolsMenu(OMenu):
 
             if hasattr(widget, "srw_live_propagation_mode"):
                 widget.set_srw_live_propagation_mode()
-                if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == PropagationMode.WHOLE_BEAMLINE):
+                if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                     if not isinstance(widget, OWSRWScreen) or getattr(widget, "is_final_screen") == False:
                         widget.view_type = 0
                         widget.set_PlotQuality()
