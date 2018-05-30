@@ -9,6 +9,7 @@ from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagatio
 
 from orangecontrib.srw.util.srw_util import showWarningMessage, showCriticalMessage
 from orangecontrib.srw.widgets.optical_elements.ow_srw_screen import OWSRWScreen
+from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
 class SRWToolsMenu(OMenu):
 
@@ -20,6 +21,11 @@ class SRWToolsMenu(OMenu):
         self.addSubMenu("Element by Element (Wofry)")
         self.addSubMenu("Element by Element (SRW Native)")
         self.addSubMenu("Whole beamline at Final Screen (SRW Native)")
+        self.closeContainer()
+        self.openContainer()
+        self.addContainer("Plotting")
+        self.addSubMenu("Select Plots \'No\' on all Source and O.E. widgets")
+        self.addSubMenu("Select Plots \'Yes\' on all Source and O.E. widgets")
         self.closeContainer()
 
     def executeAction_1(self, action):
@@ -48,7 +54,39 @@ class SRWToolsMenu(OMenu):
             self.set_srw_live_propagation_mode()
         except Exception as exception:
             showCriticalMessage(exception.args[0])
-            raise exception
+
+    def executeAction_4(self, action):
+        try:
+            for node in self.canvas_main_window.current_document().scheme().nodes:
+                widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
+
+                if isinstance(widget, SRWWidget):
+                    if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
+                        if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
+                            raise Exception("Action not possibile while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
+
+                        widget.view_type = 0
+                        widget.set_PlotQuality()
+
+        except Exception as exception:
+            showCriticalMessage(exception.args[0])
+
+    def executeAction_5(self, action):
+        try:
+            for node in self.canvas_main_window.current_document().scheme().nodes:
+                widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
+
+                if isinstance(widget, SRWWidget):
+                    if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
+                        if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
+                            raise Exception("Action not possibile while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
+
+                        widget.view_type = 1
+                        widget.set_PlotQuality()
+        except Exception as exception:
+            showCriticalMessage(exception.args[0])
+
+    #################################################################
 
     def set_srw_live_propagation_mode(self):
         for node in self.canvas_main_window.current_document().scheme().nodes:
