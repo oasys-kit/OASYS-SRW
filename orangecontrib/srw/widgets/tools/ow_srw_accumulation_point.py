@@ -58,12 +58,12 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
     def receive_srw_data(self, data):
         if not data is None:
             if isinstance(data, SRWData):
-                if not data._srw_wavefront is None:
+                if not data.get_srw_wavefront() is None:
                     self.progressBarInit()
 
                     self.progressBarSet(30)
 
-                    e, h, v, i = data._srw_wavefront.get_intensity(multi_electron=False)
+                    e, h, v, i = data.get_srw_wavefront().get_intensity(multi_electron=False)
 
                     tickets = []
 

@@ -28,11 +28,9 @@ class OWSRWWavefrontFileWriter(widget.OWWidget):
     is_automatic_run= Setting(1)
 
 
-
     inputs = [("SRWData", SRWData, "set_input"),]
 
-
-    wavefront = None
+    input_data = None
 
     def __init__(self):
         super().__init__()
@@ -81,7 +79,7 @@ class OWSRWWavefrontFileWriter(widget.OWWidget):
 
     def set_input(self, data):
         if not data is None:
-            self.wavefront = data
+            self.input_data = data
 
             if self.is_automatic_run:
                 self.write_file()
@@ -90,14 +88,14 @@ class OWSRWWavefrontFileWriter(widget.OWWidget):
         self.setStatusMessage("")
 
         try:
-            if not self.wavefront is None:
+            if not self.input_data is None:
                 congruence.checkDir(self.file_name)
 
                 # note that this is valid for both 1D and 2D wavefronts because both implement
                 # the save_h5_file method.
 
-                srw_wavefront = self.wavefront._srw_wavefront
-                save_wfr_2_hdf5(self.wavefront._srw_wavefront,self.file_name,subgroupname=self.data_path,
+                srw_wavefront = self.input_data.get_srw_wavefront()
+                save_wfr_2_hdf5(self.input_data.get_srw_wavefront(),self.file_name,subgroupname=self.data_path,
                                 intensity=True,phase=False,overwrite=True)
 
                 path, file_name = os.path.split(self.file_name)

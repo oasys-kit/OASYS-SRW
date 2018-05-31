@@ -51,6 +51,7 @@ PACKAGE_DATA = {
     "orangecontrib.srw.widgets.light_sources":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.optical_elements":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.tools":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.srw.widgets.native":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.wofry":["icons/*.png", "icons/*.jpg"],
 }
 
@@ -62,6 +63,7 @@ ENTRY_POINTS = {
         "SRW Light Sources = orangecontrib.srw.widgets.light_sources",
         "SRW Optical Elements = orangecontrib.srw.widgets.optical_elements",
         "SRW Tools = orangecontrib.srw.widgets.tools",
+        "SRW Native = orangecontrib.srw.widgets.native",
         "SRW Wofry = orangecontrib.srw.widgets.wofry",
     ),
     'oasys.menus' : ("srwmenu = orangecontrib.srw.menu",)

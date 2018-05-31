@@ -357,8 +357,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     def receive_srw_data(self, data):
         if not data is None:
             if isinstance(data, SRWData):
-                self.received_light_source = data._srw_beamline._light_source
-                received_wavefront = data._srw_wavefront
+                self.received_light_source = data.get_srw_beamline().get_light_source()
+                received_wavefront = data.get_srw_wavefront()
 
                 if not received_wavefront is None:
                     self.spe_photon_energy_min = received_wavefront.mesh.eStart

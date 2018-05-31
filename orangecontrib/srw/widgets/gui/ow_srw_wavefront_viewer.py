@@ -88,14 +88,11 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.initializeTabs()
 
-        self.srw_output = QtWidgets.QTextEdit()
-        self.srw_output.setReadOnly(True)
+        self.srw_output = oasysgui.textArea(600, 600)
 
         out_box = gui.widgetBox(out_tab, "System Output", addSpace=True, orientation="horizontal")
         out_box.layout().addWidget(self.srw_output)
 
-        self.srw_output.setFixedHeight(600)
-        self.srw_output.setFixedWidth(600)
 
     def set_srw_live_propagation_mode(self):
         propagation_mode = PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)

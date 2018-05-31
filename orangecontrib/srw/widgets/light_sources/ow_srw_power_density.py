@@ -305,8 +305,8 @@ class OWSRWPowerDensity(SRWWavefrontViewer):
     def receive_srw_data(self, data):
         if not data is None:
             if isinstance(data, SRWData):
-                self.received_light_source = data._srw_beamline._light_source
-                received_wavefront = data._srw_wavefront
+                self.received_light_source = data.get_srw_beamline().get_light_source()
+                received_wavefront = data.get_srw_wavefront()
 
                 if not received_wavefront is None:
                     self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart

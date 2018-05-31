@@ -9,13 +9,12 @@ Widgets for association rules.
 
 # Category description for the widget registry
 
-
-NAME = "SRW - WOFRY"
+NAME = "SRW Native"
 
 DESCRIPTION = "Widgets for SRW"
 
 BACKGROUND = "#b8bcdb"
 
-ICON = "icons/wofry.png"
+ICON = "icons/native.png"
 
-PRIORITY = 220
+PRIORITY = 204
