@@ -122,6 +122,7 @@ class OWSRWMirror(OWSRWOpticalElement):
             if data.error_profile_data_file != SRWPreProcessorData.NONE:
                 self.height_profile_data_file = data.error_profile_data_file
                 self.height_profile_data_file_dimension = 1
+                self.has_height_profile = 1
 
                 self.set_HeightProfile()
 

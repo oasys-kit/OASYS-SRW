@@ -29,7 +29,7 @@ class SRWPythonScriptSE(widget.OWWidget):
     want_main_area=1
     want_control_area = 0
 
-    input_beam=None
+    input_srw_data=None
 
     def __init__(self, show_automatic_box=True):
         super().__init__()
@@ -40,8 +40,10 @@ class SRWPythonScriptSE(widget.OWWidget):
                                round(min(geom.width()*0.98, self.WIDGET_WIDTH)),
                                round(min(geom.height()*0.95, self.WIDGET_HEIGHT))))
 
+        self.setMaximumHeight(self.WIDGET_HEIGHT)
+        self.setMaximumWidth(self.WIDGET_WIDTH)
 
-        gen_box = gui.widgetBox(self.mainArea, "SRW Native Code", addSpace=False, orientation="horizontal")
+        gen_box = gui.widgetBox(self.mainArea, "SRW Native Code: SE", addSpace=False, orientation="horizontal")
 
         tabs_setting = oasysgui.tabWidget(gen_box)
         tabs_setting.setFixedHeight(self.WIDGET_HEIGHT-60)
@@ -108,7 +110,7 @@ class SRWPythonScriptSE(widget.OWWidget):
             except Exception as e:
                 self.pythonScript.setText("Problem in writing python script:\n" + str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1]))
 
-                raise e
+                #raise e
         else:
             QtWidgets.QMessageBox.critical(self, "Error",
                                        "Data not displayable: No good rays or bad content",
