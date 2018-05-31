@@ -9,15 +9,16 @@ from oasys.util.oasys_util import EmittingStream
 
 from orangecontrib.srw.util.python_script import PythonConsole
 from orangecontrib.srw.util.srw_objects import SRWData
+from orangecontrib.srw.util.srw_util import showConfirmMessage
 
-class SRWPythonScript(widget.OWWidget):
+class SRWPythonScriptME(widget.OWWidget):
 
-    name = "SRW Python Script (SE)"
-    description = "SRW Python Script (SE)"
-    icon = "icons/python_script.png"
+    name = "SRW Python Script (ME)"
+    description = "SRW Python Script (ME)"
+    icon = "icons/python_script_me.png"
     maintainer = "Luca Rebuffi"
     maintainer_email = "luca.rebuffi(@at@)elettra.eu"
-    priority = 1
+    priority = 2
     category = "Data Display Tools"
     keywords = ["data", "file", "load", "read"]
 
@@ -76,10 +77,13 @@ class SRWPythonScript(widget.OWWidget):
         gui.button(button_box, self, "Save Script to File", callback=self.save_script, height=40)
 
     def execute_script(self):
-        self._script = str(self.pythonScript.toPlainText())
-        self.console.write("\nRunning script:\n")
-        self.console.push("exec(_script)")
-        self.console.new_prompt(sys.ps1)
+        if showConfirmMessage(message = "Do you confirm launching a ME propagation?",
+                              informative_text="This is a very long and resource-consuming process: launching it within the OASYS environment is highly discouraged." + \
+                                               "The suggested solution is to save the script into a file and to launch it in a different environment."):
+            self._script = str(self.pythonScript.toPlainText())
+            self.console.write("\nRunning script:\n")
+            self.console.push("exec(_script)")
+            self.console.new_prompt(sys.ps1)
 
     def save_script(self):
         file_name = QFileDialog.getSaveFileName(self, "Save File to Disk", ".", "*.py")[0]
@@ -104,7 +108,18 @@ class SRWPythonScript(widget.OWWidget):
             self.pythonScript.setText("")
 
             try:
-                self.pythonScript.setText(self.input_srw_data.get_srw_beamline().to_python_code())
+                sampFactNxNyForProp = 1.0 #0.6 #sampling factor for adjusting nx, ny (effective if > 0)
+                nMacroElec = 500000 #T otal number of Macro-Electrons (Wavefronts)
+                nMacroElecAvgOneProc = 5 # Number of Macro-Electrons (Wavefronts) to average on each node (for MPI calculations)
+                nMacroElecSavePer = 20 # Saving periodicity (in terms of Macro-Electrons) for the Resulting Intensity
+                srCalcMeth = 1 # SR calculation method (1- undulator)
+                srCalcPrec = 0.01 # SR calculation rel. accuracy
+                strIntPropME_OutFileName = "output_srw_script_me.dat"
+                _char = 4
+
+                parameters = [sampFactNxNyForProp, nMacroElec, nMacroElecAvgOneProc, nMacroElecSavePer, srCalcMeth, srCalcPrec, strIntPropME_OutFileName, _char]
+
+                self.pythonScript.setText(self.input_srw_data.get_srw_beamline().to_python_code([srw_data.get_srw_wavefront(), True, parameters]))
             except Exception as e:
                 self.pythonScript.setText("Problem in writing python script:\n" + str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1]))
 

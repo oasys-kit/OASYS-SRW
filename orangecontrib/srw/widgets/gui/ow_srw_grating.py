@@ -1,13 +1,17 @@
 import numpy
 
+from PyQt5 import QtWidgets
+
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
 from syned.beamline.optical_elements.gratings.grating import Grating
+from syned.widget.widget_decorator import WidgetDecorator
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
+from orangecontrib.srw.util.srw_objects import SRWData, SRWPreProcessorData
 
 class OWSRWGrating(OWSRWOpticalElement):
 
@@ -28,6 +32,10 @@ class OWSRWGrating(OWSRWOpticalElement):
     grooving_density_3                 = Setting(0.0) # groove density polynomial coefficient a3 [lines/mm^4]
     grooving_density_4                 = Setting(0.0)  # groove density polynomial coefficient a4 [lines/mm^5]
     grooving_angle                     = Setting(0.0)  # angle between the groove direction and the sagittal direction of the substrate
+
+    inputs = [("SRWData", SRWData, "set_input"),
+              ("PreProcessor Data", SRWPreProcessorData, "setPreProcessorData"),
+              WidgetDecorator.syned_input_data()[0]]
 
     def __init__(self):
         super().__init__(azimuth_hor_vert=True)
@@ -159,3 +167,31 @@ class OWSRWGrating(OWSRWOpticalElement):
 
         congruence.checkPositiveNumber(self.diffraction_order, "Diffraction Order")
         congruence.checkStrictlyPositiveNumber(self.grooving_density_0, "Groove density")
+
+    def setPreProcessorData(self, data):
+        if data is not None:
+            if data.error_profile_data_file != SRWPreProcessorData.NONE:
+                self.height_profile_data_file = data.error_profile_data_file
+                self.height_profile_data_file_dimension = 1
+
+                self.set_HeightProfile()
+
+                changed = False
+
+                if self.sagittal_size > data.error_profile_x_dim or \
+                   self.tangential_size > data.error_profile_y_dim:
+                    changed = True
+
+                if changed:
+                    if QtWidgets.QMessageBox.information(self, "Confirm Modification",
+                                                  "Dimensions of this O.E. must be changed in order to ensure congruence with the error profile surface, accept?",
+                                                  QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.Yes:
+                        if self.sagittal_size > data.error_profile_x_dim:
+                            self.sagittal_size = data.error_profile_x_dim
+                        if self.tangential_size > data.error_profile_y_dim:
+                            self.tangential_size = data.error_profile_y_dim
+
+                        QtWidgets.QMessageBox.information(self, "QMessageBox.information()",
+                                                      "Dimensions of this O.E. were changed",
+                                                      QtWidgets.QMessageBox.Ok)
+
