@@ -92,13 +92,14 @@ class SRWToolsMenu(OMenu):
         for node in self.canvas_main_window.current_document().scheme().nodes:
             widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
 
-            if hasattr(widget, "srw_live_propagation_mode"):
+            if hasattr(widget, "set_srw_live_propagation_mode"):
                 widget.set_srw_live_propagation_mode()
 
                 if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                     if not isinstance(widget, OWSRWScreen) or getattr(widget, "is_final_screen") == False:
-                        widget.view_type = 0
-                        widget.set_PlotQuality()
+                        if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
+                            widget.view_type = 0
+                            widget.set_PlotQuality()
 
                 if isinstance(widget, OWSRWScreen): widget.set_is_final_screen()
 

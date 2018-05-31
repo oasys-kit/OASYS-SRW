@@ -177,6 +177,3 @@ class SRWPythonScriptME(SRWWidget):
         cursor.insertText(text)
         self.shadow_output.setTextCursor(cursor)
         self.shadow_output.ensureCursorVisible()
-
-    def set_srw_live_propagation_mode(self):
-        pass
