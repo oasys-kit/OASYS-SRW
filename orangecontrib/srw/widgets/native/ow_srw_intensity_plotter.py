@@ -1,0 +1,109 @@
+__author__ = 'labx'
+
+import os, sys, numpy
+
+from PyQt5.QtGui import QPalette, QColor, QFont
+from PyQt5.QtWidgets import QMessageBox
+from orangewidget import gui
+from orangewidget.settings import Setting
+from oasys.widgets import gui as oasysgui
+
+from orangecontrib.srw.util.srw_util import SRWPlot
+from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
+
+from orangecontrib.srw.widgets.native.util import native_util
+
+class OWSRWIntensityPlotter(SRWWavefrontViewer):
+
+    maintainer = "Luca Rebuffi"
+    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    category = "Native"
+    keywords = ["data", "file", "load", "read"]
+    name = "Intensity Plot"
+    description = "SRW Native: Intensity"
+    icon = "icons/intensity.png"
+    priority = 3
+
+    want_main_area=1
+
+    TABS_AREA_HEIGHT = 618
+
+    intensity_file_name = Setting("<file_intensity>.dat")
+
+    mode = Setting(0)
+
+    def __init__(self):
+        super().__init__(show_automatic_box=False, show_view_box=False)
+
+        self.general_options_box.setVisible(False)
+
+        button_box = oasysgui.widgetBox(self.controlArea, "", addSpace=False, orientation="horizontal")
+
+        button = gui.button(button_box, self, "Load SRW File", callback=self.plot_intensity)
+        font = QFont(button.font())
+        font.setBold(True)
+        button.setFont(font)
+        palette = QPalette(button.palette()) # make a copy of the palette
+        palette.setColor(QPalette.ButtonText, QColor('Dark Blue'))
+        button.setPalette(palette) # assign new palette
+        button.setFixedHeight(45)
+
+        gui.separator(self.controlArea)
+
+        self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
+
+        self.tabs_setting = oasysgui.tabWidget(self.controlArea)
+        self.tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
+        self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
+
+        self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "Calculated Intensity Setting")
+
+        gui.separator(self.tab_bas)
+
+        file_box =  oasysgui.widgetBox(self.tab_bas, "", addSpace=False, orientation="horizontal")
+        self.le_intensity_file_name = oasysgui.lineEdit(file_box, self, "intensity_file_name", "Intensity File", labelWidth=105, valueType=str, orientation="horizontal")
+        gui.button(file_box, self, "...", callback=self.selectIntensityFile)
+
+
+    def selectIntensityFile(self):
+        self.le_intensity_file_name.setText(oasysgui.selectFileFromDialog(self, self.intensity_file_name, "Intensity File"))
+
+    def plot_intensity(self):
+        try:
+            self.progressBarInit()
+
+            tickets = []
+
+            sum, difference, intensity = native_util.load_intensity_file(self.intensity_file_name)
+
+            tickets.append(SRWPlot.get_ticket_2D(sum, difference, intensity))
+
+            self.progressBarSet(50)
+
+            self.plot_results(tickets, progressBarValue=50)
+
+            self.progressBarFinished()
+        except:
+            pass
+
+    def getVariablesToPlot(self):
+        return [[1, 2]]
+
+    def getTitles(self, with_um=False):
+        if with_um: return ["Intensity [ph/s/.1%bw/mm^2]"]
+        else: return ["Intensity"]
+
+    def getXTitles(self):
+        return ["X [um]"]
+
+    def getYTitles(self):
+        return ["Y [um]"]
+
+    def getXUM(self):
+        return ["X [um]"]
+
+    def getYUM(self):
+        return ["Y [um]"]
+
+
+
