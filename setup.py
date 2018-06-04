@@ -42,7 +42,7 @@ SETUP_REQUIRES = (
 INSTALL_REQUIRES = (
     'setuptools',
     'oasys1>=1.0.0',
-    'wofrysrw>=1.0.8'
+    'wofrysrw>=1.0.10'
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
