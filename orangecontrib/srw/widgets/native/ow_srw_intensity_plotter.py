@@ -30,7 +30,8 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
 
     intensity_file_name = Setting("<file_intensity>.dat")
 
-    mode = Setting(0)
+    is_final_screen = True
+    view_type = 1
 
     def __init__(self):
         super().__init__(show_automatic_box=False, show_view_box=False)

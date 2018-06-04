@@ -30,8 +30,10 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
 
     horizontal_cut_file_name = Setting("<file_me_degcoh>.dat.1")
     vertical_cut_file_name = Setting("<file_me_degcoh>.dat.2")
-
     mode = Setting(0)
+
+    is_final_screen = True
+    view_type = 1
 
     def __init__(self):
         super().__init__(show_automatic_box=False, show_view_box=False)

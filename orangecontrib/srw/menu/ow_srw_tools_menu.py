@@ -9,6 +9,8 @@ from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagatio
 
 from orangecontrib.srw.util.srw_util import showWarningMessage, showCriticalMessage
 from orangecontrib.srw.widgets.optical_elements.ow_srw_screen import OWSRWScreen
+from orangecontrib.srw.widgets.native.ow_srw_intensity_plotter import OWSRWIntensityPlotter
+from orangecontrib.srw.widgets.native.ow_srw_me_degcoh_plotter import OWSRWDegCohPlotter
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
 class SRWToolsMenu(OMenu):
@@ -60,7 +62,7 @@ class SRWToolsMenu(OMenu):
             for node in self.canvas_main_window.current_document().scheme().nodes:
                 widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
 
-                if isinstance(widget, SRWWidget):
+                if isinstance(widget, SRWWidget) and not (isinstance(widget, OWSRWIntensityPlotter) or isinstance(widget, OWSRWDegCohPlotter)):
                     if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
                         if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                             raise Exception("Action not possibile while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
@@ -76,7 +78,7 @@ class SRWToolsMenu(OMenu):
             for node in self.canvas_main_window.current_document().scheme().nodes:
                 widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
 
-                if isinstance(widget, SRWWidget):
+                if isinstance(widget, SRWWidget) and not (isinstance(widget, OWSRWIntensityPlotter) or isinstance(widget, OWSRWDegCohPlotter)):
                     if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
                         if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                             raise Exception("Action not possibile while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
@@ -96,7 +98,8 @@ class SRWToolsMenu(OMenu):
                 widget.set_srw_live_propagation_mode()
 
                 if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
-                    if not isinstance(widget, OWSRWScreen) or getattr(widget, "is_final_screen") == False:
+                    if not (isinstance(widget, OWSRWScreen) or isinstance(widget, OWSRWIntensityPlotter) or isinstance(widget, OWSRWDegCohPlotter)) \
+                            or getattr(widget, "is_final_screen") == False:
                         if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
                             widget.view_type = 0
                             widget.set_PlotQuality()
