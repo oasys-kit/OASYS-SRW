@@ -8,7 +8,7 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-SRW'
-VERSION = '1.0.4'
+VERSION = '1.0.7'
 ISRELEASED = False
 
 DESCRIPTION = 'SRW in OASYS'
@@ -42,8 +42,10 @@ SETUP_REQUIRES = (
 INSTALL_REQUIRES = (
     'setuptools',
     'oasys1>=1.0.0',
-    'oasys1-srwlib',
-    'wofrysrw>=1.0.10'
+    'syned>=1.0.8',
+    'wofry>=1.0.14',
+    'oasys1-srwlib>=1.0.8',
+    'wofrysrw>=1.0.11'
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
@@ -69,6 +71,13 @@ ENTRY_POINTS = {
     ),
     'oasys.menus' : ("srwmenu = orangecontrib.srw.menu",)
 }
+
+from oasys.application.addons import PipInstaller
+
+class Package:
+    def __init__(self, package_url="http://", name=""):
+        self.package_url = package_url
+        self.name = name
 
 if __name__ == '__main__':
     try:
