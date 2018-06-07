@@ -8,7 +8,7 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-SRW'
-VERSION = '1.0.9'
+VERSION = '1.0.11'
 ISRELEASED = False
 
 DESCRIPTION = 'SRW in OASYS'
@@ -55,7 +55,6 @@ PACKAGE_DATA = {
     "orangecontrib.srw.widgets.optical_elements":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.tools":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.native":["icons/*.png", "icons/*.jpg"],
-    "orangecontrib.srw.widgets.wofry":["icons/*.png", "icons/*.jpg"],
 }
 
 NAMESPACE_PACAKGES = ["orangecontrib", "orangecontrib.srw", "orangecontrib.srw.widgets"]
@@ -67,7 +66,6 @@ ENTRY_POINTS = {
         "SRW Optical Elements = orangecontrib.srw.widgets.optical_elements",
         "SRW Tools = orangecontrib.srw.widgets.tools",
         "SRW Native = orangecontrib.srw.widgets.native",
-        "SRW Wofry = orangecontrib.srw.widgets.wofry",
     ),
     'oasys.menus' : ("srwmenu = orangecontrib.srw.menu",)
 }

@@ -1,4 +1,5 @@
 from orangewidget import gui
+from oasys.widgets import gui as oasysgui
 
 from oasys.widgets import widget
 
@@ -10,30 +11,33 @@ from wofry.propagator.wavefront2D.generic_wavefront import GenericWavefront2D
 
 from orangecontrib.srw.util.srw_objects import SRWData
 
-class OWToWofryWavefront2d(widget.OWWidget):
-    name = "To Wofry Wavefront 2D"
-    id = "toWofryWavefront2D"
-    description = "To Wofry Wavefront 2D"
-    icon = "icons/to_wofry_wavefront_2d.png"
-    priority = 2
+from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront
+
+class OWFromWofryWavefront2d(widget.OWWidget):
+    name = "From Wofry Wavefront 2D"
+    id = "fromWofryWavefront2D"
+    description = "from Wofry Wavefront 2D"
+    icon = "icons/from_wofry_wavefront_2d.png"
+    priority = 20
     category = ""
     keywords = ["wise", "gaussian"]
 
-    inputs = [("SRWData", SRWData, "set_input")]
+    inputs = [("GenericWavefront2D", GenericWavefront2D, "set_input")]
 
-    outputs = [{"name":"GenericWavefront2D",
-                "type":GenericWavefront2D,
-                "doc":"GenericWavefront2D",
-                "id":"GenericWavefront2D"}]
+    outputs = [{"name":"SRWData",
+                "type":SRWData,
+                "doc":"SRWData",
+                "id":"SRWData"}]
 
     CONTROL_AREA_WIDTH = 605
 
-    srw_data = None
-
     want_main_area = 0
+
+    wavefront = None
 
     def __init__(self):
         super().__init__()
+
 
         geom = QApplication.desktop().availableGeometry()
         self.setGeometry(QRect(round(geom.width()*0.05),
@@ -41,12 +45,13 @@ class OWToWofryWavefront2d(widget.OWWidget):
                                round(min(geom.width()*0.98, self.CONTROL_AREA_WIDTH+10)),
                                round(min(geom.height()*0.95, 100))))
 
-        self.setFixedHeight(self.geometry().height())
-        self.setFixedWidth(self.geometry().width())
+        self.setMaximumHeight(self.geometry().height())
+        self.setMaximumWidth(self.geometry().width())
 
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
-        label = gui.label(self.controlArea, self, "From SRW Wavefront To Wofry Wavefront")
+
+        label = gui.label(self.controlArea, self, "From Wofry Wavefront To SRW Wavefront")
         font = QFont(label.font())
         font.setBold(True)
         font.setItalic(True)
@@ -60,20 +65,19 @@ class OWToWofryWavefront2d(widget.OWWidget):
 
         gui.button(self.controlArea, self, "Convert", callback=self.convert_wavefront, height=45)
 
-
     def set_input(self, input_data):
         self.setStatusMessage("")
 
         if not input_data is None:
-            self.srw_data = input_data
+            self.wavefront = input_data
 
             self.convert_wavefront()
 
     def convert_wavefront(self):
-        try:
-            if not self.srw_data is None:
-                self.send("GenericWavefront2D", self.srw_data._srw_wavefront.toGenericWavefront())
-        except Exception as exception:
-            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+        if not self.wavefront is None:
+            try:
+                self.send("SRWData", SRWData(srw_wavefront=SRWWavefront.fromGenericWavefront(self.wavefront)))
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-            #raise exception
+                raise exception
