@@ -526,7 +526,7 @@ class OWheight_profile_simulator(OWWidget):
                     rms_y = None
                 else:
                     if self.error_type_y == profiles_simulation.FIGURE_ERROR:
-                        rms_y = self.rms_y * 1e-7 # from nm to cm
+                        rms_y = self.rms_y * 1e-9 # from nm to m
                     else:
                         rms_y = self.rms_y * 1e-6 # from urad to rad
             else:
@@ -537,7 +537,7 @@ class OWheight_profile_simulator(OWWidget):
                 profile_1D_y_y = None
 
                 if self.error_type_y == profiles_simulation.FIGURE_ERROR:
-                    rms_y = self.rms_y * 1e-7 # from nm to cm
+                    rms_y = self.rms_y * 1e-9 # from nm to m
                 else:
                     rms_y = self.rms_y * 1e-6 # from urad to rad
 
