@@ -67,6 +67,17 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     moment_yyp          = Setting(0.0)
     moment_ypyp         = Setting((0.8352e-11)**2)
 
+    horizontal_emittance = Setting(0.0)
+    horizontal_beta = Setting(0.0)
+    horizontal_alpha = Setting(0.0)
+    horizontal_eta = Setting(0.0)
+    horizontal_etap   = Setting(0.0)
+    vertical_emittance= Setting(0.0)
+    vertical_beta     = Setting(0.0)
+    vertical_alpha    = Setting(0.0)
+    vertical_eta = Setting(0.0)
+    vertical_etap = Setting(0.0)
+
     type_of_properties = Setting(1)
     type_of_initialization = Setting(0)
 
@@ -142,7 +153,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
 
         gui.comboBox(tab_beam, self, "type_of_properties", label="Electron Beam Properties", labelWidth=350,
-                     items=["From 2nd Moments", "From Size/Divergence"],
+                     items=["From 2nd Moments", "From Size/Divergence", "From Twiss"],
                      callback=self.set_TypeOfProperties,
                      sendSelectedValue=False, orientation="horizontal")
 
@@ -161,6 +172,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_size_v",       "Vertical Beam Size [m]",  labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_divergence_h", "Horizontal Beam Divergence [rad]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.left_box_2_2, self, "electron_beam_divergence_v", "Vertical Beam Divergence [rad]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.left_box_2_3 = oasysgui.widgetBox(tab_beam, "", addSpace=False, orientation="vertical", height=160)
 
         self.set_TypeOfProperties()
 
@@ -225,6 +238,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     def set_TypeOfProperties(self):
         self.left_box_2_1.setVisible(self.type_of_properties==0)
         self.left_box_2_2.setVisible(self.type_of_properties==1)
+        self.left_box_2_2.setVisible(self.type_of_properties==2)
 
     def set_TypeOfInitialization(self):
         self.left_box_3_1.setVisible(self.type_of_initialization==1)

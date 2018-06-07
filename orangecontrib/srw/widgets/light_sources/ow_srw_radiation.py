@@ -298,49 +298,48 @@ class OWSRWRadiation(SRWWavefrontViewer):
 
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
-        e, h, v, i = srw_wavefront.get_intensity(multi_electron=False)
+        e, h, v, i_se = srw_wavefront.get_intensity(multi_electron=False)
+
+        tickets.append((i_se, e, h*1e3, v*1e3))
+
+        e, h, v, i_me = srw_wavefront.get_intensity(multi_electron=True)
+
+        tickets.append((i_me, e, h*1e3, v*1e3))
 
         if len(e) > 1: energy_step = e[1]-e[0]
         else: energy_step = 1.0
 
         import scipy.constants as codata
-        pd = i.sum(axis=0)*energy_step*codata.e*1e3
+        pd = i_se.sum(axis=0)*energy_step*codata.e*1e3
 
-        tickets.append((i, e, h*1e3, v*1e3))
-        
         self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, pd)
 
         print("TOTAL POWER: ", self.calculated_total_power, " W")
         
-        sf = i.sum(axis=2).sum(axis=1)*(h[1]-h[0])*(v[1]-v[0])*1e6
-        
         tickets.append(SRWPlot.get_ticket_2D(h, v, pd))
-        tickets.append(SRWPlot.get_ticket_1D(e, sf))
-        tickets.append(SRWPlot.get_ticket_1D(e, sf*codata.e*1e3))
 
         self.progressBarSet(progress_bar_value + 10)
 
     def getVariablesToPlot(self):
-        return [[1, 2], [1, 2], [1], [1]]
+        return [[1, 2], [1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Flux vs E,X,Y [ph/s/.1%bw/mm^2]",
-                            "Power Density vs X,Y [W/mm^2]",
-                            "Flux vs E [ph/s/.1%bw/mm^2]",
-                            "Spectral Power vs E [W/eV]"]
-        else: return ["Flux vs E,X,Y", "Power Density vs X,Y", "Flux vs E", "Spectral Power vs E"]
+        if with_um: return ["Intensity SE vs E,X,Y [ph/s/.1%bw/mm^2]",
+                            "Intensity ME vs E,X,Y [ph/s/.1%bw/mm^2]",
+                            "Power Density vs X,Y [W/mm^2]"]
+        else: return ["Intensity SE vs E,X,Y", "Intensity ME vs E,X,Y", "Power Density vs X,Y"]
 
     def getXTitles(self):
-        return ["X [mm]", "X [mm]", "E [eV]", "E [eV]"]
+        return ["X [mm]", "X [mm]", "X [mm]"]
 
     def getYTitles(self):
-        return ["Y [mm]", "Y [mm]", "Flux [ph/s/.1%bw/mm^2]", "Spectral Power [W/eV]"]
+        return ["Y [mm]", "Y [mm]", "Y [mm]"]
 
     def getXUM(self):
-        return ["X [mm]", "X [mm]", "E [eV]", "E [eV]"]
+        return ["X [mm]", "X [mm]", "X [mm]"]
 
     def getYUM(self):
-        return ["Y [mm]", "X [mm]", "Flux [ph/s/.1%bw/mm^2]", "Spectral Power [W/eV]"]
+        return ["Y [mm]", "Y [mm]", "X [mm]"]
 
     def receive_srw_data(self, data):
         if not data is None:
@@ -349,9 +348,10 @@ class OWSRWRadiation(SRWWavefrontViewer):
                 received_wavefront = data.get_srw_wavefront()
 
                 if not received_wavefront is None:
-                    self.int_photon_energy_min = received_wavefront.mesh.eStart
-                    self.int_photon_energy_max = received_wavefront.mesh.eFin
-                    self.int_photon_energy_points=received_wavefront.mesh.ne
+                    if self.int_photon_energy_min == 0.0 and self.int_photon_energy_max == 0.0:
+                        self.int_photon_energy_min = received_wavefront.mesh.eStart
+                        self.int_photon_energy_max = received_wavefront.mesh.eFin
+                        self.int_photon_energy_points=received_wavefront.mesh.ne
                     self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
                     self.int_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
                     self.int_h_slit_points=received_wavefront.mesh.nx

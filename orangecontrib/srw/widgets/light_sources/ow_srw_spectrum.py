@@ -33,7 +33,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     category = "Source"
     keywords = ["data", "file", "load", "read"]
     name = "Source Spectrum"
-    description = "SRW Source: Spectrum"
+    description = "SRW Source: Source Spectrum"
     icon = "icons/spectrum.png"
     priority = 5
 
@@ -332,27 +332,49 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
 
+        wf_parameters = WavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
+                                            photon_energy_max = self.spe_photon_energy_max,
+                                            photon_energy_points=self.spe_photon_energy_points,
+                                            h_slit_gap = 0.0,
+                                            v_slit_gap = 0.0,
+                                            h_slit_points = 1,
+                                            v_slit_points = 1,
+                                            distance = self.spe_distance,
+                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.spe_sr_method == 0 else self.get_automatic_sr_method(),
+                                                                                                        relative_precision=self.spe_relative_precision,
+                                                                                                        start_integration_longitudinal_position=self.spe_start_integration_longitudinal_position,
+                                                                                                        end_integration_longitudinal_position=self.spe_end_integration_longitudinal_position,
+                                                                                                        number_of_points_for_trajectory_calculation=self.spe_number_of_points_for_trajectory_calculation,
+                                                                                                        use_terminating_terms=self.spe_use_terminating_terms,
+                                                                                                        sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
+
+        srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
+
+        e, i = srw_wavefront.get_flux(multi_electron=False)
+
+        tickets.append(SRWPlot.get_ticket_1D(e, i))
+
         self.progressBarSet(progress_bar_value)
 
 
     def getVariablesToPlot(self):
-        return [[1]]
+        return [[1], [1]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Flux vs E [ph/s/.1%bw/mm^2]"]
-        else: return ["Flux vs E"]
+        if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from Filament Electron Beam"]
+        else: return ["Spectral Flux Density (ME) vs E", "Spectral Spatial Flux Density (SE) vs E"]
 
     def getXTitles(self):
-        return ["E [eV]"]
+        return ["E [eV]", "E [eV]"]
 
     def getYTitles(self):
-        return ["Flux [ph/s/.1%bw/mm^2]"]
+        return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
 
     def getXUM(self):
-        return ["E [eV]"]
+        return ["E [eV]", "E [eV]"]
 
     def getYUM(self):
-        return ["Flux [ph/s/.1%bw/mm^2]"]
+        return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
 
     def receive_srw_data(self, data):
         if not data is None:
@@ -361,9 +383,10 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                 received_wavefront = data.get_srw_wavefront()
 
                 if not received_wavefront is None:
-                    self.spe_photon_energy_min = received_wavefront.mesh.eStart
-                    self.spe_photon_energy_max = received_wavefront.mesh.eFin
-                    self.spe_photon_energy_points=received_wavefront.mesh.ne
+                    if self.spe_photon_energy_min == 0.0 and self.spe_photon_energy_max == 0.0:
+                        self.spe_photon_energy_min = received_wavefront.mesh.eStart
+                        self.spe_photon_energy_max = received_wavefront.mesh.eFin
+                        self.spe_photon_energy_points=received_wavefront.mesh.ne
                     self.spe_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
                     self.spe_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
                     self.spe_distance = received_wavefront.mesh.zStart
