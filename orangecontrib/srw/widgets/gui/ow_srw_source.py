@@ -49,10 +49,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     electron_energy_in_GeV = Setting(2.0)
     electron_energy_spread = Setting(0.0007)
     ring_current = Setting(0.4)
-    electron_beam_size_h = Setting(0.05545e-3)
-    electron_beam_size_v = Setting(2.784e-6)
-    electron_beam_divergence_h = Setting(0.2525e-9)
-    electron_beam_divergence_v = Setting(0.8352e-11)
+    electron_beam_size_h = Setting(5.5453e-05)
+    electron_beam_size_v = Setting(2.784e-06)
+    electron_beam_divergence_h = Setting(4.5083e-06)
+    electron_beam_divergence_v = Setting(8.98e-07)
 
     moment_x = Setting(0.0)
     moment_y = Setting(0.0)
@@ -62,10 +62,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     moment_xx           = Setting((0.05545e-3)**2)
     moment_xxp          = Setting(0.0)
-    moment_xpxp         = Setting((0.2525e-9)**2)
+    moment_xpxp         = Setting((4.5083e-06)**2)
     moment_yy           = Setting((2.784e-6)**2)
     moment_yyp          = Setting(0.0)
-    moment_ypyp         = Setting((0.8352e-11)**2)
+    moment_ypyp         = Setting((8.98e-07)**2)
 
     horizontal_emittance = Setting(0.0)
     horizontal_beta = Setting(0.0)
