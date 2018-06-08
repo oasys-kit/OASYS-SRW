@@ -1,6 +1,6 @@
 import numpy
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 from orangewidget import gui
 from orangewidget.settings import Setting
@@ -117,6 +117,6 @@ class OWSRWCrystal(OWSRWOpticalElement):
                         self.psi_hi    = exchangeData.get_content("xih_s")
                         self.psi_hbr   = exchangeData.get_content("xrh_p")
                         self.psi_hbi   = exchangeData.get_content("xih_p")
-        except:
-            pass
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
 
