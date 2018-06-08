@@ -10,12 +10,9 @@ from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
 
-from syned.beamline.optical_elements.absorbers.slit import Slit
-from syned.storage_ring.light_source import ElectronBeam, LightSource
-from syned.beamline.shape import Rectangle
+from syned.storage_ring.light_source import ElectronBeam
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
-from wofrysrw.storage_ring.srw_light_source import PowerDensityPrecisionParameters, SRWLightSource
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters, PolarizationComponent
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
@@ -69,6 +66,9 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     spe_h_slit_points=Setting(1)
     spe_v_slit_points=Setting(1)
     spe_distance = Setting(1.0)
+    spe_on_axis_x = Setting(0.0)
+    spe_on_axis_y =Setting( 0.0)
+    spe_polarization_component_to_be_extracted = Setting(6)
 
     spe_sr_method = Setting(1)  
     spe_relative_precision = Setting(0.01) 
@@ -120,15 +120,9 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
-        self.tabs_setting = oasysgui.tabWidget(self.controlArea)
-        self.tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
-        self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
-
         # FLUX -------------------------------------------
 
-        tab_flux = oasysgui.createTabPage(self.tabs_setting, "Flux")
-
-        spe_box = oasysgui.widgetBox(tab_flux, "Wavefront Parameters", addSpace=True, orientation="vertical")
+        spe_box = oasysgui.widgetBox(self.controlArea, "Wavefront Parameters", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
     
         oasysgui.lineEdit(spe_box, self, "spe_photon_energy_min", "Photon Energy Min [eV]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(spe_box, self, "spe_photon_energy_max", "Photon Energy Max [eV]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -143,7 +137,14 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
         oasysgui.lineEdit(spe_box, self, "spe_distance", "Propagation Distance [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
-        pre_box = oasysgui.widgetBox(tab_flux, "Precision Parameters", addSpace=False, orientation="vertical")
+        gui.comboBox(spe_box, self, "spe_polarization_component_to_be_extracted", label="Polarization Component",
+                     items=PolarizationComponent.tuple(), labelWidth=150,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        oasysgui.lineEdit(spe_box, self, "spe_on_axis_x", "H On-Axis Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(spe_box, self, "spe_on_axis_y", "V On-Axis Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        pre_box = oasysgui.widgetBox(self.controlArea, "Precision Parameters", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
 
         self.tabs_precision = oasysgui.tabWidget(pre_box)
 
@@ -322,7 +323,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
         if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-            e, i = srw_wavefront.get_flux(multi_electron=True)
+            e, i = srw_wavefront.get_flux(multi_electron=True, polarization_component_to_be_extracted=self.spe_polarization_component_to_be_extracted)
         elif isinstance(self.received_light_source, SRWUndulatorLightSource):
             e, i = srw_source.get_undulator_flux(source_wavefront_parameters=wf_parameters,
                                                  flux_precision_parameters=FluxPrecisionParameters(initial_UR_harmonic=self.spe_initial_UR_harmonic,
@@ -339,6 +340,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                             v_slit_gap = 0.0,
                                             h_slit_points = 1,
                                             v_slit_points = 1,
+                                            h_position=self.spe_on_axis_x,
+                                            v_position=self.spe_on_axis_y,
                                             distance = self.spe_distance,
                                             wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.spe_sr_method == 0 else self.get_automatic_sr_method(),
                                                                                                         relative_precision=self.spe_relative_precision,
@@ -350,7 +353,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
-        e, i = srw_wavefront.get_flux(multi_electron=False)
+        e, i = srw_wavefront.get_flux(multi_electron=False, polarization_component_to_be_extracted=self.spe_polarization_component_to_be_extracted)
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
 
@@ -361,20 +364,26 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         return [[1], [1]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from Filament Electron Beam"]
+        if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from 0-Emittance Beam"]
         else: return ["Spectral Flux Density (ME) vs E", "Spectral Spatial Flux Density (SE) vs E"]
 
     def getXTitles(self):
         return ["E [eV]", "E [eV]"]
 
     def getYTitles(self):
-        return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
+        if not self.received_light_source  is None and isinstance(self.received_light_source, SRWBendingMagnetLightSource):
+            return ["Spectral Flux Density [ph/s/.1%bw/mm^2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
+        else:
+            return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
 
     def getXUM(self):
         return ["E [eV]", "E [eV]"]
 
     def getYUM(self):
-        return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
+        if not self.received_light_source  is None and isinstance(self.received_light_source, SRWBendingMagnetLightSource):
+            return ["Spectral Flux Density [ph/s/.1%bw/mm^2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
+        else:
+            return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm^2]"]
 
     def receive_srw_data(self, data):
         if not data is None:
@@ -414,3 +423,11 @@ class OWSRWSpectrum(SRWWavefrontViewer):
             else:
                 raise ValueError("SRW data not correct")
 
+from PyQt5.QtWidgets import QApplication
+
+if __name__=="__main__":
+    a = QApplication(sys.argv)
+    ow = OWSRWSpectrum()
+    ow.show()
+    a.exec_()
+    ow.saveSettings()
