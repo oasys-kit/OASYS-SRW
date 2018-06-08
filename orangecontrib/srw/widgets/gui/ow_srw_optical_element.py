@@ -187,7 +187,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             oasysgui.lineEdit(self.coordinates_box, self, "q", "Distance to next Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
 
         if self.has_orientation_angles:
-            oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+            self.le_angle_radial = oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
             if self.azimuth_hor_vert:
                 gui.comboBox(self.coordinates_box, self, "orientation_azimuthal", label="Orientation of central normal vector",

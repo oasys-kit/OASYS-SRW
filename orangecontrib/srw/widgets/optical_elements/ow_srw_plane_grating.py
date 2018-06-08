@@ -9,7 +9,7 @@ class OWSRWPlaneGrating(OWSRWGrating):
     name = "Plane Grating"
     description = "SRW: Plane Grating"
     icon = "icons/plane_grating.png"
-    priority = 7
+    priority = 8
 
     def __init__(self):
         super().__init__()
