@@ -343,20 +343,27 @@ class OWSRWRadiation(SRWWavefrontViewer):
 
     def receive_srw_data(self, data):
         if not data is None:
-            if isinstance(data, SRWData):
-                self.received_light_source = data.get_srw_beamline().get_light_source()
-                received_wavefront = data.get_srw_wavefront()
+            try:
+                if isinstance(data, SRWData):
+                    self.received_light_source = data.get_srw_beamline().get_light_source()
 
-                if not received_wavefront is None:
-                    if self.int_photon_energy_min == 0.0 and self.int_photon_energy_max == 0.0:
-                        self.int_photon_energy_min = received_wavefront.mesh.eStart
-                        self.int_photon_energy_max = received_wavefront.mesh.eFin
-                        self.int_photon_energy_points=received_wavefront.mesh.ne
-                    self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
-                    self.int_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
-                    self.int_h_slit_points=received_wavefront.mesh.nx
-                    self.int_v_slit_points=received_wavefront.mesh.ny
-                    self.int_distance = received_wavefront.mesh.zStart
-            else:
-                raise ValueError("SRW data not correct")
+                    if not (isinstance(self.received_light_source, SRWBendingMagnetLightSource) or isinstance(self.received_light_source, SRWUndulatorLightSource)):
+                        raise ValueError("This source is not supported")
+
+                    received_wavefront = data.get_srw_wavefront()
+
+                    if not received_wavefront is None:
+                        if self.int_photon_energy_min == 0.0 and self.int_photon_energy_max == 0.0:
+                            self.int_photon_energy_min = received_wavefront.mesh.eStart
+                            self.int_photon_energy_max = received_wavefront.mesh.eFin
+                            self.int_photon_energy_points=received_wavefront.mesh.ne
+                        self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
+                        self.int_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
+                        self.int_h_slit_points=received_wavefront.mesh.nx
+                        self.int_v_slit_points=received_wavefront.mesh.ny
+                        self.int_distance = received_wavefront.mesh.zStart
+                else:
+                    raise ValueError("SRW data not correct")
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 

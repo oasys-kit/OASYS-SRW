@@ -1,6 +1,6 @@
 import numpy
 
-from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QMessageBox
 
 from orangewidget import gui
 from orangewidget.settings import Setting
@@ -170,29 +170,32 @@ class OWSRWGrating(OWSRWOpticalElement):
 
     def setPreProcessorData(self, data):
         if data is not None:
-            if data.error_profile_data_file != SRWPreProcessorData.NONE:
-                self.height_profile_data_file = data.error_profile_data_file
-                self.height_profile_data_file_dimension = 1
-                self.has_height_profile = 1
-
-                self.set_HeightProfile()
-
-                changed = False
-
-                if self.sagittal_size > data.error_profile_x_dim or \
-                   self.tangential_size > data.error_profile_y_dim:
-                    changed = True
-
-                if changed:
-                    if QtWidgets.QMessageBox.information(self, "Confirm Modification",
-                                                  "Dimensions of this O.E. must be changed in order to ensure congruence with the error profile surface, accept?",
-                                                  QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No) == QtWidgets.QMessageBox.Yes:
-                        if self.sagittal_size > data.error_profile_x_dim:
-                            self.sagittal_size = data.error_profile_x_dim
-                        if self.tangential_size > data.error_profile_y_dim:
-                            self.tangential_size = data.error_profile_y_dim
-
-                        QtWidgets.QMessageBox.information(self, "QMessageBox.information()",
-                                                      "Dimensions of this O.E. were changed",
-                                                      QtWidgets.QMessageBox.Ok)
+            try:
+                if data.error_profile_data_file != SRWPreProcessorData.NONE:
+                    self.height_profile_data_file = data.error_profile_data_file
+                    self.height_profile_data_file_dimension = 1
+                    self.has_height_profile = 1
+    
+                    self.set_HeightProfile()
+    
+                    changed = False
+    
+                    if self.sagittal_size > data.error_profile_x_dim or \
+                       self.tangential_size > data.error_profile_y_dim:
+                        changed = True
+    
+                    if changed:
+                        if QMessageBox.information(self, "Confirm Modification",
+                                                      "Dimensions of this O.E. must be changed in order to ensure congruence with the error profile surface, accept?",
+                                                      QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                            if self.sagittal_size > data.error_profile_x_dim:
+                                self.sagittal_size = data.error_profile_x_dim
+                            if self.tangential_size > data.error_profile_y_dim:
+                                self.tangential_size = data.error_profile_y_dim
+    
+                            QMessageBox.information(self, "QMessageBox.information()",
+                                                          "Dimensions of this O.E. were changed",
+                                                          QMessageBox.Ok)
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 

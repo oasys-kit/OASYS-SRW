@@ -80,4 +80,4 @@ class OWFromWofryWavefront2d(widget.OWWidget):
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-                raise exception
+                #raise exception

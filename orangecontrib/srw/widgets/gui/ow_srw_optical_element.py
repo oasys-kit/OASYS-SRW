@@ -651,35 +651,38 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
     def receive_syned_data(self, data):
         if not data is None:
-            beamline_element = data.get_beamline_element_at(-1)
+            try:
+                beamline_element = data.get_beamline_element_at(-1)
 
-            if not beamline_element is None:
-                self.oe_name = beamline_element._optical_element._name
-                self.p = beamline_element._coordinates._p
-                self.q = beamline_element._coordinates._q
+                if not beamline_element is None:
+                    self.oe_name = beamline_element._optical_element._name
+                    self.p = beamline_element._coordinates._p
+                    self.q = beamline_element._coordinates._q
 
-                if self.has_orientation_angles:
-                    self.angle_azimuthal = numpy.degrees(beamline_element._coordinates._angle_azimuthal)
-                    self.angle_radial = numpy.degrees(beamline_element._coordinates._angle_radial)
+                    if self.has_orientation_angles:
+                        self.angle_azimuthal = numpy.degrees(beamline_element._coordinates._angle_azimuthal)
+                        self.angle_radial = numpy.degrees(beamline_element._coordinates._angle_radial)
 
-                if self.azimuth_hor_vert:
-                    if self.angle_azimuthal == 0.0:
-                        self.orientation_azimuthal = Orientation.UP
-                    elif self.angle_azimuthal == 180.0:
-                        self.orientation_azimuthal = Orientation.DOWN
-                    elif self.angle_azimuthal == 90.0:
-                        self.orientation_azimuthal = Orientation.LEFT
-                    elif self.angle_azimuthal == 270.0:
-                        self.orientation_azimuthal == Orientation.RIGHT
+                    if self.azimuth_hor_vert:
+                        if self.angle_azimuthal == 0.0:
+                            self.orientation_azimuthal = Orientation.UP
+                        elif self.angle_azimuthal == 180.0:
+                            self.orientation_azimuthal = Orientation.DOWN
+                        elif self.angle_azimuthal == 90.0:
+                            self.orientation_azimuthal = Orientation.LEFT
+                        elif self.angle_azimuthal == 270.0:
+                            self.orientation_azimuthal == Orientation.RIGHT
+                        else:
+                            raise Exception("Syned Data not correct: Orientation of central normal vector not recognized")
                     else:
-                        raise Exception("Syned Data not correct: Orientation of central normal vector not recognized")
-                else:
-                    self.angle_azimuthal = 0.0
-                    self.angle_radial    = 0.0
+                        self.angle_azimuthal = 0.0
+                        self.angle_radial    = 0.0
 
-                self.receive_specific_syned_data(beamline_element._optical_element)
-            else:
-                raise Exception("Syned Data not correct: Empty Beamline Element")
+                    self.receive_specific_syned_data(beamline_element._optical_element)
+                else:
+                    raise Exception("Syned Data not correct: Empty Beamline Element")
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
     def receive_specific_syned_data(self, optical_element):
         raise NotImplementedError()

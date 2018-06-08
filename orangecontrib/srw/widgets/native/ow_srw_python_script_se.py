@@ -99,8 +99,6 @@ class SRWPythonScriptSE(widget.OWWidget):
 
     def set_input(self, srw_data=SRWData()):
         if not srw_data is None:
-            sys.stdout = EmittingStream(textWritten=self.writeStdOut)
-
             self.input_srw_data = srw_data
 
             self.pythonScript.setText("")
@@ -111,14 +109,4 @@ class SRWPythonScriptSE(widget.OWWidget):
                 self.pythonScript.setText("Problem in writing python script:\n" + str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1]))
 
                 #raise e
-        else:
-            QtWidgets.QMessageBox.critical(self, "Error",
-                                       "Data not displayable: No good rays or bad content",
-                                       QtWidgets.QMessageBox.Ok)
 
-    def writeStdOut(self, text):
-        cursor = self.shadow_output.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
-        cursor.insertText(text)
-        self.shadow_output.setTextCursor(cursor)
-        self.shadow_output.ensureCursorVisible()

@@ -84,8 +84,8 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
             self.plot_results(tickets, progressBarValue=50)
 
             self.progressBarFinished()
-        except:
-            pass
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
 
     def getVariablesToPlot(self):
         return [[1, 2]]

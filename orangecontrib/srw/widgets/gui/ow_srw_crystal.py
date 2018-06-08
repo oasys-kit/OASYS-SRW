@@ -100,8 +100,8 @@ class OWSRWCrystal(OWSRWOpticalElement):
         congruence.checkStrictlyPositiveNumber(self.d_spacing, "d-spacing")
 
     def acceptExchangeData(self, exchangeData):
-        try:
-            if not exchangeData is None:
+        if not exchangeData is None:
+            try:
                 if exchangeData.get_program_name() == "XRAYSERVER":
                     if exchangeData.get_widget_name() == "X0H":
                         self.notes = "Data from X-Ray Server: " + exchangeData.get_content("structure") + "(" + \
@@ -117,6 +117,6 @@ class OWSRWCrystal(OWSRWOpticalElement):
                         self.psi_hi    = exchangeData.get_content("xih_s")
                         self.psi_hbr   = exchangeData.get_content("xrh_p")
                         self.psi_hbi   = exchangeData.get_content("xih_p")
-        except Exception as e:
-            QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
+            except Exception as e:
+                QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
 

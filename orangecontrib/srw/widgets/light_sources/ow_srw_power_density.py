@@ -10,17 +10,13 @@ from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
 
-from syned.beamline.optical_elements.absorbers.slit import Slit
-from syned.storage_ring.light_source import ElectronBeam, LightSource
-from syned.beamline.shape import Rectangle
+from syned.storage_ring.light_source import ElectronBeam
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters
 from wofrysrw.storage_ring.srw_light_source import PowerDensityPrecisionParameters, SRWLightSource
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
-
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
-
-from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import FluxPrecisionParameters, SRWUndulatorLightSource
+from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
@@ -304,16 +300,23 @@ class OWSRWPowerDensity(SRWWavefrontViewer):
 
     def receive_srw_data(self, data):
         if not data is None:
-            if isinstance(data, SRWData):
-                self.received_light_source = data.get_srw_beamline().get_light_source()
-                received_wavefront = data.get_srw_wavefront()
+            try:
+                if isinstance(data, SRWData):
+                    self.received_light_source = data.get_srw_beamline().get_light_source()
 
-                if not received_wavefront is None:
-                    self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
-                    self.int_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
-                    self.int_h_slit_points=received_wavefront.mesh.nx
-                    self.int_v_slit_points=received_wavefront.mesh.ny
-                    self.int_distance = received_wavefront.mesh.zStart
-            else:
-                raise ValueError("SRW data not correct")
+                    if not (isinstance(self.received_light_source, SRWBendingMagnetLightSource) or isinstance(self.received_light_source, SRWUndulatorLightSource)):
+                        raise ValueError("This source is not supported")
+
+                    received_wavefront = data.get_srw_wavefront()
+
+                    if not received_wavefront is None:
+                        self.int_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
+                        self.int_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
+                        self.int_h_slit_points=received_wavefront.mesh.nx
+                        self.int_v_slit_points=received_wavefront.mesh.ny
+                        self.int_distance = received_wavefront.mesh.zStart
+                else:
+                    raise ValueError("SRW data not correct")
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 

@@ -76,26 +76,26 @@ class OWWavefrontFileReader(oasyswidget.OWWidget):
 
 
     def read_file(self):
+        try:
+            dialog = DataFileDialog(self)
+            dialog.setFilterMode(DataFileDialog.FilterMode.ExistingGroup)
 
-        dialog = DataFileDialog(self)
-        dialog.setFilterMode(DataFileDialog.FilterMode.ExistingGroup)
+            path, filename = os.path.split(self.file_name)
+            print("Setting path: ",path)
+            dialog.setDirectory(path)
 
-        path, filename = os.path.split(self.file_name)
-        print("Setting path: ",path)
-        dialog.setDirectory(path)
-
-        # Execute the dialog as modal
-        result = dialog.exec_()
-        if result:
-            print("Selection:")
-            print(dialog.selectedFile())
-            print(dialog.selectedUrl())
-            print(dialog.selectedDataUrl().data_path())
-            self.file_name = dialog.selectedFile()
-            self.data_path = dialog.selectedDataUrl().data_path()
-            self.send_data()
-        # else:
-        #     print("Nothing selected")
+            # Execute the dialog as modal
+            result = dialog.exec_()
+            if result:
+                print("Selection:")
+                print(dialog.selectedFile())
+                print(dialog.selectedUrl())
+                print(dialog.selectedDataUrl().data_path())
+                self.file_name = dialog.selectedFile()
+                self.data_path = dialog.selectedDataUrl().data_path()
+                self.send_data()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
 
     def send_data(self):
         try:

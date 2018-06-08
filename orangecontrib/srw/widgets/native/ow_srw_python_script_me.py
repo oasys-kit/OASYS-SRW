@@ -15,6 +15,9 @@ from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.util.srw_util import showConfirmMessage
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
+from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
+from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
+
 class SRWPythonScriptME(SRWWidget):
 
     name = "SRW Python Script (ME)"
@@ -138,8 +141,6 @@ class SRWPythonScriptME(SRWWidget):
 
     def set_input(self, srw_data=SRWData()):
         if not srw_data is None:
-            sys.stdout = EmittingStream(textWritten=self.writeStdOut)
-
             self.input_srw_data = srw_data
 
             if self.is_automatic_run:
@@ -150,10 +151,15 @@ class SRWPythonScriptME(SRWWidget):
                                        QtWidgets.QMessageBox.Ok)
 
     def refresh_script(self):
-        if not  self.input_srw_data is None:
+        if not self.input_srw_data is None:
             self.pythonScript.setText("")
 
             try:
+                received_light_source = self.input_srw_data.get_srw_beamline().get_light_source()
+
+                if not (isinstance(received_light_source, SRWBendingMagnetLightSource) or isinstance(received_light_source, SRWUndulatorLightSource)):
+                    raise ValueError("ME Script is not available with this source")
+
                 _char = 0 if self._char == 0 else 4
 
                 parameters = [self.sampFactNxNyForProp,
@@ -171,9 +177,3 @@ class SRWPythonScriptME(SRWWidget):
 
                 #raise e
 
-    def writeStdOut(self, text):
-        cursor = self.shadow_output.textCursor()
-        cursor.movePosition(QtGui.QTextCursor.End)
-        cursor.insertText(text)
-        self.shadow_output.setTextCursor(cursor)
-        self.shadow_output.ensureCursorVisible()

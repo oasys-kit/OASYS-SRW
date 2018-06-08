@@ -387,41 +387,47 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
     def receive_srw_data(self, data):
         if not data is None:
-            if isinstance(data, SRWData):
-                self.received_light_source = data.get_srw_beamline().get_light_source()
-                received_wavefront = data.get_srw_wavefront()
+            try:
+                if isinstance(data, SRWData):
+                    self.received_light_source = data.get_srw_beamline().get_light_source()
+                    received_wavefront = data.get_srw_wavefront()
 
-                if not received_wavefront is None:
-                    if self.spe_photon_energy_min == 0.0 and self.spe_photon_energy_max == 0.0:
-                        self.spe_photon_energy_min = received_wavefront.mesh.eStart
-                        self.spe_photon_energy_max = received_wavefront.mesh.eFin
-                        self.spe_photon_energy_points=received_wavefront.mesh.ne
-                    self.spe_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
-                    self.spe_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
-                    self.spe_distance = received_wavefront.mesh.zStart
+                    if not received_wavefront is None:
+                        if self.spe_photon_energy_min == 0.0 and self.spe_photon_energy_max == 0.0:
+                            self.spe_photon_energy_min = received_wavefront.mesh.eStart
+                            self.spe_photon_energy_max = received_wavefront.mesh.eFin
+                            self.spe_photon_energy_points=received_wavefront.mesh.ne
+                        self.spe_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
+                        self.spe_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
+                        self.spe_distance = received_wavefront.mesh.zStart
 
-                n_tab = len(self.tabs_precision)
+                    n_tab = len(self.tabs_precision)
 
-                if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-                    self.spe_h_slit_points = received_wavefront.mesh.nx
-                    self.spe_v_slit_points = received_wavefront.mesh.ny
-                    self.box_points.setVisible(True)
+                    if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
+                        self.spe_h_slit_points = received_wavefront.mesh.nx
+                        self.spe_v_slit_points = received_wavefront.mesh.ny
+                        self.box_points.setVisible(True)
 
-                    if n_tab > 1: self.tabs_precision.removeTab(n_tab-1)
-                elif isinstance(self.received_light_source, SRWUndulatorLightSource):
-                    self.spe_h_slit_points = 1
-                    self.spe_v_slit_points = 1
-                    self.box_points.setVisible(False)
+                        if n_tab > 1: self.tabs_precision.removeTab(n_tab-1)
+                    elif isinstance(self.received_light_source, SRWUndulatorLightSource):
+                        self.spe_h_slit_points = 1
+                        self.spe_v_slit_points = 1
+                        self.box_points.setVisible(False)
 
-                    if n_tab == 1:
-                        tab_flu = oasysgui.createTabPage(self.tabs_precision, "Flux")
+                        if n_tab == 1:
+                            tab_flu = oasysgui.createTabPage(self.tabs_precision, "Flux")
 
-                        oasysgui.lineEdit(tab_flu, self, "spe_initial_UR_harmonic", "Initial Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
-                        oasysgui.lineEdit(tab_flu, self, "spe_final_UR_harmonic", "Final Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
-                        oasysgui.lineEdit(tab_flu, self, "spe_longitudinal_integration_precision_parameter", "Longitudinal integration precision param.", labelWidth=260, valueType=float, orientation="horizontal")
-                        oasysgui.lineEdit(tab_flu, self, "spe_azimuthal_integration_precision_parameter", "Azimuthal integration precision param.", labelWidth=260, valueType=int, orientation="horizontal")
-            else:
-                raise ValueError("SRW data not correct")
+                            oasysgui.lineEdit(tab_flu, self, "spe_initial_UR_harmonic", "Initial Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
+                            oasysgui.lineEdit(tab_flu, self, "spe_final_UR_harmonic", "Final Harmonic", labelWidth=260, valueType=int, orientation="horizontal")
+                            oasysgui.lineEdit(tab_flu, self, "spe_longitudinal_integration_precision_parameter", "Longitudinal integration precision param.", labelWidth=260, valueType=float, orientation="horizontal")
+                            oasysgui.lineEdit(tab_flu, self, "spe_azimuthal_integration_precision_parameter", "Azimuthal integration precision param.", labelWidth=260, valueType=int, orientation="horizontal")
+                    else:
+                        raise ValueError("This source is not supported")
+                else:
+                    raise ValueError("SRW data not correct")
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
 
 from PyQt5.QtWidgets import QApplication
 
