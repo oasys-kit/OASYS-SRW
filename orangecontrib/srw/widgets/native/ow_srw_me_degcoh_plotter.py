@@ -115,10 +115,10 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
         else: return ["Degree Of Coherence (H)", "Degree Of Coherence (V)"]
 
     def getXTitles(self):
-        return ["(X1 + X2)/2 [mm]", "(Y1 + Y2)/2 [mm]"]
+        return ["(X\u2081 + X\u2082)/2 [mm]", "(Y\u2081 + Y\u2082)/2 [mm]"]
 
     def getYTitles(self):
-        return ["(X1 - X2)/2 [mm]", "(Y1 - Y2)/2 [mm]"]
+        return ["(X\u2081 - X\u2082)/2 [mm]", "(Y\u2081 - Y\u2082)/2 [mm]"]
 
     def getXUM(self):
         return ["X [mm]", "X [mm]"]

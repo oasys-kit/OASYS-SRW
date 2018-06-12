@@ -83,7 +83,7 @@ class OWSRWUndulator(OWSRWSource):
 
         self.set_MagneticField()
 
-        oasysgui.lineEdit(horizontal_box, self, "initial_phase_horizontal", "\u03c60 [rad]", labelWidth=70, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(horizontal_box, self, "initial_phase_horizontal", "\u03c6\u2080 [rad]", labelWidth=70, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(vertical_box, self, "initial_phase_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
 
 

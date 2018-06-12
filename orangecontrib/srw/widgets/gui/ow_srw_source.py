@@ -207,17 +207,17 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.left_box_3_1 = oasysgui.widgetBox(tab_traj, "", addSpace=False, orientation="vertical", height=160)
         self.left_box_3_2 = oasysgui.widgetBox(tab_traj, "", addSpace=False, orientation="vertical", height=160)
 
-        oasysgui.lineEdit(self.left_box_3_1, self, "moment_x", "x0 [m]", labelWidth=200, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_3_1, self, "moment_y", "y0 [m]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_x", "x\u2080 [m]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_y", "y\u2080 [m]", labelWidth=200, valueType=float, orientation="horizontal")
 
         box = oasysgui.widgetBox(self.left_box_3_1, "", addSpace=False, orientation="horizontal")
 
-        oasysgui.lineEdit(box, self, "moment_z", "z0 [m]", labelWidth=160, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "moment_z", "z\u2080 [m]", labelWidth=160, valueType=float, orientation="horizontal")
         gui.button(box, self, "Auto", width=35, callback=self.set_z0Default)
 
 
-        oasysgui.lineEdit(self.left_box_3_1, self, "moment_xp", "xp0 [rad]", labelWidth=200, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.left_box_3_1, self, "moment_yp", "yp0 [rad]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_xp", "x'\u2080 [rad]", labelWidth=200, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.left_box_3_1, self, "moment_yp", "y'\u2080 [rad]", labelWidth=200, valueType=float, orientation="horizontal")
 
         self.set_TypeOfInitialization()
 

@@ -1,8 +1,8 @@
-import numpy
+import os, numpy
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QColor, QFont, QPixmap
-from PyQt5.QtWidgets import QMessageBox, QDialogButtonBox, QDialog, QGridLayout, QLabel, QSizePolicy
+from PyQt5.QtWidgets import QMessageBox, QDialogButtonBox, QDialog, QLabel, QSizePolicy
 
 import orangecanvas.resources as resources
 
@@ -338,7 +338,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
     class PropagatorInfoDialog(QDialog):
 
-        usage_path = resources.package_dirname("orangecontrib.srw.widgets.gui") + "/misc/propagator_info.png"
+        usage_path = os.path.join(resources.package_dirname("orangecontrib.srw.widgets.gui"), "misc", "propagator_info.png")
 
         def __init__(self, parent=None):
             QDialog.__init__(self, parent)
