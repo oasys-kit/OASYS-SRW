@@ -45,13 +45,13 @@ INSTALL_REQUIRES = (
     'syned>=1.0.8',
     'wofry>=1.0.14',
     'oasys1-srwlib>=1.0.12',
-    'wofrysrw>=1.0.17'
+    'wofrysrw>=1.0.19'
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
 
 PACKAGE_DATA = {
-    "orangecontrib.srw.widgets.light_sources":["icons/*.png", "icons/*.jpg"],
+    "orangecontrib.srw.widgets.light_sources":["icons/*.png", "icons/*.jpg", "misc/*.png"],
     "orangecontrib.srw.widgets.optical_elements":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.tools":["icons/*.png", "icons/*.jpg"],
     "orangecontrib.srw.widgets.native":["icons/*.png", "icons/*.jpg"],

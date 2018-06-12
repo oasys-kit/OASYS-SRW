@@ -234,7 +234,7 @@ def file_load(_fname, _read_labels=1):
     allrange = e0, e1, ne, x0, x1, nx, y0, y1, ny
 
     arLabels = ['Photon Energy', 'Horizontal Position', 'Vertical Position', 'Intensity']
-    arUnits = ['eV', 'm', 'm', 'ph/s/.1%bw/mm^2']
+    arUnits = ['eV', 'm', 'm', 'ph/s/.1%bw/mm\u00b2']
 
     if _read_labels:
 

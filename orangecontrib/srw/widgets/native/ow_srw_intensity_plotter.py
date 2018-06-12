@@ -75,9 +75,9 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
 
             tickets = []
 
-            sum, difference, intensity = native_util.load_intensity_file(self.intensity_file_name)
+            x, y, intensity = native_util.load_intensity_file(self.intensity_file_name)
 
-            tickets.append(SRWPlot.get_ticket_2D(sum, difference, intensity))
+            tickets.append(SRWPlot.get_ticket_2D(x*1000, y*1000, intensity))
 
             self.progressBarSet(50)
 
@@ -91,20 +91,20 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
         return [[1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity [ph/s/.1%bw/mm^2]"]
+        if with_um: return ["Intensity [ph/s/.1%bw/mm\u00b2]"]
         else: return ["Intensity"]
 
     def getXTitles(self):
-        return ["X [um]"]
+        return ["X [\u03bcm]"]
 
     def getYTitles(self):
-        return ["Y [um]"]
+        return ["Y [\u03bcm]"]
 
     def getXUM(self):
-        return ["X [um]"]
+        return ["X [\u03bcm]"]
 
     def getYUM(self):
-        return ["Y [um]"]
+        return ["Y [\u03bcm]"]
 
 
 

@@ -27,10 +27,10 @@ class OWSRWGrating(OWSRWOpticalElement):
 
     diffraction_order                  = Setting(1)
     grooving_density_0                 = Setting(800.0) # groove density [lines/mm] (coefficient a0 in the polynomial groove density: a0 + a1*y + a2*y^2 + a3*y^3 + a4*y^4)
-    grooving_density_1                 = Setting(0.0) # groove density polynomial coefficient a1 [lines/mm^2]
-    grooving_density_2                 = Setting(0.0) # groove density polynomial coefficient a2 [lines/mm^3]
-    grooving_density_3                 = Setting(0.0) # groove density polynomial coefficient a3 [lines/mm^4]
-    grooving_density_4                 = Setting(0.0)  # groove density polynomial coefficient a4 [lines/mm^5]
+    grooving_density_1                 = Setting(0.0) # groove density polynomial coefficient a1 [lines/mm\u00b2]
+    grooving_density_2                 = Setting(0.0) # groove density polynomial coefficient a2 [lines/mm\u00b3]
+    grooving_density_3                 = Setting(0.0) # groove density polynomial coefficient a3 [lines/mm\u2074]
+    grooving_density_4                 = Setting(0.0)  # groove density polynomial coefficient a4 [lines/mm\u2075]
     grooving_angle                     = Setting(0.0)  # angle between the groove direction and the sagittal direction of the substrate
 
     inputs = [("SRWData", SRWData, "set_input"),
@@ -80,10 +80,10 @@ class OWSRWGrating(OWSRWOpticalElement):
         oasysgui.lineEdit(self.grooving_box, self, "grooving_angle", "Angle between groove direction and\nsagittal direction of the substrate [deg]", labelWidth=260, valueType=float, orientation="horizontal")
 
         oasysgui.lineEdit(self.grooving_box, self, "grooving_density_0", "Groove density [lines/mm]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_1", "Groove den. poly. coeff. a1 [lines/mm^2]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_2", "Groove den. poly. coeff. a2 [lines/mm^3]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_3", "Groove den. poly. coeff. a3 [lines/mm^4]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_4", "Groove den. poly. coeff. a4 [lines/mm^5]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_1", "Groove den. poly. coeff. a1 [lines/mm\u00b2]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_2", "Groove den. poly. coeff. a2 [lines/mm\u00b3]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_3", "Groove den. poly. coeff. a3 [lines/mm\u2074]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_4", "Groove den. poly. coeff. a4 [lines/mm\u2075]", labelWidth=260, valueType=float, orientation="horizontal")
 
     def selectHeightProfileDataFile(self):
         self.le_height_profile_data_file.setText(oasysgui.selectFileFromDialog(self, self.height_profile_data_file, "Height profile data file"))

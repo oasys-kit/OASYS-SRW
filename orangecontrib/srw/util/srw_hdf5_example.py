@@ -180,8 +180,8 @@ def calculate_undulator_source(Source="EBS",pMltLr=28.3,do_plots=True):
     #
     if do_plots:
         plot_wfr(wfr,kind='intensity',title='Source Intensity at ' + str(wfr.mesh.eStart) + ' eV',
-                 xtitle='Horizontal Position [um]',
-                 ytitle='Vertical Position [um]',aspect=None,show=True)
+                 xtitle='Horizontal Position [\u03bcm]',
+                 ytitle='Vertical Position [\u03bcm]',aspect=None,show=True)
 
 
     print('\nsource calculation finished\n')
@@ -223,8 +223,8 @@ def propagate_beamline(wfr,do_plots=True):
 
     if do_plots:
         plot_wfr(wfr,kind='intensity',title='Focal Intensity at ' + str(wfr.mesh.eStart) + ' eV',
-                 xtitle='Horizontal Position [um]',
-                 ytitle='Vertical Position [um]',show=True)
+                 xtitle='Horizontal Position [\u03bcm]',
+                 ytitle='Vertical Position [\u03bcm]',show=True)
 
     print('\nbeamline calculation finished\n')
     return wfr

@@ -1,7 +1,8 @@
-import sys
+import sys, os
 
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QDialogButtonBox
+from PyQt5.QtGui import QPixmap
+import orangecanvas.resources as resources
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
@@ -9,12 +10,10 @@ from oasys.widgets import congruence
 
 from syned.storage_ring.magnetic_structures.undulator import Undulator
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
-from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import FluxPrecisionParameters, SRWUndulatorLightSource
+from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
 from wofrysrw.storage_ring.magnetic_structures.srw_undulator import SRWUndulator
 
 from orangecontrib.srw.widgets.gui.ow_srw_source import OWSRWSource
-from orangecontrib.srw.util.srw_util import SRWPlot
 
 class OWSRWUndulator(OWSRWSource):
 
@@ -33,37 +32,74 @@ class OWSRWUndulator(OWSRWSource):
 
     period_length = Setting(0.02)
     number_of_periods = Setting(75)
+    longitudinal_central_position = Setting(0.0)
 
     wf_use_harmonic = Setting(0)
     wf_harmonic_number = Setting(1)
 
     want_main_area=1
 
+    initial_phase_vertical = Setting(0.0)
+    initial_phase_horizontal = Setting(0.0)
+
+    symmetry_vs_longitudinal_position_vertical = Setting(1)
+    symmetry_vs_longitudinal_position_horizontal = Setting(0)
+
     def __init__(self):
         super().__init__()
 
-        left_box_2 = oasysgui.widgetBox(self.tab_source, "ID Parameters", addSpace=True, orientation="vertical", height=175)
+        tabs = oasysgui.tabWidget(self.tab_source, height=175)
 
-        gui.comboBox(left_box_2, self, "magnetic_field_from", label="Magnetic Field", labelWidth=350,
+        left_box_2 = oasysgui.createTabPage(tabs, "ID Parameters")
+        left_box_3 = oasysgui.createTabPage(tabs, "ID Magnetic Field")
+
+        oasysgui.lineEdit(left_box_2, self, "period_length", "Period Length [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2, self, "number_of_periods", "Number of Periods", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2, self, "longitudinal_central_position", "Longitudinal Central Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
+
+
+        gui.comboBox(left_box_3, self, "magnetic_field_from", label="Magnetic Field", labelWidth=350,
                      items=["From K", "From B"],
                      callback=self.set_MagneticField,
                      sendSelectedValue=False, orientation="horizontal")
 
-        self.magnetic_field_box_1 = oasysgui.widgetBox(left_box_2, "", addSpace=False, orientation="vertical")
-        self.magnetic_field_box_2 = oasysgui.widgetBox(left_box_2, "", addSpace=False, orientation="vertical")
+        container = oasysgui.widgetBox(left_box_3, "", addSpace=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.magnetic_field_box_1, self, "K_horizontal", "Horizontal K", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.magnetic_field_box_1, self, "K_vertical", "Vertical K", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.magnetic_field_box_2, self, "B_horizontal", "Horizontal B (T)", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.magnetic_field_box_2, self, "B_vertical", "Vertical B (T)", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_2, self, "period_length", "Period Length [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_2, self, "number_of_periods", "Number of Periods", labelWidth=260, valueType=float, orientation="horizontal")
+        horizontal_box = oasysgui.widgetBox(container, "", addSpace=False, orientation="vertical", width=215)
+        vertical_box = oasysgui.widgetBox(container,  "", addSpace=False, orientation="vertical", width=155)
+
+        gui.label(horizontal_box, self, "                     Horizontal")
+        gui.label(vertical_box, self, "  Vertical")
+
+        self.magnetic_field_box_1_h = oasysgui.widgetBox(horizontal_box, "", addSpace=False, orientation="vertical")
+        self.magnetic_field_box_2_h = oasysgui.widgetBox(horizontal_box, "", addSpace=False, orientation="vertical")
+        self.magnetic_field_box_1_v = oasysgui.widgetBox(vertical_box, "", addSpace=False, orientation="vertical")
+        self.magnetic_field_box_2_v = oasysgui.widgetBox(vertical_box, "", addSpace=False, orientation="vertical")
+
+        oasysgui.lineEdit(self.magnetic_field_box_1_h, self, "K_horizontal", "K", labelWidth=70, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_1_v, self, "K_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_2_h, self, "B_horizontal", "B [T]", labelWidth=70, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_2_v, self, "B_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
 
         self.set_MagneticField()
 
+        oasysgui.lineEdit(horizontal_box, self, "initial_phase_horizontal", "\u03c60 [rad]", labelWidth=70, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(vertical_box, self, "initial_phase_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
+
+
+        gui.comboBox(horizontal_box, self, "symmetry_vs_longitudinal_position_horizontal", label="Symmetry", labelWidth=70,
+                     items=["Symmetrical", "Anti-Symmetrical"],
+                     sendSelectedValue=False, orientation="horizontal")
+
+        symmetry_v_box =  oasysgui.widgetBox(vertical_box, "", addSpace=False, orientation="horizontal")
+        gui.comboBox(symmetry_v_box, self, "symmetry_vs_longitudinal_position_vertical", label=" ", labelWidth=2,
+                     items=["Symmetrical", "Anti-Symmetrical"],
+                     sendSelectedValue=False, orientation="horizontal")
+        gui.button(symmetry_v_box, self, "?", callback=self.open_help, width=12)
+
+
         gui.rubber(self.controlArea)
         gui.rubber(self.mainArea)
-
 
     def build_wf_photon_energy_box(self, box):
 
@@ -79,10 +115,34 @@ class OWSRWUndulator(OWSRWSource):
 
         self.set_WFUseHarmonic()
 
+    class ShowHelpDialog(QDialog):
+
+        def __init__(self, parent=None):
+            QDialog.__init__(self, parent)
+            self.setWindowTitle('Symmetry vs Longitudinal Position')
+            layout = QVBoxLayout(self)
+            label = QLabel("")
+
+            file = os.path.join(resources.package_dirname("orangecontrib.srw.widgets.light_sources"), "misc", "symmetry.png")
+
+            label.setPixmap(QPixmap(file))
+
+            bbox = QDialogButtonBox(QDialogButtonBox.Ok)
+
+            bbox.accepted.connect(self.accept)
+            layout.addWidget(label)
+            layout.addWidget(bbox)
+
+
+    def open_help(self):
+        dialog = OWSRWUndulator.ShowHelpDialog(parent=self)
+        dialog.show()
 
     def set_MagneticField(self):
-        self.magnetic_field_box_1.setVisible(self.magnetic_field_from==0)
-        self.magnetic_field_box_2.setVisible(self.magnetic_field_from==1)
+        self.magnetic_field_box_1_h.setVisible(self.magnetic_field_from==0)
+        self.magnetic_field_box_2_h.setVisible(self.magnetic_field_from==1)
+        self.magnetic_field_box_1_v.setVisible(self.magnetic_field_from==0)
+        self.magnetic_field_box_2_v.setVisible(self.magnetic_field_from==1)
 
     def set_WFUseHarmonic(self):
         self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
@@ -92,15 +152,27 @@ class OWSRWUndulator(OWSRWSource):
         return -0.5*self.period_length*(self.number_of_periods + 4) # initial Longitudinal Coordinate (set before the ID)
 
     def get_srw_source(self, electron_beam):
+        symmetry_vs_longitudinal_position_horizontal = 1 if self.symmetry_vs_longitudinal_position_horizontal == 0 else -1
+        symmetry_vs_longitudinal_position_vertical = 1 if self.symmetry_vs_longitudinal_position_vertical == 0 else -1
 
         if self.magnetic_field_from == 0:
-            undulator_magnetic_structure=SRWUndulator(K_vertical=self.K_vertical,
+            undulator_magnetic_structure=SRWUndulator(longitudinal_central_position=self.longitudinal_central_position,
+                                                      K_vertical=self.K_vertical,
                                                       K_horizontal=self.K_horizontal,
                                                       period_length=self.period_length,
-                                                      number_of_periods=self.number_of_periods)
+                                                      number_of_periods=self.number_of_periods,
+                                                      initial_phase_horizontal=self.initial_phase_horizontal,
+                                                      initial_phase_vertical=self.initial_phase_vertical,
+                                                      symmetry_vs_longitudinal_position_horizontal=symmetry_vs_longitudinal_position_horizontal,
+                                                      symmetry_vs_longitudinal_position_vertical=symmetry_vs_longitudinal_position_vertical)
         else:
-            undulator_magnetic_structure=SRWUndulator(period_length=self.period_length,
-                                                      number_of_periods=self.number_of_periods)
+            undulator_magnetic_structure=SRWUndulator(longitudinal_central_position=self.longitudinal_central_position,
+                                                      period_length=self.period_length,
+                                                      number_of_periods=self.number_of_periods,
+                                                      initial_phase_horizontal=self.initial_phase_horizontal,
+                                                      initial_phase_vertical=self.initial_phase_vertical,
+                                                      symmetry_vs_longitudinal_position_horizontal=symmetry_vs_longitudinal_position_horizontal,
+                                                      symmetry_vs_longitudinal_position_vertical=symmetry_vs_longitudinal_position_vertical)
             undulator_magnetic_structure.set_K_vertical_from_magnetic_field(self.B_vertical)
             undulator_magnetic_structure.set_K_horizontal_from_magnetic_field(self.B_horizontal)
 
@@ -153,7 +225,7 @@ class OWSRWUndulator(OWSRWSource):
 
 if __name__ == "__main__":
     a = QApplication(sys.argv)
-    ow = SRWUndulator()
+    ow = OWSRWUndulator()
     ow.show()
     a.exec_()
     ow.saveSettings()

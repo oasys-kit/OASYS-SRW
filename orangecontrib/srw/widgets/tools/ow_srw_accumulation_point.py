@@ -100,7 +100,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
         return [[1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Accumulated Intensity [ph/s/.1%bw/mm^2]"]
+        if with_um: return ["Accumulated Intensity [ph/s/.1%bw/mm\u00b2]"]
         else: return ["Accumulated Intensity"]
 
     def getXTitles(self):

@@ -283,7 +283,7 @@ class OWSRWPowerDensity(SRWWavefrontViewer):
         return [[1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Power Density vs X,Y [W/mm^2]"]
+        if with_um: return ["Power Density vs X,Y [W/mm\u00b2]"]
         else: return ["Power Density vs X,Y"]
 
     def getXTitles(self):

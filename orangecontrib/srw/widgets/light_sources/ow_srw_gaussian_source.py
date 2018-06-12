@@ -277,18 +277,18 @@ class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
         return [[1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity [ph/s/.1%bw/mm^2]",
+        if with_um: return ["Intensity [ph/s/.1%bw/mm\u00b2]",
                             "Phase [rad]"]
         else: return ["Intensity", "Phase"]
 
     def getXTitles(self):
-        return ["X [um]", "X [um]"]
+        return ["X [\u03bcm]", "X [\u03bcm]"]
 
     def getYTitles(self):
-        return ["Y [um]", "Y [um]"]
+        return ["Y [\u03bcm]", "Y [\u03bcm]"]
 
     def getXUM(self):
-        return ["X [um]", "X [um]"]
+        return ["X [\u03bcm]", "X [\u03bcm]"]
 
     def getYUM(self):
-        return ["Y [um]", "Y [um]"]
+        return ["Y [\u03bcm]", "Y [\u03bcm]"]

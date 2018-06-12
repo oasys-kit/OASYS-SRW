@@ -324,9 +324,9 @@ class OWSRWRadiation(SRWWavefrontViewer):
         return [[1, 2], [1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity SE vs E,X,Y [ph/s/.1%bw/mm^2]",
-                            "Intensity ME vs E,X,Y [ph/s/.1%bw/mm^2]",
-                            "Power Density vs X,Y [W/mm^2]"]
+        if with_um: return ["Intensity SE vs E,X,Y [ph/s/.1%bw/mm\u00b2]",
+                            "Intensity ME vs E,X,Y [ph/s/.1%bw/mm\u00b2]",
+                            "Power Density vs X,Y [W/mm\u00b2]"]
         else: return ["Intensity SE vs E,X,Y", "Intensity ME vs E,X,Y", "Power Density vs X,Y"]
 
     def getXTitles(self):

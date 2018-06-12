@@ -54,7 +54,7 @@ class OWSRWCrystal(OWSRWOpticalElement):
         polarization_box_l = oasysgui.widgetBox(polarization_box, "", addSpace=False, orientation="vertical", width=200)
         polarization_box_r = oasysgui.widgetBox(polarization_box, "", addSpace=False, orientation="vartical")
 
-        gui.label(polarization_box_l, self, "Real Part")
+        gui.label(polarization_box_l, self, "               Real Part")
         oasysgui.lineEdit(polarization_box_l, self, "psi_0r" , "X0", labelWidth=50, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(polarization_box_l, self, "psi_hr" , "Xh \u03c3", labelWidth=50, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(polarization_box_l, self, "psi_hbr", "Xh \u03c0", labelWidth=50, valueType=float, orientation="horizontal")
