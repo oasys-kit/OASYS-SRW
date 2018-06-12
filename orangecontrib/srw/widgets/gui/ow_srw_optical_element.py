@@ -493,7 +493,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.setStatusMessage("")
             self.progressBarFinished()
 
-            #raise e
+            raise e
 
     def set_additional_parameters(self, beamline_element, propagation_parameters=None, beamline=None):
         from wofrysrw.beamline.srw_beamline import Where

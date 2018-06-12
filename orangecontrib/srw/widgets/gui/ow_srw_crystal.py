@@ -40,8 +40,6 @@ class OWSRWCrystal(OWSRWOpticalElement):
     def __init__(self):
         super().__init__(azimuth_hor_vert=True)
 
-        self.le_angle_radial.setEnabled(False)
-
     def draw_specific_box(self):
         self.crystal_box = oasysgui.widgetBox(self.tab_bas, "Crystal Setting", addSpace=False, orientation="vertical")
 
@@ -80,7 +78,8 @@ class OWSRWCrystal(OWSRWOpticalElement):
                           psi_hr                          = self.psi_hr,
                           psi_hi                          = self.psi_hi,
                           psi_hbr                         = self.psi_hbr,
-                          psi_hbi                         = self.psi_hbi)
+                          psi_hbi                         = self.psi_hbi,
+                          incident_angle                  = numpy.radians(90-self.angle_radial))
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:

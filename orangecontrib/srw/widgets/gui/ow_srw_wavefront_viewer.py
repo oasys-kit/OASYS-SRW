@@ -65,7 +65,7 @@ class SRWWavefrontViewer(SRWWidget):
                                                 items=["No", "Yes"],
                                                 callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
         else:
-            self.view_type = 1
+            self.view_type = 0
             self.view_type_combo = QtWidgets.QWidget()
 
 
@@ -93,6 +93,7 @@ class SRWWavefrontViewer(SRWWidget):
         out_box = gui.widgetBox(out_tab, "System Output", addSpace=True, orientation="horizontal")
         out_box.layout().addWidget(self.srw_output)
 
+        self.set_PlotQuality()
 
     def set_srw_live_propagation_mode(self):
         propagation_mode = PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
@@ -112,6 +113,8 @@ class SRWWavefrontViewer(SRWWidget):
         palette.setColor(QPalette.Text, QColor(color))
         palette.setColor(QPalette.Base, QColor(243, 240, 140))
         self.le_srw_live_propagation_mode.setPalette(palette)
+
+        if propagation_mode==SRWPropagationMode.WHOLE_BEAMLINE: self.view_type = 0
 
     def initializeTabs(self):
         current_tab = self.tabs.currentIndex()
@@ -150,7 +153,7 @@ class SRWWavefrontViewer(SRWWidget):
                                                str(exception),
                         QtWidgets.QMessageBox.Ok)
 
-                    raise exception
+                    #raise exception
         else:
             self.initializeTabs()
 
