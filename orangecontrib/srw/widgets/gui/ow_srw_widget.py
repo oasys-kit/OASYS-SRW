@@ -1,4 +1,4 @@
-import sys
+import os
 
 from oasys.widgets import widget
 
@@ -27,6 +27,8 @@ class SRWWidget(widget.OWWidget):
     TABS_AREA_HEIGHT = 560
 
     srw_live_propagation_mode = "Unknown"
+
+    IS_DEVELOP = False if not "OASYSDEVELOP" in os.environ.keys() else str(os.environ.get('OASYSDEVELOP')) == "1"
 
     def __init__(self, show_automatic_box=True):
         super().__init__()

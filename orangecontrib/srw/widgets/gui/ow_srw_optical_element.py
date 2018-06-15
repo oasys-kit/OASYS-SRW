@@ -370,7 +370,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         except Exception as exception:
             QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-            raise exception
+            if self.IS_DEVELOP: raise exception
 
     def draw_specific_box(self):
         raise NotImplementedError()
@@ -493,7 +493,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.setStatusMessage("")
             self.progressBarFinished()
 
-            raise e
+            if self.IS_DEVELOP: raise e
 
     def set_additional_parameters(self, beamline_element, propagation_parameters=None, beamline=None):
         from wofrysrw.beamline.srw_beamline import Where

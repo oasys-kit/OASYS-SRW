@@ -67,8 +67,9 @@ class SRWToolsMenu(OMenu):
                         if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                             raise Exception("Action not possibile while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
 
-                        widget.view_type = 0
-                        widget.set_PlotQuality()
+                        if hasattr(widget, "show_view_box") and getattr(widget, "show_view_box"):
+                            widget.view_type = 0
+                            widget.set_PlotQuality()
 
         except Exception as exception:
             showCriticalMessage(exception.args[0])
@@ -83,8 +84,10 @@ class SRWToolsMenu(OMenu):
                         if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) == SRWPropagationMode.WHOLE_BEAMLINE):
                             raise Exception("Action not possibile while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
 
+                    if hasattr(widget, "show_view_box") and getattr(widget, "show_view_box"):
                         widget.view_type = 1
                         widget.set_PlotQuality()
+
         except Exception as exception:
             showCriticalMessage(exception.args[0])
 
@@ -101,8 +104,9 @@ class SRWToolsMenu(OMenu):
                     if not (isinstance(widget, OWSRWScreen) or isinstance(widget, OWSRWIntensityPlotter) or isinstance(widget, OWSRWDegCohPlotter)) \
                             or getattr(widget, "is_final_screen") == False:
                         if hasattr(widget, "view_type") and hasattr(widget, "set_PlotQuality"):
-                            widget.view_type = 0
-                            widget.set_PlotQuality()
+                            if hasattr(widget, "show_view_box") and getattr(widget, "show_view_box"):
+                                widget.view_type = 0
+                                widget.set_PlotQuality()
 
                 if isinstance(widget, OWSRWScreen): widget.set_is_final_screen()
 

@@ -205,7 +205,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
-                raise exception
+                if self.IS_DEVELOP: raise exception
 
             self.progressBarFinished()
 

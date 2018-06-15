@@ -65,9 +65,10 @@ class SRWWavefrontViewer(SRWWidget):
                                                 items=["No", "Yes"],
                                                 callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
         else:
-            self.view_type = 0
+            self.view_type = 1
             self.view_type_combo = QtWidgets.QWidget()
 
+        self.show_view_box = show_view_box
 
         #* -------------------------------------------------------------------------------------------------------------
         propagation_box = oasysgui.widgetBox(self.view_box, "", addSpace=False, orientation="vertical")
@@ -153,7 +154,7 @@ class SRWWavefrontViewer(SRWWidget):
                                                str(exception),
                         QtWidgets.QMessageBox.Ok)
 
-                    #raise exception
+                    if self.IS_DEVELOP: raise exception
         else:
             self.initializeTabs()
 

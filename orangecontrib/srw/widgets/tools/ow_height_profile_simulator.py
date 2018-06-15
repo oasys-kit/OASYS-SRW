@@ -686,7 +686,8 @@ class OWheight_profile_simulator(OWWidget):
             QMessageBox.critical(self, "Error",
                                  exception.args[0],
                                  QMessageBox.Ok)
-            #raise exception
+
+            if self.IS_DEVELOP: raise exception
 
     def generate_heigth_profile_file_ni(self):
         self.generate_heigth_profile_file(not_interactive_mode=True)
@@ -721,7 +722,7 @@ class OWheight_profile_simulator(OWWidget):
                                      exception.args[0],
                                      QMessageBox.Ok)
 
-                raise exception
+                if self.IS_DEVELOP: raise exception
 
     def call_reset_settings(self):
         if ConfirmDialog.confirmed(parent=self, message="Confirm Reset of the Fields?"):

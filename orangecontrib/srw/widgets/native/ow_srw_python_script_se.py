@@ -108,5 +108,5 @@ class SRWPythonScriptSE(widget.OWWidget):
             except Exception as e:
                 self.pythonScript.setText("Problem in writing python script:\n" + str(sys.exc_info()[0]) + ": " + str(sys.exc_info()[1]))
 
-                #raise e
+                if self.IS_DEVELOP: raise e
 
