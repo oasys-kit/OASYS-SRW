@@ -72,7 +72,7 @@ class OWToWofryWavefront2d(widget.OWWidget):
     def convert_wavefront(self):
         try:
             if not self.srw_data is None:
-                self.send("GenericWavefront2D", self.srw_data._srw_wavefront.toGenericWavefront())
+                self.send("GenericWavefront2D", self.srw_data.get_srw_wavefront().toGenericWavefront())
         except Exception as exception:
             QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
