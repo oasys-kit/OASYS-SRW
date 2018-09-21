@@ -14,7 +14,7 @@ from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontVi
 class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
     maintainer = "Luca Rebuffi"
-    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    maintainer_email = "lrebuffi(@at@)anl.gov"
     category = "Tools"
     keywords = ["data", "file", "load", "read"]
     name = "Accumulation Point"

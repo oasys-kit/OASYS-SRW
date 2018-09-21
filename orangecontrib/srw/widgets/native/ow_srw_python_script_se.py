@@ -16,7 +16,7 @@ class SRWPythonScriptSE(widget.OWWidget):
     description = "SRW Python Script (SE)"
     icon = "icons/python_script_se.png"
     maintainer = "Luca Rebuffi"
-    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    maintainer_email = "lrebuffi(@at@)anl.gov"
     priority = 1
     category = "Data Display Tools"
     keywords = ["data", "file", "load", "read"]

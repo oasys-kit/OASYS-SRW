@@ -16,7 +16,7 @@ from orangecontrib.srw.widgets.native.util import native_util
 class OWSRWIntensityPlotter(SRWWavefrontViewer):
 
     maintainer = "Luca Rebuffi"
-    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    maintainer_email = "lrebuffi(@at@)anl.gov"
     category = "Native"
     keywords = ["data", "file", "load", "read"]
     name = "Intensity Plot"

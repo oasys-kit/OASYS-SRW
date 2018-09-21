@@ -24,7 +24,7 @@ class SRWPythonScriptME(SRWWidget):
     description = "SRW Python Script (ME)"
     icon = "icons/python_script_me.png"
     maintainer = "Luca Rebuffi"
-    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    maintainer_email = "lrebuffi(@at@)anl.gov"
     priority = 2
     category = "Data Display Tools"
     keywords = ["data", "file", "load", "read"]

@@ -221,7 +221,7 @@ class OWheight_profile_simulator(OWWidget):
         oasysgui.lineEdit(self.kind_of_profile_y_box_1, self, "rms_y", "Rms Value",
                            labelWidth=260, valueType=float, orientation="horizontal")
 
-        self.kind_of_profile_y_box_2 = oasysgui.widgetBox(input_box_l, "", addSpace=True, orientation="vertical", height=350)
+        self.kind_of_profile_y_box_2 = oasysgui.widgetBox(input_box_l, "", addSpace=True, orientation="vertical", height=390)
 
         select_file_box_2 = oasysgui.widgetBox(self.kind_of_profile_y_box_2, "", addSpace=True, orientation="horizontal")
 
@@ -286,7 +286,7 @@ class OWheight_profile_simulator(OWWidget):
 
         gui.separator(input_box_w)
 
-        self.kind_of_profile_x_box_1 = oasysgui.widgetBox(input_box_w, "", addSpace=True, orientation="vertical", height=300)
+        self.kind_of_profile_x_box_1 = oasysgui.widgetBox(input_box_w, "", addSpace=True, orientation="vertical", height=350)
 
         self.le_dimension_x = oasysgui.lineEdit(self.kind_of_profile_x_box_1, self, "dimension_x", "Dimensions",
                           labelWidth=260, valueType=float, orientation="horizontal")
@@ -316,7 +316,7 @@ class OWheight_profile_simulator(OWWidget):
 
         ##----------------------------------
 
-        self.kind_of_profile_x_box_2 = oasysgui.widgetBox(input_box_w, "", addSpace=True, orientation="vertical", height=300)
+        self.kind_of_profile_x_box_2 = oasysgui.widgetBox(input_box_w, "", addSpace=True, orientation="vertical", height=390)
 
         select_file_box_1 = oasysgui.widgetBox(self.kind_of_profile_x_box_2, "", addSpace=True, orientation="horizontal")
 

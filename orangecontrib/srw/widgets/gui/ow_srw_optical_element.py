@@ -34,7 +34,7 @@ from orangecontrib.srw.util.srw_util import SRWPlot
 class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
     maintainer = "Luca Rebuffi"
-    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    maintainer_email = "lrebuffi(@at@)anl.gov"
     keywords = ["data", "file", "load", "read"]
     category = "SRW Optical Elements"
 

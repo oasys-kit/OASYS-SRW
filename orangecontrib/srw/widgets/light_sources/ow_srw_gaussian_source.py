@@ -31,7 +31,7 @@ from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontVi
 class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
 
     maintainer = "Luca Rebuffi"
-    maintainer_email = "luca.rebuffi(@at@)elettra.eu"
+    maintainer_email = "lrebuffi(@at@)anl.gov"
     category = "Sources"
     keywords = ["data", "file", "load", "read"]
     name = "Gaussian Source"
