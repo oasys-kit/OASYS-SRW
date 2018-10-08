@@ -19,7 +19,7 @@ from syned.beamline.element_coordinates import ElementCoordinates
 from syned.beamline.beamline_element import BeamlineElement
 
 from wofry.propagator.propagator import PropagationManager, PropagationElements, PropagationParameters
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import PolarizationComponent, WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
 from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
 from wofrysrw.propagator.propagators2D.srw_fresnel_native import FresnelSRWNative, SRW_APPLICATION
 from wofrysrw.propagator.propagators2D.srw_fresnel_wofry import FresnelSRWWofry
@@ -120,7 +120,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     oe_orientation_of_the_horizontal_base_vector_y     = Setting(0.0)
 
     input_srw_data = None
-    wavefront_to_plot = None
 
     has_orientation_angles=True
     has_oe_wavefront_propagation_parameters_tab = True
@@ -473,11 +472,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             tickets = None
 
             if not output_wavefront is None:
-                self.wavefront_to_plot = output_wavefront
+                self.output_wavefront = output_wavefront
                 self.initializeTabs()
 
                 tickets = []
-                self.run_calculations(tickets=tickets, progress_bar_value=50)
+
+                self.run_calculation_for_plots(tickets=tickets, progress_bar_value=50)
 
             self.plot_results(tickets, 80)
 
@@ -636,18 +636,39 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             if self.is_automatic_run:
                 self.propagate_wavefront()
 
-    def run_calculations(self, tickets, progress_bar_value):
-        e, h, v, i = self.wavefront_to_plot.get_intensity(multi_electron=False)
+    def run_calculation_for_plots(self, tickets, progress_bar_value):
+        if self.view_type==2:
+            e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-        self.progressBarSet(progress_bar_value)
+            self.progressBarSet(progress_bar_value)
 
-        e, h, v, i = self.wavefront_to_plot.get_phase()
+            e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-        self.progressBarSet(progress_bar_value + 10)
+            e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
+
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+            self.progressBarSet(progress_bar_value + 10)
+
+            e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
+
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+        elif self.view_type==1:
+            e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False)
+
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+            self.progressBarSet(progress_bar_value)
+
+            e, h, v, i = self.output_wavefront.get_phase()
+
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+            self.progressBarSet(progress_bar_value + 10)
 
     def receive_syned_data(self, data):
         if not data is None:
@@ -698,8 +719,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         return [[1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity SE [ph/s/.1%bw/mm\u00b2]", "Phase SE [rad]"]
-        else: return ["Intensity SE", "Phase SE"]
+        if with_um: return ["Intensity SE [ph/s/.1%bw/mm\u00b2]",
+                            "Phase SE [rad]"]
+        else: return ["Intensity SE",
+                      "Phase SE"]
 
     def getXTitles(self):
         return ["X [\u03bcm]", "X [\u03bcm]"]
@@ -712,3 +735,49 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
     def getYUM(self):
         return ["Y [\u03bcm]", "Y [\u03bcm]"]
+
+    def getVariablesToPlot(self):
+        if self.view_type == 2:
+            return [[1, 2], [1, 2], [1, 2], [1, 2]]
+        else:
+            return [[1, 2], [1, 2]]
+
+    def getTitles(self, with_um=False):
+        if self.view_type == 2:
+            if with_um: return ["Intensity SE \u03c0 [ph/s/.1%bw/mm\u00b2]",
+                                "Intensity SE \u03c3 [ph/s/.1%bw/mm\u00b2]",
+                                "Phase SE \u03c0 [rad]",
+                                "Phase SE \u03c3 [rad]"]
+            else: return ["Intensity SE \u03c0",
+                          "Intensity SE \u03c3",
+                          "Phase SE \u03c0",
+                          "Phase SE \u03c3"]
+        else:
+            if with_um: return ["Intensity SE [ph/s/.1%bw/mm\u00b2]",
+                                "Phase SE [rad]"]
+            else: return ["Intensity SE",
+                          "Phase SE"]
+
+    def getXTitles(self):
+        if self.view_type == 2:
+            return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
+        else:
+            return ["X [\u03bcm]", "X [\u03bcm]"]
+
+    def getYTitles(self):
+        if self.view_type == 2:
+            return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
+        else:
+            return ["Y [\u03bcm]", "Y [\u03bcm]"]
+
+    def getXUM(self):
+        if self.view_type == 2:
+            return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
+        else:
+            return ["X [\u03bcm]", "X [\u03bcm]"]
+
+    def getYUM(self):
+        if self.view_type == 2:
+            return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
+        else:
+            return ["Y [\u03bcm]", "Y [\u03bcm]"]

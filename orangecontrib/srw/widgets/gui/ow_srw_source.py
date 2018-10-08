@@ -18,7 +18,7 @@ from syned.storage_ring.light_source import ElectronBeam, LightSource
 from syned.widget.widget_decorator import WidgetDecorator
 from syned.beamline.shape import Rectangle
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters, PolarizationComponent
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
@@ -94,8 +94,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     wf_end_integration_longitudinal_position = Setting(0.0) 
     wf_number_of_points_for_trajectory_calculation = Setting(50000)
     wf_use_terminating_terms = Setting(1)
-    wf_sampling_factor_for_adjusting_nx_ny = Setting(0.0) 
-
+    wf_sampling_factor_for_adjusting_nx_ny = Setting(0.0)
 
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
@@ -292,20 +291,20 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             self.setStatusMessage("")
 
             beamline = SRWBeamline(light_source=srw_source)
-            wavefront = self.calculate_wavefront_propagation(srw_source)
+            self.output_wavefront = self.calculate_wavefront_propagation(srw_source)
 
             tickets = []
 
             if self.is_do_plots():
                 self.setStatusMessage("Plotting Results")
 
-                self.run_calculation_intensity(wavefront, tickets)
+                self.run_calculation_for_plots(tickets, 50)
 
-                self.plot_results(tickets)
+                self.plot_results(tickets, 80)
 
             self.setStatusMessage("")
 
-            self.send("SRWData", SRWData(srw_beamline=beamline, srw_wavefront=wavefront))
+            self.send("SRWData", SRWData(srw_beamline=beamline, srw_wavefront=self.output_wavefront))
 
         except Exception as exception:
             QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
@@ -467,26 +466,64 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     def checkWavefrontPhotonEnergy(self):
         congruence.checkStrictlyPositiveNumber(self.wf_photon_energy, "Wavefront Propagation Photon Energy")
 
+    def run_calculation_for_plots(self, tickets, progress_bar_value):
+        if not self.output_wavefront is None:
+            if self.view_type == 1:
+                e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False)
 
-    def run_calculation_intensity(self, srw_wavefront, tickets, progress_bar_value=30):
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-        e, h, v, i = srw_wavefront.get_intensity(multi_electron=False)
+                self.progressBarSet(progress_bar_value)
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                e, h, v, i = self.output_wavefront.get_phase()
 
-        self.progressBarSet(progress_bar_value)
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-        e, h, v, i = srw_wavefront.get_phase()
+                self.progressBarSet(progress_bar_value + 10)
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True)
 
-        self.progressBarSet(progress_bar_value + 10)
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-        e, h, v, i = srw_wavefront.get_intensity(multi_electron=True)
+                self.progressBarSet(progress_bar_value + 20)
+            elif self.view_type == 2:
+                e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-        self.progressBarSet(progress_bar_value + 10)
+                self.progressBarSet(progress_bar_value)
+
+                #--
+
+                e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
+
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+                #--
+
+                e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
+
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+                self.progressBarSet(progress_bar_value + 10)
+
+                e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
+
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+                #--
+
+                e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
+
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+                self.progressBarSet(progress_bar_value + 20)
+
+                e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
+
+                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+
+
 
     def get_automatic_sr_method(self):
         raise NotImplementedError()
@@ -577,3 +614,4 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     def receive_specific_syned_data(self, data):
         raise NotImplementedError()
+

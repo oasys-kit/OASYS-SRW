@@ -46,7 +46,7 @@ class SRWWavefrontViewer(SRWWidget):
     want_main_area=1
     view_type=Setting(1)
 
-    plotted_tickets=None
+    output_wavefront=None
 
     def __init__(self, show_automatic_box=True, show_view_box=True):
         super().__init__(show_automatic_box)
@@ -61,8 +61,8 @@ class SRWWavefrontViewer(SRWWidget):
             view_box_1 = oasysgui.widgetBox(self.view_box, "", addSpace=False, orientation="vertical", width=350)
 
             self.view_type_combo = gui.comboBox(view_box_1, self, "view_type", label="Plot Results",
-                                                labelWidth=220,
-                                                items=["No", "Yes"],
+                                                labelWidth=120,
+                                                items=["No", "Yes (Total Polarization)", "Yes (Polarization Components)"],
                                                 callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
         else:
             self.view_type = 1
@@ -144,22 +144,29 @@ class SRWWavefrontViewer(SRWWidget):
         self.progressBarInit()
 
         if self.is_do_plots():
-            if not self.plotted_tickets is None:
-                try:
-                    self.initializeTabs()
+            try:
+                self.initializeTabs()
 
-                    self.plot_results(self.plotted_tickets, 80)
-                except Exception as exception:
-                    QtWidgets.QMessageBox.critical(self, "Error",
-                                               str(exception),
-                        QtWidgets.QMessageBox.Ok)
+                if not self.output_wavefront is None:
+                    tickets = []
 
-                    if self.IS_DEVELOP: raise exception
+                    self.run_calculation_for_plots(tickets, 50)
+
+                    self.plot_results(tickets, 80)
+
+            except Exception as exception:
+                QtWidgets.QMessageBox.critical(self, "Error",
+                                           str(exception),
+                    QtWidgets.QMessageBox.Ok)
+
+                if self.IS_DEVELOP: raise exception
         else:
             self.initializeTabs()
 
         self.progressBarFinished()
 
+    def run_calculation_for_plots(self, tickets, progress_bar_value):
+        raise NotImplementedError("to be implemented")
 
     def plot_1D(self, ticket, progressBarValue, var, plot_canvas_index, title, xtitle, ytitle, xum=""):
         if self.plot_canvas[plot_canvas_index] is None:
@@ -218,7 +225,7 @@ class SRWWavefrontViewer(SRWWidget):
         return True
 
     def is_do_plots(self):
-        return self.view_type == 1
+        return self.view_type == 1 or self.view_type == 2
 
     def plot_results(self, tickets = [], progressBarValue=80):
         if self.is_do_plots():
@@ -256,8 +263,6 @@ class SRWWavefrontViewer(SRWWidget):
             else:
                 raise Exception("Nothing to Plot")
 
-        self.plotted_tickets = tickets
-
     def writeStdOut(self, text):
         cursor = self.srw_output.textCursor()
         cursor.movePosition(QtGui.QTextCursor.End)
@@ -269,25 +274,56 @@ class SRWWavefrontViewer(SRWWidget):
         self.initializeTabs()
 
     def getVariablesToPlot(self):
-        return [[1, 2], [1, 2], [1, 2]]
+        if self.view_type == 2:
+            return [[1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2]]
+        else:
+            return [[1, 2], [1, 2], [1, 2]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Intensity SE [ph/s/.1%bw/mm\u00b2]",
-                            "Phase SE [rad]",
-                            "Intensity ME [ph/s/.1%bw/mm\u00b2]"]
-        else: return ["Intensity SE", "Phase SE", "Intensity ME (Convolution)"]
+        if self.view_type == 2:
+            if with_um: return ["Intensity SE \u03c0 [ph/s/.1%bw/mm\u00b2]",
+                                "Intensity SE \u03c3 [ph/s/.1%bw/mm\u00b2]",
+                                "Phase SE \u03c0 [rad]",
+                                "Phase SE \u03c3 [rad]",
+                                "Intensity ME \u03c0 [ph/s/.1%bw/mm\u00b2]",
+                                "Intensity ME \u03c3 [ph/s/.1%bw/mm\u00b2]"]
+            else: return ["Intensity SE \u03c0",
+                          "Intensity SE \u03c3",
+                          "Phase SE \u03c0",
+                          "Phase SE \u03c3",
+                          "Intensity ME \u03c0 (Convolution)",
+                          "Intensity ME \u03c3 (Convolution)"]
+        else:
+            if with_um: return ["Intensity SE [ph/s/.1%bw/mm\u00b2]",
+                                "Phase SE [rad]",
+                                "Intensity ME [ph/s/.1%bw/mm\u00b2]"]
+            else: return ["Intensity SE",
+                          "Phase SE",
+                          "Intensity ME (Convolution)"]
 
     def getXTitles(self):
-        return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
+        if self.view_type == 2:
+            return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
+        else:
+            return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
 
     def getYTitles(self):
-        return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
+        if self.view_type == 2:
+            return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
+        else:
+            return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
 
     def getXUM(self):
-        return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
+        if self.view_type == 2:
+            return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
+        else:
+            return ["X [\u03bcm]", "X [\u03bcm]", "X [\u03bcm]"]
 
     def getYUM(self):
-        return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
+        if self.view_type == 2:
+            return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
+        else:
+            return ["Y [\u03bcm]", "Y [\u03bcm]", "Y [\u03bcm]"]
 
     def getConversionActive(self):
         return True
