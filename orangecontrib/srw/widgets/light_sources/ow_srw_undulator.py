@@ -32,6 +32,8 @@ class OWSRWUndulator(OWSRWSource):
 
     period_length = Setting(0.02)
     number_of_periods = Setting(75)
+    horizontal_central_position = Setting(0.0)
+    vertical_central_position = Setting(0.0)
     longitudinal_central_position = Setting(0.0)
 
     wf_use_harmonic = Setting(0)
@@ -55,6 +57,8 @@ class OWSRWUndulator(OWSRWSource):
 
         oasysgui.lineEdit(left_box_2, self, "period_length", "Period Length [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "number_of_periods", "Number of Periods", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2, self, "horizontal_central_position", "Horizontal Central Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2, self, "vertical_central_position", "Vertical Central Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "longitudinal_central_position", "Longitudinal Central Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
 
@@ -156,7 +160,9 @@ class OWSRWUndulator(OWSRWSource):
         symmetry_vs_longitudinal_position_vertical = 1 if self.symmetry_vs_longitudinal_position_vertical == 0 else -1
 
         if self.magnetic_field_from == 0:
-            undulator_magnetic_structure=SRWUndulator(longitudinal_central_position=self.longitudinal_central_position,
+            undulator_magnetic_structure=SRWUndulator(horizontal_central_position = 0.0,
+                                                      vertical_central_position = 0.0,
+                                                      longitudinal_central_position=self.longitudinal_central_position,
                                                       K_vertical=self.K_vertical,
                                                       K_horizontal=self.K_horizontal,
                                                       period_length=self.period_length,
@@ -166,7 +172,9 @@ class OWSRWUndulator(OWSRWSource):
                                                       symmetry_vs_longitudinal_position_horizontal=symmetry_vs_longitudinal_position_horizontal,
                                                       symmetry_vs_longitudinal_position_vertical=symmetry_vs_longitudinal_position_vertical)
         else:
-            undulator_magnetic_structure=SRWUndulator(longitudinal_central_position=self.longitudinal_central_position,
+            undulator_magnetic_structure=SRWUndulator(horizontal_central_position = 0.0,
+                                                      vertical_central_position = 0.0,
+                                                      longitudinal_central_position=self.longitudinal_central_position,
                                                       period_length=self.period_length,
                                                       number_of_periods=self.number_of_periods,
                                                       initial_phase_horizontal=self.initial_phase_horizontal,
