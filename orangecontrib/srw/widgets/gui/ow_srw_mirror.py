@@ -9,9 +9,11 @@ from oasys.widgets import congruence
 
 from syned.beamline.optical_elements.mirrors.mirror import Mirror
 from syned.widget.widget_decorator import WidgetDecorator
+from wofrysrw.beamline.optical_elements.mirrors.srw_mirror import ScaleType
 
 from orangecontrib.srw.util.srw_objects import SRWData, SRWPreProcessorData
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
+
 
 class OWSRWMirror(OWSRWOpticalElement):
 
@@ -25,6 +27,23 @@ class OWSRWMirror(OWSRWOpticalElement):
     height_profile_data_file_dimension = Setting(0)
     height_amplification_coefficient   = Setting(1.0)
 
+    has_reflectivity = Setting(0)
+
+    reflectivity_value = Setting(0.95)
+    reflectivity_data_file = Setting("reflectivity.dat")
+
+    reflectivity_energies_number = Setting(100)
+    reflectivity_angles_number = Setting(100)
+    reflectivity_components_number = Setting(0)
+
+    reflectivity_energy_start = Setting(100.0)
+    reflectivity_energy_end = Setting(10000.0)
+    reflectivity_energy_scale_type = Setting(0)
+
+    reflectivity_angle_start = Setting(0.001)
+    reflectivity_angle_end = Setting(0.005)
+    reflectivity_angle_scale_type = Setting(0)
+
     inputs = [("SRWData", SRWData, "set_input"),
               ("PreProcessor Data", SRWPreProcessorData, "setPreProcessorData"),
               WidgetDecorator.syned_input_data()[0]]
@@ -33,20 +52,33 @@ class OWSRWMirror(OWSRWOpticalElement):
         super().__init__(azimuth_hor_vert=True)
 
     def draw_specific_box(self):
-        self.mirror_box = oasysgui.widgetBox(self.tab_bas, "Mirror Setting", addSpace=False, orientation="vertical")
+
+        tabs_mirr = oasysgui.tabWidget(self.tab_bas)
+
+        tab_mirr = oasysgui.createTabPage(tabs_mirr, "Mirror")
+        tab_errp = oasysgui.createTabPage(tabs_mirr, "Error Profile")
+        tab_refl = oasysgui.createTabPage(tabs_mirr, "Reflectivity")
+
+        self.mirror_box = oasysgui.widgetBox(tab_mirr, "", addSpace=False, orientation="vertical")
 
         oasysgui.lineEdit(self.mirror_box, self, "tangential_size", "Tangential Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.mirror_box, self, "sagittal_size", "Sagittal_Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.mirror_box, self, "horizontal_position_of_mirror_center", "Horizontal position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.mirror_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
-        gui.comboBox(self.mirror_box, self, "has_height_profile", label="Use Height Error Profile",
+        gui.separator(self.mirror_box)
+
+        self.error_box = oasysgui.widgetBox(tab_errp, "", addSpace=False, orientation="vertical")
+
+        gui.comboBox(self.error_box, self, "has_height_profile", label="Use Height Error Profile",
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal", callback=self.set_HeightProfile)
 
-        self.height_profile_box_1 = oasysgui.widgetBox(self.mirror_box, "", addSpace=False, orientation="vertical", height=100)
+        gui.separator(self.error_box)
 
-        self.height_profile_box_2 = oasysgui.widgetBox(self.mirror_box, "", addSpace=False, orientation="vertical", height=100)
+        self.height_profile_box_1 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=80)
+
+        self.height_profile_box_2 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=80)
 
         file_box =  oasysgui.widgetBox(self.height_profile_box_2, "", addSpace=False, orientation="horizontal")
 
@@ -61,12 +93,76 @@ class OWSRWMirror(OWSRWOpticalElement):
 
         self.set_HeightProfile()
 
+        self.reflectivity_box = oasysgui.widgetBox(tab_refl, "", addSpace=False, orientation="vertical")
+
+        gui.comboBox(self.reflectivity_box, self, "has_reflectivity", label="Use Reflectivity",
+                     items=["No", "Single Value", "R vs E vs \u03b1 (vs \u03c3/\u03c0)"], labelWidth=200,
+                     sendSelectedValue=False, orientation="horizontal", callback=self.set_Reflectivity)
+
+        gui.separator(self.reflectivity_box)
+
+        self.reflectivity_box_1 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=200)
+
+        self.reflectivity_box_2 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=200)
+
+        oasysgui.lineEdit(self.reflectivity_box_2, self, "reflectivity_value", "Reflectivity Value", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.reflectivity_box_3 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=270)
+
+        file_box =  oasysgui.widgetBox(self.reflectivity_box_3, "", addSpace=False, orientation="horizontal")
+
+        self.le_reflectivity_data_file = oasysgui.lineEdit(file_box, self, "reflectivity_data_file", "Reflectivity data file", labelWidth=185, valueType=str, orientation="horizontal")
+        gui.button(file_box, self, "...", callback=self.selectReflectivityDataFile)
+
+        gui.separator(self.reflectivity_box_3)
+
+        oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_energies_number", "Number of Energy Values", labelWidth=260, valueType=float, orientation="horizontal")
+
+        energy_box = oasysgui.widgetBox(self.reflectivity_box_3, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(energy_box, self, "reflectivity_energy_start", "Energy Values [eV]: Initial", labelWidth=160, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(energy_box, self, "reflectivity_energy_end", "Final", labelWidth=50, valueType=float, orientation="horizontal")
+
+        gui.comboBox(self.reflectivity_box_3, self, "reflectivity_energy_scale_type", label="Energy Scale Type",
+                     items=["Linear", "Logarithmic"], labelWidth=250,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.separator(self.reflectivity_box_3)
+
+        oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_angles_number", "Number of Grazing Angle Values", labelWidth=260, valueType=float, orientation="horizontal")
+
+        angle_box = oasysgui.widgetBox(self.reflectivity_box_3, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(angle_box, self, "reflectivity_angle_start", "Gr. Ang. Values [rad]: Initial", labelWidth=170, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(angle_box, self, "reflectivity_angle_end", "Final", labelWidth=40, valueType=float, orientation="horizontal")
+
+        gui.comboBox(self.reflectivity_box_3, self, "reflectivity_angle_scale_type", label="Grazing Angle Scale Type",
+                     items=["Linear", "Logarithmic"], labelWidth=250,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.separator(self.reflectivity_box_3)
+
+        gui.comboBox(self.reflectivity_box_3, self, "reflectivity_components_number", label="Polarization",
+                     items=["Total", "\u03c3/\u03c0"], labelWidth=280,
+                     sendSelectedValue=False, orientation="horizontal")
+
+
+        self.set_Reflectivity()
+
     def selectHeightProfileDataFile(self):
         self.le_height_profile_data_file.setText(oasysgui.selectFileFromDialog(self, self.height_profile_data_file, "Height profile data file"))
+
+    def selectReflectivityDataFile(self):
+        self.le_reflectivity_data_file.setText(oasysgui.selectFileFromDialog(self, self.reflectivity_data_file, "Reflectivity data file"))
 
     def set_HeightProfile(self):
         self.height_profile_box_1.setVisible(self.has_height_profile==0)
         self.height_profile_box_2.setVisible(self.has_height_profile==1)
+
+    def set_Reflectivity(self):
+        self.reflectivity_box_1.setVisible(self.has_reflectivity==0)
+        self.reflectivity_box_2.setVisible(self.has_reflectivity==1)
+        self.reflectivity_box_3.setVisible(self.has_reflectivity==2)
 
     def get_optical_element(self):
         
@@ -80,9 +176,26 @@ class OWSRWMirror(OWSRWOpticalElement):
         mirror.height_profile_data_file=self.height_profile_data_file if self.has_height_profile else None
         mirror.height_profile_data_file_dimension=self.height_profile_data_file_dimension + 1
         mirror.height_amplification_coefficient=self.height_amplification_coefficient
-        
+
+        if self.has_reflectivity == 1:
+            mirror.set_reflectivity(reflectivity_data=self.reflectivity_value)
+        elif self.has_reflectivity == 2:
+            mirror.set_reflectivity(reflectivity_data=self.read_reflectivity_data_file(),
+                                    energies_number=self.reflectivity_energies_number,
+                                    angles_number=self.reflectivity_angles_number,
+                                    components_number=self.reflectivity_components_number + 1,
+                                    energy_start=self.reflectivity_energy_start,
+                                    energy_end=self.reflectivity_energy_end,
+                                    energy_scale_type=ScaleType.LINEAR if self.reflectivity_energy_scale_type==0 else ScaleType.LOGARITHMIC,
+                                    angle_start=self.reflectivity_angle_start,
+                                    angle_end=self.reflectivity_angle_end,
+                                    angle_scale_type=ScaleType.LINEAR if self.reflectivity_angle_scale_type==0 else ScaleType.LOGARITHMIC)
+
         return mirror
-        
+
+    def read_reflectivity_data_file(self):
+        return numpy.loadtxt(self.reflectivity_data_file).tolist()
+
     def get_mirror_instance(self):
         raise NotImplementedError()
 
@@ -116,6 +229,20 @@ class OWSRWMirror(OWSRWOpticalElement):
         if self.has_height_profile:
             congruence.checkFile(self.height_profile_data_file)
 
+        if self.has_reflectivity == 1:
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_value, "Reflectivity Value")
+        elif self.has_reflectivity == 2:
+            congruence.checkFile(self.reflectivity_data_file)
+
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_energies_number, "Number of Energy Values")
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_energy_start, "Initial Energy Value")
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_energy_end, "Final Energy Value")
+            congruence.checkGreaterOrEqualThan(self.reflectivity_energy_end, self.reflectivity_energy_start, "Final Energy Value", "Initial Energy Value")
+
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_angles_number, "Number of Grazing Angle Values")
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_angle_start, "Initial Grazing Angle Value")
+            congruence.checkStrictlyPositiveNumber(self.reflectivity_angle_end, "Final Grazing Angle Value")
+            congruence.checkGreaterOrEqualThan(self.reflectivity_angle_end, self.reflectivity_angle_start, "Final Grazing Angle Value", "Initial Grazing Angle Value")
 
     def setPreProcessorData(self, data):
         if data is not None:
@@ -145,6 +272,7 @@ class OWSRWMirror(OWSRWOpticalElement):
                             QMessageBox.information(self, "QMessageBox.information()",
                                                           "Dimensions of this O.E. were changed",
                                                           QMessageBox.Ok)
+
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
     
