@@ -193,6 +193,8 @@ class OWSRWMirror(OWSRWOpticalElement):
 
         return mirror
 
+
+
     def read_reflectivity_data_file(self):
         return numpy.loadtxt(self.reflectivity_data_file).tolist()
 

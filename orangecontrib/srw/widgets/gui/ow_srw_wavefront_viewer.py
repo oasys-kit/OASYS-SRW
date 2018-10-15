@@ -48,8 +48,8 @@ class SRWWavefrontViewer(SRWWidget):
 
     output_wavefront=None
 
-    def __init__(self, show_automatic_box=True, show_view_box=True):
-        super().__init__(show_automatic_box)
+    def __init__(self, show_general_option_box=True, show_automatic_box=True, show_view_box=True):
+        super().__init__(show_general_option_box=show_general_option_box, show_automatic_box=show_automatic_box)
 
         self.main_tabs = oasysgui.tabWidget(self.mainArea)
         plot_tab = oasysgui.createTabPage(self.main_tabs, "Plots")

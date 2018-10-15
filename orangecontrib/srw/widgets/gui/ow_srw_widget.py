@@ -28,7 +28,7 @@ class SRWWidget(widget.OWWidget):
 
     srw_live_propagation_mode = "Unknown"
 
-    def __init__(self, show_automatic_box=True):
+    def __init__(self, show_general_option_box=True, show_automatic_box=True):
         super().__init__()
 
         geom = QApplication.desktop().availableGeometry()
@@ -43,6 +43,7 @@ class SRWWidget(widget.OWWidget):
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
         self.general_options_box = gui.widgetBox(self.controlArea, "General Options", addSpace=True, orientation="horizontal")
+        self.general_options_box.setVisible(show_general_option_box)
 
         if show_automatic_box :
             gui.checkBox(self.general_options_box, self, 'is_automatic_run', 'Automatic Execution')

@@ -99,14 +99,12 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
 
-    def __init__(self, show_automatic_box=False):
-        super().__init__(show_automatic_box=show_automatic_box)
+    def __init__(self):
+        super().__init__(show_general_option_box=False, show_automatic_box=False)
 
         self.runaction = widget.OWAction("Run SRW", self)
         self.runaction.triggered.connect(self.runSRWSource)
         self.addAction(self.runaction)
-
-        self.general_options_box.setVisible(False)
 
         button_box = oasysgui.widgetBox(self.controlArea, "", addSpace=False, orientation="horizontal")
 
