@@ -11,7 +11,7 @@ from syned.beamline.optical_elements.mirrors.mirror import Mirror
 from syned.widget.widget_decorator import WidgetDecorator
 from wofrysrw.beamline.optical_elements.mirrors.srw_mirror import ScaleType
 
-from orangecontrib.srw.util.srw_objects import SRWData, SRWPreProcessorData
+from orangecontrib.srw.util.srw_objects import SRWData, SRWPreProcessorData, SRWErrorProfileData, SRWReflectivityData
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
 
@@ -45,7 +45,8 @@ class OWSRWMirror(OWSRWOpticalElement):
     reflectivity_angle_scale_type = Setting(0)
 
     inputs = [("SRWData", SRWData, "set_input"),
-              ("PreProcessor Data", SRWPreProcessorData, "setPreProcessorData"),
+              ("PreProcessor Data #1", SRWPreProcessorData, "setPreProcessorData"),
+              ("PreProcessor Data #2", SRWPreProcessorData, "setPreProcessorData"),
               WidgetDecorator.syned_input_data()[0]]
 
     def __init__(self):
@@ -249,32 +250,48 @@ class OWSRWMirror(OWSRWOpticalElement):
     def setPreProcessorData(self, data):
         if data is not None:
             try:
-                if data.error_profile_data_file != SRWPreProcessorData.NONE:
-                    self.height_profile_data_file = data.error_profile_data_file
-                    self.height_profile_data_file_dimension = 1
-                    self.has_height_profile = 1
-    
-                    self.set_HeightProfile()
-    
-                    changed = False
-    
-                    if self.sagittal_size > data.error_profile_x_dim or \
-                       self.tangential_size > data.error_profile_y_dim:
-                        changed = True
-    
-                    if changed:
-                        if QMessageBox.information(self, "Confirm Modification",
-                                                      "Dimensions of this O.E. must be changed in order to ensure congruence with the error profile surface, accept?",
-                                                      QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
-                            if self.sagittal_size > data.error_profile_x_dim:
-                                self.sagittal_size = data.error_profile_x_dim
-                            if self.tangential_size > data.error_profile_y_dim:
-                                self.tangential_size = data.error_profile_y_dim
-    
-                            QMessageBox.information(self, "QMessageBox.information()",
-                                                          "Dimensions of this O.E. were changed",
-                                                          QMessageBox.Ok)
+                if not data.error_profile_data is None:
+                    if data.error_profile_data.error_profile_data_file != SRWErrorProfileData.NONE:
+                        self.height_profile_data_file = data.error_profile_data.error_profile_data_file
+                        self.height_profile_data_file_dimension = 1
+                        self.has_height_profile = 1
+        
+                        self.set_HeightProfile()
+        
+                        changed = False
+        
+                        if self.sagittal_size > data.error_profile_data.error_profile_x_dim or \
+                           self.tangential_size > data.error_profile_data.error_profile_y_dim:
+                            changed = True
+        
+                        if changed:
+                            if QMessageBox.information(self, "Confirm Modification",
+                                                          "Dimensions of this O.E. must be changed in order to ensure congruence with the error profile surface, accept?",
+                                                          QMessageBox.Yes | QMessageBox.No) == QMessageBox.Yes:
+                                if self.sagittal_size > data.error_profile_data.error_profile_x_dim:
+                                    self.sagittal_size = data.error_profile_data.error_profile_x_dim
+                                if self.tangential_size > data.error_profile_data.error_profile_y_dim:
+                                    self.tangential_size = data.error_profile_data.error_profile_y_dim
+        
+                                QMessageBox.information(self, "QMessageBox.information()",
+                                                              "Dimensions of this O.E. were changed",
+                                                              QMessageBox.Ok)
+                if not data.reflectivity_data is None:    
+                    if data.reflectivity_data.reflectivity_data_file != SRWReflectivityData.NONE:
+                        self.has_reflectivity=2
+                        self.reflectivity_data_file=data.reflectivity_data.reflectivity_data_file
+                        self.reflectivity_energies_number=data.reflectivity_data.energies_number
+                        self.reflectivity_angles_number=data.reflectivity_data.angles_number
+                        self.reflectivity_components_number=data.reflectivity_data.components_number-1
+                        self.reflectivity_energy_start=data.reflectivity_data.energy_start
+                        self.reflectivity_energy_end=data.reflectivity_data.energy_end
+                        self.reflectivity_energy_scale_type=0 if data.reflectivity_data.energy_scale_type==ScaleType.LINEAR else 1
+                        self.reflectivity_angle_start=data.reflectivity_data.angle_start
+                        self.reflectivity_angle_end=data.reflectivity_data.angle_end
+                        self.reflectivity_angle_scale_type=0 if data.reflectivity_data.angle_scale_type==ScaleType.LINEAR else 1
 
+                        self.set_Reflectivity()
+                        
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
     

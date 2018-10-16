@@ -27,7 +27,7 @@ try:
 except:
     pass
 
-from orangecontrib.srw.util.srw_objects import SRWPreProcessorData
+from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWErrorProfileData
 
 from srxraylib.metrology import profiles_simulation, dabam
 import orangecontrib.srw.util.srw_util as SU
@@ -714,9 +714,9 @@ class OWdabam_height_profile(OWWidget):
                 if self.modify_y == 1 or self.modify_y == 2:
                     dimension_y = self.new_length
 
-                self.send("PreProcessor_Data", SRWPreProcessorData(error_profile_data_file=self.heigth_profile_file_name,
-                                                                   error_profile_x_dim=self.dimension_x,
-                                                                   error_profile_y_dim=dimension_y))
+                self.send("PreProcessor_Data", SRWPreProcessorData(error_profile_data=SRWErrorProfileData(error_profile_data_file=self.heigth_profile_file_name,
+                                                                                                          error_profile_x_dim=self.dimension_x,
+                                                                                                          error_profile_y_dim=dimension_y)))
             except Exception as exception:
                 QMessageBox.critical(self, "Error",
                                      exception.args[0],

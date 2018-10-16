@@ -1,9 +1,12 @@
-import numpy
+import os, numpy
 
 from silx.gui.plot import Plot2D
 
-from PyQt5.QtGui import QPalette, QColor, QFont
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox, QLabel, QSizePolicy
+from PyQt5.QtGui import QFont, QPalette, QColor, QPixmap
+
+import orangecanvas.resources as resources
 
 from orangewidget import gui, widget
 from orangewidget.settings import Setting
@@ -12,6 +15,7 @@ from oasys.widgets import gui as oasysgui, congruence
 from oasys.widgets.exchange import DataExchangeObject
 
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
+from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWReflectivityData
 
 from wofrysrw.beamline.optical_elements.mirrors.srw_mirror import ScaleType
 
@@ -36,7 +40,7 @@ class OWReflectivityGenerator(SRWWidget):
               ("Reflectivity (\u03c0)", DataExchangeObject, "set_input_3")]
 
     outputs = [{"name":"Reflectivity Data",
-                "type":DataExchangeObject,
+                "type":SRWPreProcessorData,
                 "doc":"Reflectivity Data",
                 "id":"data"}
                ]
@@ -49,6 +53,8 @@ class OWReflectivityGenerator(SRWWidget):
 
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
+
+    usage_path = os.path.join(resources.package_dirname("orangecontrib.srw.widgets.gui"), "misc", "reflectivity_generator_usage.png")
 
     def __init__(self):
         super().__init__(show_general_option_box=False, show_automatic_box=False)
@@ -82,13 +88,24 @@ class OWReflectivityGenerator(SRWWidget):
 
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
-        self.tabs_setting = oasysgui.tabWidget(self.controlArea)
-        self.tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
-        self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
+        tabs_setting = oasysgui.tabWidget(self.controlArea)
+        tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
+        tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
 
-        self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "Reflectivity Generator Setting")
+        tab_bas = oasysgui.createTabPage(tabs_setting, "Reflectivity Generator Setting")
+        tab_usa = oasysgui.createTabPage(tabs_setting, "Use of the Widget")
+        tab_usa.setStyleSheet("background-color: white;")
 
-        file_box = oasysgui.widgetBox(self.tab_bas, "", addSpace=False, orientation="horizontal")
+        usage_box = oasysgui.widgetBox(tab_usa, "", addSpace=True, orientation="horizontal")
+
+        label = QLabel("")
+        label.setAlignment(Qt.AlignCenter)
+        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        label.setPixmap(QPixmap(self.usage_path))
+
+        usage_box.layout().addWidget(label)
+
+        file_box = oasysgui.widgetBox(tab_bas, "", addSpace=False, orientation="horizontal")
 
         self.le_data_file_name = oasysgui.lineEdit(file_box, self, "data_file_name", "Output File Name", labelWidth=150, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectDataFile)
@@ -99,8 +116,7 @@ class OWReflectivityGenerator(SRWWidget):
     def generate_reflectivity_file(self):
         file_name = congruence.checkFileName(self.data_file_name)
 
-        output_data = DataExchangeObject("SRW", "SRWReflectivityGenerator")
-        output_data.add_content("data_file_name", self.data_file_name)
+        output_data = SRWPreProcessorData(reflectivity_data=SRWReflectivityData(reflectivity_data_file=self.data_file_name))
 
         data_txt = ""
 
@@ -110,15 +126,15 @@ class OWReflectivityGenerator(SRWWidget):
                 energy = self.reflectivity_unpol_data.get_content("dataX")
                 angle = self.reflectivity_unpol_data.get_content("dataY")
 
-                output_data.add_content("energies_number", len(energy))
-                output_data.add_content("angles_number", len(angle))
-                output_data.add_content("components_number", 1)
-                output_data.add_content("energy_start", energy[0])
-                output_data.add_content("energy_end", energy[-1])
-                output_data.add_content("energy_scale_type", ScaleType.LINEAR)
-                output_data.add_content("angle_start", angle[0])
-                output_data.add_content("angle_end", angle[-1])
-                output_data.add_content("angle_scale_type", ScaleType.LINEAR)
+                output_data.reflectivity_data.energies_number = len(energy)
+                output_data.reflectivity_data.angles_number = len(angle)
+                output_data.reflectivity_data.components_number = 1
+                output_data.reflectivity_data.energy_start = energy[0]
+                output_data.reflectivity_data.energy_end = energy[-1]
+                output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
+                output_data.reflectivity_data.angle_start = angle[0]
+                output_data.reflectivity_data.angle_end = angle[-1]
+                output_data.reflectivity_data.angle_scale_type = ScaleType.LINEAR
 
                 data_txt = ""
 
@@ -132,16 +148,18 @@ class OWReflectivityGenerator(SRWWidget):
                 try:
                     reflectivity = self.reflectivity_unpol_data.get_content("xoppy_data")
 
-                    output_data.add_content("energies_number", len(energy))
-                    output_data.add_content("angles_number", len(angle))
-                    output_data.add_content("components_number", 1)
-                    output_data.add_content("energy_start", energy[0])
-                    output_data.add_content("energy_end", energy[-1])
-                    output_data.add_content("energy_scale_type", ScaleType.LINEAR)
-                    output_data.add_content("angle_start", angle[0])
-                    output_data.add_content("angle_end", angle[-1])
-                    output_data.add_content("angle_scale_type", ScaleType.LINEAR)
 
+
+
+                    output_data.reflectivity_data.energies_number = len(energy)
+                    output_data.reflectivity_data.angles_number = len(angle)
+                    output_data.reflectivity_data.components_number = 1
+                    output_data.reflectivity_data.energy_start = energy[0]
+                    output_data.reflectivity_data.energy_end = energy[-1]
+                    output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
+                    output_data.reflectivity_data.angle_start = angle[0]
+                    output_data.reflectivity_data.angle_end = angle[-1]
+                    output_data.reflectivity_data.angle_scale_type = ScaleType.LINEAR
 
                     j = int(self.reflectivity_unpol_data.get_content("plot_y_col"))
 
@@ -200,15 +218,15 @@ class OWReflectivityGenerator(SRWWidget):
 
         self.clear_tabs()
 
-        self.plot_data(self.reflectivity_unpol_data, 0, 0)
+        self.plot_data(self.reflectivity_unpol_data, 0, 0, "Reflectivity (Total/Unpol.)")
 
         self.progressBarSet(30)
 
-        self.plot_data(self.reflectivity_s_data, 1, 1)
+        self.plot_data(self.reflectivity_s_data, 1, 1, "Reflectivity (\u03c3)")
 
         self.progressBarSet(60)
 
-        self.plot_data(self.reflectivity_p_data, 2, 2)
+        self.plot_data(self.reflectivity_p_data, 2, 2, "Reflectivity (\u03c0)")
 
         self.progressBarSet(90)
 
@@ -223,7 +241,7 @@ class OWReflectivityGenerator(SRWWidget):
 
         self.plot_canvas = [None, None, None]
 
-    def plot_data(self, data, tabs_canvas_index, plot_canvas_index):
+    def plot_data(self, data, tabs_canvas_index, plot_canvas_index, title):
         if not data is None:
             try:
                 data2D = data.get_content("data2D")
@@ -233,7 +251,7 @@ class OWReflectivityGenerator(SRWWidget):
                 self.plot_data2D(data2D, dataX, dataY, tabs_canvas_index, plot_canvas_index,
                                  xtitle='Energy [eV]',
                                  ytitle='Theta [mrad]',
-                                 title='Reflectivity')
+                                 title=title)
 
             except:
                 try:
@@ -247,7 +265,7 @@ class OWReflectivityGenerator(SRWWidget):
                                     xoppy_data[:, y_col],
                                     tabs_canvas_index=tabs_canvas_index,
                                     plot_canvas_index=plot_canvas_index,
-                                    title='Reflectivity',
+                                    title=title,
                                     xtitle=labels[0],
                                     ytitle=labels[1])
                 except Exception as exception:

@@ -26,7 +26,7 @@ try:
 except:
     pass
 
-from orangecontrib.srw.util.srw_objects import SRWPreProcessorData
+from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWErrorProfileData
 import orangecontrib.srw.util.srw_util as SU
 
 class OWheight_profile_simulator(OWWidget):
@@ -714,9 +714,9 @@ class OWheight_profile_simulator(OWWidget):
                 if self.kind_of_profile_y == 2: #user defined
                     dimension_y = (self.yy[-1] - self.yy[0])
 
-                self.send("PreProcessor_Data", SRWPreProcessorData(error_profile_data_file=self.heigth_profile_file_name,
-                                                                   error_profile_x_dim=dimension_x,
-                                                                   error_profile_y_dim=dimension_y))
+                self.send("PreProcessor_Data", SRWPreProcessorData(error_profile_data=SRWErrorProfileData(error_profile_data_file=self.heigth_profile_file_name,
+                                                                                                          error_profile_x_dim=dimension_x,
+                                                                                                          error_profile_y_dim=dimension_y)))
             except Exception as exception:
                 QMessageBox.critical(self, "Error",
                                      exception.args[0],
