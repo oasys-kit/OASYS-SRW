@@ -164,7 +164,7 @@ class OWReflectivityGenerator(SRWWidget):
                     y_col = int(self.reflectivity_unpol_data.get_content("plot_y_col"))
 
                     if "Energy" in labels[0]:
-                        congruence.checkStrictlyPositiveAngle(self.angle_single_value, "Angle Single Value")
+                        congruence.checkStrictlyPositiveNumber(self.angle_single_value, "Angle Single Value")
 
                         output_data.reflectivity_data.energies_number = len(reflectivity_data)
                         output_data.reflectivity_data.angles_number = 1
@@ -174,7 +174,7 @@ class OWReflectivityGenerator(SRWWidget):
                         output_data.reflectivity_data.angle_end = self.angle_single_value
 
                     elif "Theta" in labels[0]:
-                        congruence.checkStrictlyPositiveAngle(self.energy_single_value, "Energy Single Value")
+                        congruence.checkStrictlyPositiveNumber(self.energy_single_value, "Energy Single Value")
 
                         output_data.reflectivity_data.energies_number = 1
                         output_data.reflectivity_data.angles_number = len(reflectivity_data)
@@ -257,14 +257,14 @@ class OWReflectivityGenerator(SRWWidget):
                     return
             except:
                try:
-                    reflectivity_s = self.reflectivity_unpol_data.get_content("xoppy_data")
-                    labels_s = self.reflectivity_unpol_data.get_content("labels")
-                    x_col = int(self.reflectivity_unpol_data.get_content("plot_x_col"))
-                    y_col = int(self.reflectivity_unpol_data.get_content("plot_y_col"))
+                    reflectivity_s = self.reflectivity_s_data.get_content("xoppy_data")
+                    labels_s = self.reflectivity_s_data.get_content("labels")
+                    x_col = int(self.reflectivity_s_data.get_content("plot_x_col"))
+                    y_col = int(self.reflectivity_s_data.get_content("plot_y_col"))
 
                     try:
-                        reflectivity_p = self.reflectivity_unpol_data.get_content("xoppy_data")
-                        labels_p = self.reflectivity_unpol_data.get_content("labels")
+                        reflectivity_p = self.reflectivity_p_data.get_content("xoppy_data")
+                        labels_p = self.reflectivity_p_data.get_content("labels")
 
                         if (len(reflectivity_p) != len(reflectivity_s)) or \
                                 (reflectivity_s[0, x_col] != reflectivity_p[0, x_col]) or \
@@ -274,25 +274,32 @@ class OWReflectivityGenerator(SRWWidget):
 
                             return
 
-                        if "Energy" in labels_s[0]:
-                            congruence.checkStrictlyPositiveAngle(self.angle_single_value, "Angle Single Value")
+                        try:
+                            if "Energy" in labels_s[0]:
+                                congruence.checkStrictlyPositiveNumber(self.angle_single_value, "Angle Single Value")
 
-                            output_data.reflectivity_data.energies_number = len(reflectivity_s)
-                            output_data.reflectivity_data.angles_number = 1
-                            output_data.reflectivity_data.energy_start = reflectivity_s[0, x_col]
-                            output_data.reflectivity_data.energy_end = reflectivity_s[-1, x_col]
-                            output_data.reflectivity_data.angle_start = self.angle_single_value
-                            output_data.reflectivity_data.angle_end = self.angle_single_value
+                                output_data.reflectivity_data.energies_number = len(reflectivity_s)
+                                output_data.reflectivity_data.angles_number = 1
+                                output_data.reflectivity_data.energy_start = reflectivity_s[0, x_col]
+                                output_data.reflectivity_data.energy_end = reflectivity_s[-1, x_col]
+                                output_data.reflectivity_data.angle_start = self.angle_single_value
+                                output_data.reflectivity_data.angle_end = self.angle_single_value
 
-                        elif "Theta" in labels_s[0]:
-                            congruence.checkStrictlyPositiveAngle(self.energy_single_value, "Energy Single Value")
+                            elif "Theta" in labels_s[0]:
+                                congruence.checkStrictlyPositiveNumber(self.energy_single_value, "Energy Single Value")
 
-                            output_data.reflectivity_data.energies_number = 1
-                            output_data.reflectivity_data.angles_number = len(reflectivity_s)
-                            output_data.reflectivity_data.energy_start = self.energy_single_value
-                            output_data.reflectivity_data.energy_end = self.energy_single_value
-                            output_data.reflectivity_data.angle_start = reflectivity_s[0, x_col]
-                            output_data.reflectivity_data.angle_end = reflectivity_s[-1, x_col]
+                                output_data.reflectivity_data.energies_number = 1
+                                output_data.reflectivity_data.angles_number = len(reflectivity_s)
+                                output_data.reflectivity_data.energy_start = self.energy_single_value
+                                output_data.reflectivity_data.energy_end = self.energy_single_value
+                                output_data.reflectivity_data.angle_start = reflectivity_s[0, x_col]
+                                output_data.reflectivity_data.angle_end = reflectivity_s[-1, x_col]
+                        except Exception as exception:
+                            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+                            if self.IS_DEVELOP: raise exception
+
+                            return
 
                         output_data.reflectivity_data.components_number = 2
                         output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
