@@ -50,11 +50,14 @@ class OWReflectivityGenerator(SRWWidget):
     reflectivity_s_data = None
 
     data_file_name = Setting("reflectivity.dat")
+    energy_single_value = Setting(0.0)
+    angle_single_value = Setting(0.0)
 
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
 
     usage_path = os.path.join(resources.package_dirname("orangecontrib.srw.widgets.gui"), "misc", "reflectivity_generator_usage.png")
+
 
     def __init__(self):
         super().__init__(show_general_option_box=False, show_automatic_box=False)
@@ -110,6 +113,15 @@ class OWReflectivityGenerator(SRWWidget):
         self.le_data_file_name = oasysgui.lineEdit(file_box, self, "data_file_name", "Output File Name", labelWidth=150, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectDataFile)
 
+        self.energy_box = oasysgui.widgetBox(tab_bas, "", addSpace=False, orientation="vertical")
+        oasysgui.lineEdit(self.energy_box, self, "energy_single_value", "Energy Single Value [eV]", labelWidth=250, valueType=float, orientation="horizontal")
+
+        self.angle_box = oasysgui.widgetBox(tab_bas, "", addSpace=False, orientation="vertical")
+        oasysgui.lineEdit(self.angle_box, self, "angle_single_value", "Angle Single Value [rad]", labelWidth=250, valueType=float, orientation="horizontal")
+
+        self.energy_box.setVisible(False)
+        self.angle_box.setVisible(False)
+
     def selectDataFile(self):
         self.le_data_file_name.setText(oasysgui.selectFileFromDialog(self, self.data_file_name, "Output Data File"))
 
@@ -122,7 +134,7 @@ class OWReflectivityGenerator(SRWWidget):
 
         if not self.reflectivity_unpol_data is None:
             try:
-                reflectivity = self.reflectivity_unpol_data.get_content("data2D")
+                reflectivity_data = self.reflectivity_unpol_data.get_content("data2D")
                 energy = self.reflectivity_unpol_data.get_content("dataX")
                 angle = self.reflectivity_unpol_data.get_content("dataY")
 
@@ -140,38 +152,52 @@ class OWReflectivityGenerator(SRWWidget):
 
                 for i in range(0, len(angle)):
                     for j in range (0, len(energy)):
-                        if i==0 and j==0: data_txt += "\n"
+                        if not (i==0 and j==0): data_txt += "\n"
 
-                        data_txt += str(reflectivity[j, i]) + "\n00"
+                        data_txt += str(reflectivity_data[j, i]) + "\n0.0"
 
             except:
                 try:
-                    reflectivity = self.reflectivity_unpol_data.get_content("xoppy_data")
+                    reflectivity_data = self.reflectivity_unpol_data.get_content("xoppy_data")
+                    labels = self.reflectivity_unpol_data.get_content("labels")
+                    x_col = int(self.reflectivity_unpol_data.get_content("plot_x_col"))
+                    y_col = int(self.reflectivity_unpol_data.get_content("plot_y_col"))
 
+                    if "Energy" in labels[0]:
+                        congruence.checkStrictlyPositiveAngle(self.angle_single_value, "Angle Single Value")
 
+                        output_data.reflectivity_data.energies_number = len(reflectivity_data)
+                        output_data.reflectivity_data.angles_number = 1
+                        output_data.reflectivity_data.energy_start = reflectivity_data[0, x_col]
+                        output_data.reflectivity_data.energy_end = reflectivity_data[-1, x_col]
+                        output_data.reflectivity_data.angle_start = self.angle_single_value
+                        output_data.reflectivity_data.angle_end = self.angle_single_value
 
+                    elif "Theta" in labels[0]:
+                        congruence.checkStrictlyPositiveAngle(self.energy_single_value, "Energy Single Value")
 
-                    output_data.reflectivity_data.energies_number = len(energy)
-                    output_data.reflectivity_data.angles_number = len(angle)
+                        output_data.reflectivity_data.energies_number = 1
+                        output_data.reflectivity_data.angles_number = len(reflectivity_data)
+                        output_data.reflectivity_data.energy_start = self.energy_single_value
+                        output_data.reflectivity_data.energy_end = self.energy_single_value
+                        output_data.reflectivity_data.angle_start = reflectivity_data[0, x_col]
+                        output_data.reflectivity_data.angle_end = reflectivity_data[-1, x_col]
+
                     output_data.reflectivity_data.components_number = 1
-                    output_data.reflectivity_data.energy_start = energy[0]
-                    output_data.reflectivity_data.energy_end = energy[-1]
                     output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
-                    output_data.reflectivity_data.angle_start = angle[0]
-                    output_data.reflectivity_data.angle_end = angle[-1]
                     output_data.reflectivity_data.angle_scale_type = ScaleType.LINEAR
 
-                    j = int(self.reflectivity_unpol_data.get_content("plot_y_col"))
+                    for i in range(0, len(reflectivity_data)):
+                        if i!=0: data_txt += "\n"
 
-                    for i in range(0, len(reflectivity)):
-                        if i==0: data_txt += "\n"
-
-                        data_txt += str(reflectivity[i, j]) + "\n00"
+                        data_txt += str(reflectivity_data[i, y_col]) + "\n0.0"
 
                 except Exception as exception:
                     QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
                     if self.IS_DEVELOP: raise exception
+
+                    return
 
             if not data_txt == "":
                 file = open(file_name, "w")
@@ -183,7 +209,123 @@ class OWReflectivityGenerator(SRWWidget):
             self.send("Reflectivity Data", output_data)
 
         elif not self.reflectivity_s_data is None and not self.reflectivity_p_data is None:
-            pass
+            try:
+                reflectivity_s = self.reflectivity_s_data.get_content("data2D")
+                energy_s = self.reflectivity_s_data.get_content("dataX")
+                angle_s = self.reflectivity_s_data.get_content("dataY")
+
+                try:
+                    reflectivity_p = self.reflectivity_p_data.get_content("data2D")
+                    energy_p = self.reflectivity_p_data.get_content("dataX")
+                    angle_p = self.reflectivity_p_data.get_content("dataY")
+
+                    if (len(energy_s) != len(energy_p)) or \
+                            (energy_p[0] != energy_s[0]) or \
+                            (energy_p[-1] != energy_s[-1]) or \
+                            (len(angle_s) != len(angle_p)) or \
+                            (angle_p[0] != angle_s[0]) or \
+                            (angle_p[-1] != angle_s[-1]):
+                        QMessageBox.critical(self, "Error", "Reflectivity data have different dimension or different range of Energy/Angle values", QMessageBox.Ok)
+
+                        return
+
+                    output_data.reflectivity_data.energies_number = len(energy_s)
+                    output_data.reflectivity_data.angles_number = len(angle_s)
+                    output_data.reflectivity_data.components_number = 2
+                    output_data.reflectivity_data.energy_start = energy_s[0]
+                    output_data.reflectivity_data.energy_end = energy_s[-1]
+                    output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
+                    output_data.reflectivity_data.angle_start = angle_s[0]
+                    output_data.reflectivity_data.angle_end = angle_s[-1]
+                    output_data.reflectivity_data.angle_scale_type = ScaleType.LINEAR
+
+                    data_txt = ""
+
+                    for i in range(0, len(angle_s)):
+                        for j in range (0, len(energy_s)):
+                            if not (i==0 and j==0): data_txt += "\n"
+
+                            data_txt += str(reflectivity_s[j, i]) + "\n0.0"
+
+                    for i in range(0, len(angle_p)):
+                        for j in range (0, len(energy_p)):
+                            data_txt += "\n" + str(reflectivity_p[j, i]) + "\n0.0"
+
+                except:
+                    QMessageBox.critical(self, "Error", "Reflectivity data have different dimension", QMessageBox.Ok)
+
+                    return
+            except:
+               try:
+                    reflectivity_s = self.reflectivity_unpol_data.get_content("xoppy_data")
+                    labels_s = self.reflectivity_unpol_data.get_content("labels")
+                    x_col = int(self.reflectivity_unpol_data.get_content("plot_x_col"))
+                    y_col = int(self.reflectivity_unpol_data.get_content("plot_y_col"))
+
+                    try:
+                        reflectivity_p = self.reflectivity_unpol_data.get_content("xoppy_data")
+                        labels_p = self.reflectivity_unpol_data.get_content("labels")
+
+                        if (len(reflectivity_p) != len(reflectivity_s)) or \
+                                (reflectivity_s[0, x_col] != reflectivity_p[0, x_col]) or \
+                                (reflectivity_s[-1, x_col] != reflectivity_p[-1, x_col]) or \
+                                (labels_s[0] != labels_p[0]):
+                            QMessageBox.critical(self, "Error", "Reflectivity data have different dimension or different range of Energy/Angle values", QMessageBox.Ok)
+
+                            return
+
+                        if "Energy" in labels_s[0]:
+                            congruence.checkStrictlyPositiveAngle(self.angle_single_value, "Angle Single Value")
+
+                            output_data.reflectivity_data.energies_number = len(reflectivity_s)
+                            output_data.reflectivity_data.angles_number = 1
+                            output_data.reflectivity_data.energy_start = reflectivity_s[0, x_col]
+                            output_data.reflectivity_data.energy_end = reflectivity_s[-1, x_col]
+                            output_data.reflectivity_data.angle_start = self.angle_single_value
+                            output_data.reflectivity_data.angle_end = self.angle_single_value
+
+                        elif "Theta" in labels_s[0]:
+                            congruence.checkStrictlyPositiveAngle(self.energy_single_value, "Energy Single Value")
+
+                            output_data.reflectivity_data.energies_number = 1
+                            output_data.reflectivity_data.angles_number = len(reflectivity_s)
+                            output_data.reflectivity_data.energy_start = self.energy_single_value
+                            output_data.reflectivity_data.energy_end = self.energy_single_value
+                            output_data.reflectivity_data.angle_start = reflectivity_s[0, x_col]
+                            output_data.reflectivity_data.angle_end = reflectivity_s[-1, x_col]
+
+                        output_data.reflectivity_data.components_number = 2
+                        output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
+                        output_data.reflectivity_data.angle_scale_type = ScaleType.LINEAR
+
+                        for i in range(0, len(reflectivity_s)):
+                            if i!=0: data_txt += "\n"
+
+                            data_txt += str(reflectivity_s[i, y_col]) + "\n0.0"
+
+                        for i in range(0, len(reflectivity_p)):
+                            data_txt += "\n" + str(reflectivity_p[i, y_col]) + "\n0.0"
+                    except:
+                        QMessageBox.critical(self, "Error", "Reflectivity data have different dimension", QMessageBox.Ok)
+
+                        return
+
+               except Exception as exception:
+                    QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+                    if self.IS_DEVELOP: raise exception
+
+                    return
+
+            if not data_txt == "":
+                file = open(file_name, "w")
+
+                file.write(data_txt)
+                file.flush()
+                file.close()
+
+            self.send("Reflectivity Data", output_data)
+
         else:
             QMessageBox.critical(self, "Error", "Incomplete Data: connect Total Polarization Data or BOTH Polarizations Data", QMessageBox.Ok)
 
@@ -195,6 +337,20 @@ class OWReflectivityGenerator(SRWWidget):
             self.reflectivity_p_data = None
             self.reflectivity_s_data = None
 
+            try:
+                self.reflectivity_unpol_data.get_content("xoppy_data")
+                labels = self.reflectivity_unpol_data.get_content("labels")
+
+                if "Energy" in labels[0]:
+                    self.angle_box.setVisible(True)
+                    self.energy_box.setVisible(False)
+                elif "Theta" in labels[0]:
+                    self.angle_box.setVisible(False)
+                    self.energy_box.setVisible(True)
+            except:
+                self.angle_box.setVisible(False)
+                self.energy_box.setVisible(False)
+
         self.plot_results()
 
     def set_input_2(self, data):
@@ -203,6 +359,25 @@ class OWReflectivityGenerator(SRWWidget):
         if not self.reflectivity_s_data is None:
             self.reflectivity_unpol_data = None
 
+            try:
+                self.reflectivity_s_data.get_content("xoppy_data")
+                labels = self.reflectivity_s_data.get_content("labels")
+
+                if "Energy" in labels[0]:
+                    self.angle_box.setVisible(True)
+                    self.energy_box.setVisible(False)
+                elif "Theta" in labels[0]:
+                    self.angle_box.setVisible(False)
+                    self.energy_box.setVisible(True)
+            except: #2D
+                if not self.reflectivity_p_data is None:
+                    try:
+                        self.reflectivity_p_data.get_content("xoppy_data")
+                    except:
+                        self.angle_box.setVisible(False)
+                        self.energy_box.setVisible(False)
+
+
         self.plot_results()
 
     def set_input_3(self, data):
@@ -210,6 +385,24 @@ class OWReflectivityGenerator(SRWWidget):
 
         if not self.reflectivity_p_data is None:
             self.reflectivity_unpol_data = None
+
+            try:
+                self.reflectivity_p_data.get_content("xoppy_data")
+                labels = self.reflectivity_p_data.get_content("labels")
+
+                if "Energy" in labels[0]:
+                    self.angle_box.setVisible(True)
+                    self.energy_box.setVisible(False)
+                elif "Theta" in labels[0]:
+                    self.angle_box.setVisible(False)
+                    self.energy_box.setVisible(True)
+            except: #2D
+                if not self.reflectivity_s_data is None:
+                    try:
+                        self.reflectivity_s_data.get_content("xoppy_data")
+                    except:
+                        self.angle_box.setVisible(False)
+                        self.energy_box.setVisible(False)
 
         self.plot_results()
 

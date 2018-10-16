@@ -117,7 +117,7 @@ class OWSRWMirror(OWSRWOpticalElement):
 
         gui.separator(self.reflectivity_box_3)
 
-        oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_energies_number", "Number of Energy Values", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_energies_number", "Number of Energy Values", labelWidth=260, valueType=int, orientation="horizontal")
 
         energy_box = oasysgui.widgetBox(self.reflectivity_box_3, "", addSpace=False, orientation="horizontal")
 
@@ -130,7 +130,7 @@ class OWSRWMirror(OWSRWOpticalElement):
 
         gui.separator(self.reflectivity_box_3)
 
-        oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_angles_number", "Number of Grazing Angle Values", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_angles_number", "Number of Grazing Angle Values", labelWidth=260, valueType=int, orientation="horizontal")
 
         angle_box = oasysgui.widgetBox(self.reflectivity_box_3, "", addSpace=False, orientation="horizontal")
 
