@@ -360,6 +360,8 @@ class OWReflectivityGenerator(SRWWidget):
 
         self.plot_results()
 
+        self.main_tabs.setCurrentIndex(0)
+
     def set_input_2(self, data):
         self.reflectivity_s_data = data
 
@@ -387,6 +389,8 @@ class OWReflectivityGenerator(SRWWidget):
 
         self.plot_results()
 
+        self.main_tabs.setCurrentIndex(1)
+
     def set_input_3(self, data):
         self.reflectivity_p_data = data
 
@@ -412,6 +416,8 @@ class OWReflectivityGenerator(SRWWidget):
                         self.energy_box.setVisible(False)
 
         self.plot_results()
+
+        self.main_tabs.setCurrentIndex(2)
 
     def plot_results(self):
         self.progressBarInit()
