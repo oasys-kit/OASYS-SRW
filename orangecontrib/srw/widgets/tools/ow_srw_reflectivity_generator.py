@@ -136,7 +136,7 @@ class OWReflectivityGenerator(SRWWidget):
             try:
                 reflectivity_data = self.reflectivity_unpol_data.get_content("data2D")
                 energy = self.reflectivity_unpol_data.get_content("dataX")
-                angle = self.reflectivity_unpol_data.get_content("dataY")
+                angle = self.reflectivity_unpol_data.get_content("dataY")*0.001 #to rad
 
                 output_data.reflectivity_data.energies_number = len(energy)
                 output_data.reflectivity_data.angles_number = len(angle)
@@ -180,8 +180,8 @@ class OWReflectivityGenerator(SRWWidget):
                         output_data.reflectivity_data.angles_number = len(reflectivity_data)
                         output_data.reflectivity_data.energy_start = self.energy_single_value
                         output_data.reflectivity_data.energy_end = self.energy_single_value
-                        output_data.reflectivity_data.angle_start = reflectivity_data[0, x_col]
-                        output_data.reflectivity_data.angle_end = reflectivity_data[-1, x_col]
+                        output_data.reflectivity_data.angle_start = reflectivity_data[0, x_col]*0.001 #to rad
+                        output_data.reflectivity_data.angle_end = reflectivity_data[-1, x_col]*0.001 #to rad
 
                     output_data.reflectivity_data.components_number = 1
                     output_data.reflectivity_data.energy_scale_type = ScaleType.LINEAR
@@ -212,12 +212,12 @@ class OWReflectivityGenerator(SRWWidget):
             try:
                 reflectivity_s = self.reflectivity_s_data.get_content("data2D")
                 energy_s = self.reflectivity_s_data.get_content("dataX")
-                angle_s = self.reflectivity_s_data.get_content("dataY")
+                angle_s = self.reflectivity_s_data.get_content("dataY")*0.001 #to rad
 
                 try:
                     reflectivity_p = self.reflectivity_p_data.get_content("data2D")
                     energy_p = self.reflectivity_p_data.get_content("dataX")
-                    angle_p = self.reflectivity_p_data.get_content("dataY")
+                    angle_p = self.reflectivity_p_data.get_content("dataY")*0.001 #to rad
 
                     if (len(energy_s) != len(energy_p)) or \
                             (energy_p[0] != energy_s[0]) or \
@@ -292,8 +292,8 @@ class OWReflectivityGenerator(SRWWidget):
                                 output_data.reflectivity_data.angles_number = len(reflectivity_s)
                                 output_data.reflectivity_data.energy_start = self.energy_single_value
                                 output_data.reflectivity_data.energy_end = self.energy_single_value
-                                output_data.reflectivity_data.angle_start = reflectivity_s[0, x_col]
-                                output_data.reflectivity_data.angle_end = reflectivity_s[-1, x_col]
+                                output_data.reflectivity_data.angle_start = reflectivity_s[0, x_col]*0.001 #to rad
+                                output_data.reflectivity_data.angle_end = reflectivity_s[-1, x_col]*0.001 #to rad
                         except Exception as exception:
                             QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
