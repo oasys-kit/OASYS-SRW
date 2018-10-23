@@ -22,6 +22,8 @@ class OWSRWMirror(OWSRWOpticalElement):
     horizontal_position_of_mirror_center = Setting(0.0)
     vertical_position_of_mirror_center = Setting(0.0)
 
+    add_acceptance_slit = Setting(0)
+
     has_height_profile = Setting(0)
     height_profile_data_file           = Setting("mirror.dat")
     height_profile_data_file_dimension = Setting(0)
@@ -66,6 +68,10 @@ class OWSRWMirror(OWSRWOpticalElement):
         oasysgui.lineEdit(self.mirror_box, self, "sagittal_size", "Sagittal_Size [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.mirror_box, self, "horizontal_position_of_mirror_center", "Horizontal position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.mirror_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        gui.comboBox(self.mirror_box, self, "add_acceptance_slit", label="Add Acceptance Slit",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
 
         gui.separator(self.mirror_box)
 
@@ -174,6 +180,7 @@ class OWSRWMirror(OWSRWOpticalElement):
         mirror.grazing_angle=numpy.radians(90-self.angle_radial)
         mirror.orientation_of_reflection_plane=self.orientation_azimuthal
         mirror.invert_tangent_component = self.invert_tangent_component == 1
+        mirror.add_acceptance_slit=self.add_acceptance_slit == 1
         mirror.height_profile_data_file=self.height_profile_data_file if self.has_height_profile else None
         mirror.height_profile_data_file_dimension=self.height_profile_data_file_dimension + 1
         mirror.height_amplification_coefficient=self.height_amplification_coefficient
