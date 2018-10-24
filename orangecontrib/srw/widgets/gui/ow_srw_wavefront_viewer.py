@@ -89,7 +89,7 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.initializeTabs()
 
-        self.srw_output = oasysgui.textArea(600, 600)
+        self.srw_output = oasysgui.textArea(580, 800)
 
         out_box = gui.widgetBox(out_tab, "System Output", addSpace=True, orientation="horizontal")
         out_box.layout().addWidget(self.srw_output)
