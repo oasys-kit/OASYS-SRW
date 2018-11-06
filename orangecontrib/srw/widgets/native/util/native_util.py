@@ -170,6 +170,14 @@ def calculate_degree_of_coherence_vs_sum_and_difference(coor, coor_conj, mutual_
 
         nmResDegCoh_z *= mask
 
+    bad = numpy.where(numpy.isnan(nmResDegCoh_z))
+    nmResDegCoh_z[bad] = 0
+
+    bad = numpy.where(numpy.isinf(nmResDegCoh_z))
+    nmResDegCoh_z[bad] = 0
+
+    bad = numpy.where(nmResDegCoh_z > 1)
+    nmResDegCoh_z[bad] = 1
 
     return coor, coor_conj, nmResDegCoh_z
 

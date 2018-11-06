@@ -434,6 +434,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             srw_beamline.append_beamline_element(beamline_element)
             working_srw_beamline.append_beamline_element(beamline_element)
 
+            self.progressBarSet(20)
+
             if propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE:
                 self.set_additional_parameters(beamline_element, None, srw_beamline)
                 self.set_additional_parameters(beamline_element, None, working_srw_beamline)
@@ -444,8 +446,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
                     propagation_parameters.set_additional_parameters("working_beamline", working_srw_beamline)
 
+                    self.setStatusMessage("Begin Propagation")
+
                     output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
                                                                  handler_name=handler_name)
+                    self.setStatusMessage("Propagation Completed")
+
                     output_srw_data = SRWData(srw_beamline=srw_beamline,
                                               srw_wavefront=output_wavefront)
                     output_srw_data.reset_working_srw_beamline()
@@ -463,13 +469,19 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
                 self.set_additional_parameters(beamline_element, propagation_parameters, srw_beamline)
 
+                self.setStatusMessage("Begin Propagation")
+
                 output_wavefront = propagator.do_propagation(propagation_parameters=propagation_parameters,
                                                              handler_name=handler_name)
+
+                self.setStatusMessage("Propagation Completed")
 
                 output_srw_data = SRWData(srw_beamline=srw_beamline,
                                           srw_wavefront=output_wavefront)
 
             tickets = None
+
+            self.progressBarSet(50)
 
             if not output_wavefront is None:
                 self.output_wavefront = output_wavefront
@@ -482,6 +494,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.plot_results(tickets, 80)
 
             self.progressBarFinished()
+            self.setStatusMessage("")
 
             self.send("SRWData", output_srw_data)
 

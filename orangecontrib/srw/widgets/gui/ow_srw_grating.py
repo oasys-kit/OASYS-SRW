@@ -20,6 +20,8 @@ class OWSRWGrating(OWSRWOpticalElement):
     horizontal_position_of_mirror_center = Setting(0.0)
     vertical_position_of_mirror_center = Setting(0.0)
 
+    add_acceptance_slit = Setting(0)
+
     has_height_profile = Setting(0)
     height_profile_data_file           = Setting("mirror.dat")
     height_profile_data_file_dimension = Setting(0)
@@ -41,8 +43,13 @@ class OWSRWGrating(OWSRWOpticalElement):
         super().__init__(azimuth_hor_vert=True)
 
     def draw_specific_box(self):
-        
-        self.grating_setting = oasysgui.tabWidget(self.tab_bas)
+
+        tabs_grat = oasysgui.tabWidget(self.tab_bas)
+
+        tab_grat = oasysgui.createTabPage(tabs_grat, "Grating")
+        tab_errp = oasysgui.createTabPage(tabs_grat, "Error Profile")
+
+        self.grating_setting = oasysgui.tabWidget(tab_grat)
         
         substrate_tab = oasysgui.createTabPage(self.grating_setting, "Substrate Mirror Setting")
         grooving_tab = oasysgui.createTabPage(self.grating_setting, "Grooving Setting")
@@ -55,13 +62,31 @@ class OWSRWGrating(OWSRWOpticalElement):
         oasysgui.lineEdit(self.substrate_box, self, "horizontal_position_of_mirror_center", "Horizontal position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(self.substrate_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
-        gui.comboBox(self.substrate_box, self, "has_height_profile", label="Use Height Error Profile",
+        gui.comboBox(self.substrate_box, self, "add_acceptance_slit", label="Add Acceptance Slit",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        oasysgui.lineEdit(self.grooving_box, self, "diffraction_order", "Diffraction order", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_angle", "Angle between groove direction and\nsagittal direction of the substrate [deg]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_0", "Groove density [lines/mm]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_1", "Groove den. poly. coeff. a1 [lines/mm\u00b2]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_2", "Groove den. poly. coeff. a2 [lines/mm\u00b3]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_3", "Groove den. poly. coeff. a3 [lines/mm\u2074]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_4", "Groove den. poly. coeff. a4 [lines/mm\u2075]", labelWidth=260, valueType=float, orientation="horizontal")
+
+
+        self.error_box = oasysgui.widgetBox(tab_errp, "", addSpace=False, orientation="vertical")
+
+        gui.comboBox(self.error_box, self, "has_height_profile", label="Use Height Error Profile",
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal", callback=self.set_HeightProfile)
 
-        self.height_profile_box_1 = oasysgui.widgetBox(self.substrate_box, "", addSpace=False, orientation="vertical", height=100)
+        gui.separator(self.error_box)
 
-        self.height_profile_box_2 = oasysgui.widgetBox(self.substrate_box, "", addSpace=False, orientation="vertical", height=100)
+        self.height_profile_box_1 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=80)
+
+        self.height_profile_box_2 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=80)
 
         file_box =  oasysgui.widgetBox(self.height_profile_box_2, "", addSpace=False, orientation="horizontal")
 
@@ -75,15 +100,6 @@ class OWSRWGrating(OWSRWOpticalElement):
         oasysgui.lineEdit(self.height_profile_box_2, self, "height_amplification_coefficient", "Height Amplification Coefficient", labelWidth=260, valueType=float, orientation="horizontal")
 
         self.set_HeightProfile()
-        
-        oasysgui.lineEdit(self.grooving_box, self, "diffraction_order", "Diffraction order", labelWidth=260, valueType=int, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_angle", "Angle between groove direction and\nsagittal direction of the substrate [deg]", labelWidth=260, valueType=float, orientation="horizontal")
-
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_0", "Groove density [lines/mm]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_1", "Groove den. poly. coeff. a1 [lines/mm\u00b2]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_2", "Groove den. poly. coeff. a2 [lines/mm\u00b3]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_3", "Groove den. poly. coeff. a3 [lines/mm\u2074]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.grooving_box, self, "grooving_density_4", "Groove den. poly. coeff. a4 [lines/mm\u2075]", labelWidth=260, valueType=float, orientation="horizontal")
 
     def selectHeightProfileDataFile(self):
         self.le_height_profile_data_file.setText(oasysgui.selectFileFromDialog(self, self.height_profile_data_file, "Height profile data file"))
@@ -100,6 +116,7 @@ class OWSRWGrating(OWSRWOpticalElement):
         grating.grazing_angle=numpy.radians(90-self.angle_radial)
         grating.orientation_of_reflection_plane=self.orientation_azimuthal
         grating.invert_tangent_component = self.invert_tangent_component == 1
+        grating.add_acceptance_slit=self.add_acceptance_slit == 1
         grating.height_profile_data_file=self.height_profile_data_file if self.has_height_profile else None
         grating.height_profile_data_file_dimension=self.height_profile_data_file_dimension + 1
         grating.height_amplification_coefficient=self.height_amplification_coefficient

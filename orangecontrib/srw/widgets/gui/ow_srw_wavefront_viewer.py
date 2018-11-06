@@ -115,7 +115,7 @@ class SRWWavefrontViewer(SRWWidget):
         palette.setColor(QPalette.Base, QColor(243, 240, 140))
         self.le_srw_live_propagation_mode.setPalette(palette)
 
-        if propagation_mode==SRWPropagationMode.WHOLE_BEAMLINE: self.view_type = 0
+        if self.show_view_box and propagation_mode==SRWPropagationMode.WHOLE_BEAMLINE: self.view_type = 0
 
     def initializeTabs(self):
         current_tab = self.tabs.currentIndex()
