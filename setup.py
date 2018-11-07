@@ -45,7 +45,7 @@ INSTALL_REQUIRES = (
     'syned>=1.0.10',
     'wofry>=1.0.15',
     'oasys1-srwlib>=1.0.12',
-    'wofrysrw>=1.0.24'
+    'wofrysrw>=1.0.25'
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
