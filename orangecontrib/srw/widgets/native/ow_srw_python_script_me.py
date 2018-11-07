@@ -1,9 +1,8 @@
-import sys
+import os, sys
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QApplication, QFileDialog
-from oasys.util.oasys_util import EmittingStream
 
 from orangewidget import gui
 from orangewidget.settings import Setting
@@ -107,7 +106,7 @@ class SRWPythonScriptME(SRWWidget):
 
         self.shadow_output = oasysgui.textArea()
 
-        out_box = oasysgui.widgetBox(tab_out, "System Output", addSpace=True, orientation="horizontal", height=self.IMAGE_HEIGHT - 10)
+        out_box = oasysgui.widgetBox(tab_out, "System Output", addSpace=True, orientation="horizontal", height=self.IMAGE_WIDTH - 45)
         out_box.layout().addWidget(self.shadow_output)
 
         #############################
@@ -127,7 +126,7 @@ class SRWPythonScriptME(SRWWidget):
             self.console.new_prompt(sys.ps1)
 
     def save_script(self):
-        file_name = QFileDialog.getSaveFileName(self, "Save File to Disk", ".", "*.py")[0]
+        file_name = QFileDialog.getSaveFileName(self, "Save File to Disk", os.getcwd(), filter='*.py')[0]
 
         if not file_name is None:
             if not file_name.strip() == "":

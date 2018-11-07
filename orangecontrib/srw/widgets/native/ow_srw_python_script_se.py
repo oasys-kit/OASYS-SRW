@@ -1,11 +1,10 @@
-import sys
+import os, sys
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QApplication, QFileDialog
 from orangewidget import gui
 from oasys.widgets import gui as oasysgui, widget
-from oasys.util.oasys_util import EmittingStream
 
 from orangecontrib.srw.util.python_script import PythonConsole
 from orangecontrib.srw.util.srw_objects import SRWData
@@ -84,7 +83,7 @@ class SRWPythonScriptSE(widget.OWWidget):
         self.console.new_prompt(sys.ps1)
 
     def save_script(self):
-        file_name = QFileDialog.getSaveFileName(self, "Save File to Disk", ".", "*.py")[0]
+        file_name = QFileDialog.getSaveFileName(self, "Save File to Disk", os.getcwd(), filter='*.py')[0]
 
         if not file_name is None:
             if not file_name.strip() == "":

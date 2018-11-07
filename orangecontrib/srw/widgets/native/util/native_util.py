@@ -204,6 +204,8 @@ def load_mutual_intensity_file(filename):
     if dim_x > 1: dim = dim_x
     elif dim_y > 1: dim = dim_y
 
+    if data.size == 2*(dim**2): data = data[::2]
+
     np_array = data.reshape((dim, dim))
     np_array = np_array.transpose()
 
