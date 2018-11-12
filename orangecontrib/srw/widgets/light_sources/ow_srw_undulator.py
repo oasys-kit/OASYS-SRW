@@ -160,8 +160,8 @@ class OWSRWUndulator(OWSRWSource):
         symmetry_vs_longitudinal_position_vertical = 1 if self.symmetry_vs_longitudinal_position_vertical == 0 else -1
 
         if self.magnetic_field_from == 0:
-            undulator_magnetic_structure=SRWUndulator(horizontal_central_position = 0.0,
-                                                      vertical_central_position = 0.0,
+            undulator_magnetic_structure=SRWUndulator(horizontal_central_position = self.horizontal_central_position,
+                                                      vertical_central_position = self.vertical_central_position,
                                                       longitudinal_central_position=self.longitudinal_central_position,
                                                       K_vertical=self.K_vertical,
                                                       K_horizontal=self.K_horizontal,
@@ -172,8 +172,8 @@ class OWSRWUndulator(OWSRWSource):
                                                       symmetry_vs_longitudinal_position_horizontal=symmetry_vs_longitudinal_position_horizontal,
                                                       symmetry_vs_longitudinal_position_vertical=symmetry_vs_longitudinal_position_vertical)
         else:
-            undulator_magnetic_structure=SRWUndulator(horizontal_central_position = 0.0,
-                                                      vertical_central_position = 0.0,
+            undulator_magnetic_structure=SRWUndulator(horizontal_central_position = self.horizontal_central_position,
+                                                      vertical_central_position = self.vertical_central_position,
                                                       longitudinal_central_position=self.longitudinal_central_position,
                                                       period_length=self.period_length,
                                                       number_of_periods=self.number_of_periods,
