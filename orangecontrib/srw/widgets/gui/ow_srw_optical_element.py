@@ -479,8 +479,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                 output_srw_data = SRWData(srw_beamline=srw_beamline,
                                           srw_wavefront=output_wavefront)
 
-            tickets = None
-
             self.progressBarSet(50)
 
             if not output_wavefront is None:
@@ -491,7 +489,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
                 self.run_calculation_for_plots(tickets=tickets, progress_bar_value=50)
 
-            self.plot_results(tickets, 80)
+                self.plot_results(tickets, 80)
 
             self.progressBarFinished()
             self.setStatusMessage("")

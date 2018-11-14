@@ -291,10 +291,11 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             beamline = SRWBeamline(light_source=srw_source)
             self.output_wavefront = self.calculate_wavefront_propagation(srw_source)
 
-            tickets = []
 
             if self.is_do_plots():
                 self.setStatusMessage("Plotting Results")
+
+                tickets = []
 
                 self.run_calculation_for_plots(tickets, 50)
 
@@ -522,7 +523,6 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
                 tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
 
-
     def get_automatic_sr_method(self):
         raise NotImplementedError()
 
@@ -557,58 +557,58 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         raise NotImplementedError()
 
     def receive_syned_data(self, data):
-            if not data is None:
-                try:
-                    if data.get_beamline_elements_number() > 0:
-                        slit_element = data.get_beamline_element_at(0)
-                        slit = slit_element.get_optical_element()
-                        coordinates = slit_element.get_coordinates()
+        if not data is None:
+            try:
+                if data.get_beamline_elements_number() > 0:
+                    slit_element = data.get_beamline_element_at(0)
+                    slit = slit_element.get_optical_element()
+                    coordinates = slit_element.get_coordinates()
 
-                        if isinstance(slit, Slit) and isinstance(slit.get_boundary_shape(), Rectangle):
-                            rectangle = slit.get_boundary_shape()
+                    if isinstance(slit, Slit) and isinstance(slit.get_boundary_shape(), Rectangle):
+                        rectangle = slit.get_boundary_shape()
 
-                            self.wf_h_slit_gap = rectangle._x_right - rectangle._x_left
-                            self.wf_v_slit_gap = rectangle._y_top - rectangle._y_bottom
-                            self.wf_distance = coordinates.p()
+                        self.wf_h_slit_gap = rectangle._x_right - rectangle._x_left
+                        self.wf_v_slit_gap = rectangle._y_top - rectangle._y_bottom
+                        self.wf_distance = coordinates.p()
 
-                            self.int_h_slit_gap = rectangle._x_right - rectangle._x_left
-                            self.int_v_slit_gap = rectangle._y_top - rectangle._y_bottom
-                            self.int_distance = coordinates.p()
+                        self.int_h_slit_gap = rectangle._x_right - rectangle._x_left
+                        self.int_v_slit_gap = rectangle._y_top - rectangle._y_bottom
+                        self.int_distance = coordinates.p()
 
-                            self.spe_h_slit_gap = rectangle._x_right - rectangle._x_left
-                            self.spe_v_slit_gap = rectangle._y_top - rectangle._y_bottom
-                            self.spe_distance = coordinates.p()
-                    elif not data._light_source is None and isinstance(data._light_source, LightSource):
-                        light_source = data._light_source
+                        self.spe_h_slit_gap = rectangle._x_right - rectangle._x_left
+                        self.spe_v_slit_gap = rectangle._y_top - rectangle._y_bottom
+                        self.spe_distance = coordinates.p()
+                elif not data._light_source is None and isinstance(data._light_source, LightSource):
+                    light_source = data._light_source
 
-                        self.source_name = light_source._name
-                        self.electron_energy_in_GeV = light_source._electron_beam._energy_in_GeV
-                        self.electron_energy_spread = light_source._electron_beam._energy_spread
-                        self.ring_current = light_source._electron_beam._current
+                    self.source_name = light_source._name
+                    self.electron_energy_in_GeV = light_source._electron_beam._energy_in_GeV
+                    self.electron_energy_spread = light_source._electron_beam._energy_spread
+                    self.ring_current = light_source._electron_beam._current
 
-                        self.moment_xx = light_source._electron_beam._moment_xx
-                        self.moment_xxp = light_source._electron_beam._moment_xxp
-                        self.moment_xpxp = light_source._electron_beam._moment_xpxp
-                        self.moment_yy = light_source._electron_beam._moment_yy
-                        self.moment_yyp = light_source._electron_beam._moment_yyp
-                        self.moment_ypyp = light_source._electron_beam._moment_ypyp
+                    self.moment_xx = light_source._electron_beam._moment_xx
+                    self.moment_xxp = light_source._electron_beam._moment_xxp
+                    self.moment_xpxp = light_source._electron_beam._moment_xpxp
+                    self.moment_yy = light_source._electron_beam._moment_yy
+                    self.moment_yyp = light_source._electron_beam._moment_yyp
+                    self.moment_ypyp = light_source._electron_beam._moment_ypyp
 
-                        x, xp, y, yp = light_source._electron_beam.get_sigmas_all()
+                    x, xp, y, yp = light_source._electron_beam.get_sigmas_all()
 
-                        self.electron_beam_size_h = round(x, 9)
-                        self.electron_beam_size_v = round(y, 9)
-                        self.electron_beam_divergence_h = round(xp, 10)
-                        self.electron_beam_divergence_v = round(yp, 10)
+                    self.electron_beam_size_h = round(x, 9)
+                    self.electron_beam_size_v = round(y, 9)
+                    self.electron_beam_divergence_h = round(xp, 10)
+                    self.electron_beam_divergence_v = round(yp, 10)
 
-                        self.type_of_properties = 0
+                    self.type_of_properties = 0
 
-                        self.set_TypeOfProperties()
+                    self.set_TypeOfProperties()
 
-                        self.receive_specific_syned_data(data)
-                    else:
-                        raise ValueError("Syned data not correct")
-                except Exception as exception:
-                    QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+                    self.receive_specific_syned_data(data)
+                else:
+                    raise ValueError("Syned data not correct")
+            except Exception as exception:
+                QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
     def receive_specific_syned_data(self, data):
         raise NotImplementedError()

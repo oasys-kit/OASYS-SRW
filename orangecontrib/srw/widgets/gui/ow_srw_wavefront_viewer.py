@@ -48,6 +48,13 @@ class SRWWavefrontViewer(SRWWidget):
 
     output_wavefront=None
 
+    use_range = Setting(0)
+
+    range_x_min = Setting(-50)
+    range_x_max = Setting(50)
+    range_y_min = Setting(-50)
+    range_y_max = Setting(50)
+
     def __init__(self, show_general_option_box=True, show_automatic_box=True, show_view_box=True):
         super().__init__(show_general_option_box=show_general_option_box, show_automatic_box=show_automatic_box)
 
@@ -64,6 +71,30 @@ class SRWWavefrontViewer(SRWWidget):
                                                 labelWidth=120,
                                                 items=["No", "Yes (Total Polarization)", "Yes (Polarization Components)"],
                                                 callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
+
+            view_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="horizontal", width=350)
+
+            self.range_combo = gui.comboBox(view_box_2, self, "use_range", label="Plotting Range",
+                                            labelWidth=120,
+                                            items=["No", "Yes"],
+                                            callback=self.set_PlottingRange, sendSelectedValue=False, orientation="horizontal")
+
+            self.refresh_button = gui.button(view_box_2, self, "Refresh", callback=self.replot)
+
+            self.plot_range_box_1 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", width=350, height=50)
+            self.plot_range_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", width=350, height=50)
+
+            view_box_2 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal", width=350)
+
+            oasysgui.lineEdit(view_box_2, self, "range_x_min", "Plotting Range X min [\u03bcm]", labelWidth=150, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(view_box_2, self, "range_x_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
+
+            view_box_3 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal", width=350)
+
+            oasysgui.lineEdit(view_box_3, self, "range_y_min", "Plotting Range Y min [\u03bcm]", labelWidth=150, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(view_box_3, self, "range_y_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
+
+            self.set_PlottingRange()
         else:
             self.view_type = 1
             self.view_type_combo = QtWidgets.QWidget()
@@ -134,11 +165,36 @@ class SRWWavefrontViewer(SRWWidget):
             self.plot_canvas.append(None)
 
         for tab in self.tab:
-            tab.setFixedHeight(self.IMAGE_HEIGHT)
+            tab.setFixedHeight(self.IMAGE_HEIGHT-80)
             tab.setFixedWidth(self.IMAGE_WIDTH)
 
         self.tabs.setCurrentIndex(current_tab)
 
+    def set_PlottingRange(self):
+        self.plot_range_box_1.setVisible(self.use_range==1)
+        self.plot_range_box_2.setVisible(self.use_range==0)
+        self.refresh_button.setEnabled(self.use_range==1)
+
+    def replot(self):
+        self.progressBarInit()
+
+        if self.is_do_plots():
+            try:
+                if not self.output_wavefront is None:
+                    tickets = []
+
+                    self.run_calculation_for_plots(tickets, 50)
+
+                    self.plot_results(tickets, 80)
+
+            except Exception as exception:
+                QtWidgets.QMessageBox.critical(self, "Error",
+                                           str(exception),
+                    QtWidgets.QMessageBox.Ok)
+
+                if self.IS_DEVELOP: raise exception
+
+        self.progressBarFinished()
 
     def set_PlotQuality(self):
         self.progressBarInit()
@@ -177,13 +233,17 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.progressBarSet(progressBarValue)
 
-
     def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum=""):
         if self.plot_canvas[plot_canvas_index] is None:
             self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed2DWidget()
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
 
-        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum)
+        if self.use_range == 1:
+            plotting_range = [self.range_x_min/1000, self.range_x_max/1000, self.range_y_min/1000, self.range_y_max/1000]
+        else:
+            plotting_range = None
+
+        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range)
 
         self.progressBarSet(progressBarValue)
 
