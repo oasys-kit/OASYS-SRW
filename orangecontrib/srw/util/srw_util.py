@@ -63,13 +63,13 @@ class SRWPlot:
         def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, is_2d=True):
             super(SRWPlot.InfoBoxWidget, self).__init__()
 
-            info_box_inner=gui.widgetBox(self, "Info")
+            info_box_inner=abstract.widgetBox(self, "Info")
             info_box_inner.setFixedHeight(515*y_scale_factor)
             info_box_inner.setFixedWidth(230*x_scale_factor)
 
-            self.total = gui.lineEdit(info_box_inner, self, "total_field", "Total", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
+            self.total = abstract.lineEdit(info_box_inner, self, "total_field", "Total", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
 
-            label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+            label_box_1 = abstract.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
 
             self.label_h = QLabel("FWHM ")
             self.label_h.setFixedWidth(115)
@@ -77,10 +77,10 @@ class SRWPlot:
             palette.setColor(QPalette.Foreground, QColor('blue'))
             self.label_h.setPalette(palette)
             label_box_1.layout().addWidget(self.label_h)
-            self.fwhm_h = gui.lineEdit(label_box_1, self, "fwhm_h_field", "", tooltip="FWHM", labelWidth=115, valueType=str, orientation="horizontal")
+            self.fwhm_h = abstract.lineEdit(label_box_1, self, "fwhm_h_field", "", tooltip="FWHM", labelWidth=115, valueType=str, orientation="horizontal")
 
             if is_2d:
-                label_box_2 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+                label_box_2 = abstract.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
 
                 self.label_v = QLabel("FWHM ")
                 self.label_v.setFixedWidth(115)
@@ -88,7 +88,7 @@ class SRWPlot:
                 palette.setColor(QPalette.Foreground, QColor('red'))
                 self.label_v.setPalette(palette)
                 label_box_2.layout().addWidget(self.label_v)
-                self.fwhm_v = gui.lineEdit(label_box_2, self, "fwhm_v_field", "", tooltip="FWHM", labelWidth=115, valueType=str, orientation="horizontal")
+                self.fwhm_v = abstract.lineEdit(label_box_2, self, "fwhm_v_field", "", tooltip="FWHM", labelWidth=115, valueType=str, orientation="horizontal")
 
             self.total.setReadOnly(True)
             font = QFont(self.total.font())
@@ -128,7 +128,7 @@ class SRWPlot:
         def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0):
             super(SRWPlot.Detailed1DWidget, self).__init__()
 
-            self.plot_canvas = gui.plotWindow(roi=False, control=False, position=True, logScale=False)
+            self.plot_canvas = abstract.plotWindow(roi=False, control=False, position=True, logScale=False)
             self.plot_canvas.setDefaultPlotLines(True)
             self.plot_canvas.setActiveCurveColor(color='blue')
             self.plot_canvas.setMinimumWidth(590*x_scale_factor)
@@ -249,7 +249,6 @@ class SRWPlot:
 
             if len(xx) == 0 or len(yy) == 0:
                 raise Exception("Nothing to plot in the given range")
-
 
             xmin, xmax = xx.min(), xx.max()
             ymin, ymax = yy.min(), yy.max()

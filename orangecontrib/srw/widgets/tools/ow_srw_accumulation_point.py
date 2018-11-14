@@ -27,12 +27,13 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
     want_main_area=1
 
     TABS_AREA_HEIGHT = 618
-    CONTROL_AREA_WIDTH = 255
+    is_final_screen = True
 
     accumulated_intensity = None
+    last_tickets = None
 
     def __init__(self, show_automatic_box=False):
-        super().__init__(show_automatic_box=show_automatic_box)
+        super().__init__(show_automatic_box=show_automatic_box, show_view_box=False)
 
         self.general_options_box.setVisible(False)
 
@@ -54,6 +55,47 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
         self.tabs_setting = oasysgui.tabWidget(self.controlArea)
         self.tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
         self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
+
+        self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "Accumulation Point Setting")
+
+        gui.separator(self.tab_bas)
+
+        view_box_1 = oasysgui.widgetBox(self.tab_bas, "Plot Setting", addSpace=False, orientation="vertical")
+
+        view_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="horizontal")
+
+        self.range_combo = gui.comboBox(view_box_2, self, "use_range", label="Plotting Range",
+                                        labelWidth=120,
+                                        items=["No", "Yes"],
+                                        callback=self.set_PlottingRange, sendSelectedValue=False, orientation="horizontal")
+
+        self.refresh_button = gui.button(view_box_2, self, "Refresh", callback=self.replot)
+
+        self.plot_range_box_1 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=50)
+        self.plot_range_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=50)
+
+        view_box_2 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(view_box_2, self, "range_x_min", "Plotting Range X min [\u03bcm]", labelWidth=160, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(view_box_2, self, "range_x_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
+
+        view_box_3 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(view_box_3, self, "range_y_min", "Plotting Range Y min [\u03bcm]", labelWidth=160, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(view_box_3, self, "range_y_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
+
+        self.set_PlottingRange()
+
+
+    def replot(self):
+        if not self.last_tickets is None:
+            self.progressBarInit()
+
+            self.progressBarSet(50)
+
+            self.plot_results(self.last_tickets, progressBarValue=50)
+
+            self.progressBarFinished()
 
     def receive_srw_data(self, data):
         if not data is None:
@@ -77,9 +119,11 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
                     self.progressBarSet(60)
 
-                    tickets.append(SRWPlot.get_ticket_2D(h, v, self.accumulated_intensity[int(e.size/2)]))
+                    tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, self.accumulated_intensity[int(e.size/2)]))
 
                     self.plot_results(tickets, progressBarValue=90)
+
+                    self.last_tickets = tickets
 
                     self.progressBarFinished()
 
@@ -91,7 +135,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
             self.plot_results([SRWPlot.get_ticket_2D(numpy.array([0, 0.001]),
                                                      numpy.array([0, 0.001]),
-                                                     numpy.zeros((2, 2)))])
+                                                     numpy.zeros((2, 2)))], ignore_range=True)
             self.progressBarFinished()
         except:
             pass
@@ -104,13 +148,13 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
         else: return ["Accumulated Intensity"]
 
     def getXTitles(self):
-        return ["X [mm]"]
+        return ["X [\u03bcm]"]
 
     def getYTitles(self):
-        return ["Y [mm]"]
+        return ["Y [\u03bcm]"]
 
     def getXUM(self):
-        return ["X [mm]"]
+        return ["X [\u03bcm]"]
 
     def getYUM(self):
-        return ["Y [mm]"]
+        return ["Y [\u03bcm]"]

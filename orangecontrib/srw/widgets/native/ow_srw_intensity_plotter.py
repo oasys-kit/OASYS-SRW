@@ -33,6 +33,8 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
     is_final_screen = True
     view_type = 1
 
+    last_tickets=None
+
     def __init__(self):
         super().__init__(show_automatic_box=False, show_view_box=False)
 
@@ -65,6 +67,45 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
         self.le_intensity_file_name = oasysgui.lineEdit(file_box, self, "intensity_file_name", "Intensity File", labelWidth=105, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectIntensityFile)
 
+        gui.separator(self.tab_bas)
+
+        view_box_1 = oasysgui.widgetBox(self.tab_bas, "Plot Setting", addSpace=False, orientation="vertical")
+
+        view_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="horizontal")
+
+        self.range_combo = gui.comboBox(view_box_2, self, "use_range", label="Plotting Range",
+                                        labelWidth=120,
+                                        items=["No", "Yes"],
+                                        callback=self.set_PlottingRange, sendSelectedValue=False, orientation="horizontal")
+
+        self.refresh_button = gui.button(view_box_2, self, "Refresh", callback=self.replot)
+
+        self.plot_range_box_1 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=50)
+        self.plot_range_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=50)
+
+        view_box_2 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(view_box_2, self, "range_x_min", "Plotting Range X min [\u03bcm]", labelWidth=150, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(view_box_2, self, "range_x_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
+
+        view_box_3 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal")
+
+        oasysgui.lineEdit(view_box_3, self, "range_y_min", "Plotting Range Y min [\u03bcm]", labelWidth=150, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(view_box_3, self, "range_y_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
+
+        self.set_PlottingRange()
+
+    def replot(self):
+        if self.last_tickets is None:
+            self.plot_intensity()
+        else:
+            self.progressBarInit()
+
+            self.progressBarSet(50)
+
+            self.plot_results(self.last_tickets, progressBarValue=50)
+
+            self.progressBarFinished()
 
     def selectIntensityFile(self):
         self.le_intensity_file_name.setText(oasysgui.selectFileFromDialog(self, self.intensity_file_name, "Intensity File"))
@@ -82,6 +123,8 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
             self.progressBarSet(50)
 
             self.plot_results(tickets, progressBarValue=50)
+
+            self.last_tickets = tickets
 
             self.progressBarFinished()
         except Exception as e:
