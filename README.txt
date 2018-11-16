@@ -1,7 +1,2 @@
 
-This is the WORKING project for SRW IN OASYS
-
-THIS VERSION IS UNDER DEVELOPMENT AND IS HIGLY INSTABLE:
-
-             INSTALLATION IS NOT RECOMENDED!!!!
-
+This is the project for SRW IN OASYS
