@@ -145,9 +145,7 @@ class SRWPythonScriptME(SRWWidget):
             if self.is_automatic_run:
                 self.refresh_script()
         else:
-            QtWidgets.QMessageBox.critical(self, "Error",
-                                       "Data not displayable: No good rays or bad content",
-                                       QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self, "Error", str(e), QtWidgets.QMessageBox.Ok)
 
     def refresh_script(self):
         if not self.input_srw_data is None:

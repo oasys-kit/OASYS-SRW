@@ -90,7 +90,7 @@ def save_wfr_2_hdf5(wfr,filename,subgroupname="wfr",intensity=False,phase=False,
         ar2 = array('d', [0] * wfr.mesh.nx * wfr.mesh.ny)  # "flat" 2D array to take intensity data
         srwl.CalcIntFromElecField(ar2, wfr, 1, 4, 3, wfr.mesh.eStart, 0, 0)
         aryy = numpy.array(ar2)
-        aryy = arxx.reshape((wfr.mesh.ny, wfr.mesh.nx))#.T
+        aryy = aryy.reshape((wfr.mesh.ny, wfr.mesh.nx))#.T
 
         _dump_arr_2_hdf5(arxx-aryy, "phase/wfr_phase", filename, subgroupname) # difference
         _dump_arr_2_hdf5(arxx, "phase/wfr_phase_s", filename, subgroupname)
