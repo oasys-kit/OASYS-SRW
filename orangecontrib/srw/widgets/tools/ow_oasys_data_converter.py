@@ -1,3 +1,5 @@
+import os
+
 from orangewidget import gui
 from oasys.widgets import gui as oasysgui
 
@@ -79,11 +81,12 @@ class OWOasysDataConverter(widget.OWWidget):
                 if isinstance(self.oasys_data, OasysPreProcessorData):
                     error_profile_data = self.oasys_data.error_profile_data
                     surface_data = error_profile_data.surface_data
-
                     error_profile_data_file = surface_data.surface_data_file
 
-                    if (error_profile_data_file.endswith("hd5") or error_profile_data_file.endswith("hdf5") or error_profile_data_file.endswith("hdf")):
-                        error_profile_data_file += "_converted.dat"
+                    filename, file_extension = os.path.splitext(error_profile_data_file)
+
+                    if (file_extension==".hd5" or file_extension==".hdf5" or file_extension==".hdf"):
+                        error_profile_data_file = filename + "_srw.dat"
 
                     SU.write_error_profile_file(surface_data.zz, surface_data.xx, surface_data.yy, error_profile_data_file)
 
@@ -91,17 +94,19 @@ class OWOasysDataConverter(widget.OWWidget):
                                                                                                               error_profile_x_dim=error_profile_data.error_profile_x_dim,
                                                                                                               error_profile_y_dim=error_profile_data.error_profile_y_dim)))
                 elif isinstance(self.oasys_data, OasysSurfaceData):
-                    error_profile_data_file = self.oasys_data.surface_data_file
+                    surface_data_file = self.oasys_data.surface_data_file
 
-                    if (error_profile_data_file.endswith("hd5") or error_profile_data_file.endswith("hdf5") or error_profile_data_file.endswith("hdf")):
-                        error_profile_data_file += "_converted.dat"
+                    filename, file_extension = os.path.splitext(surface_data_file)
 
-                    SU.write_error_profile_file(self.oasys_data.zz, self.oasys_data.xx, self.oasys_data.yy, error_profile_data_file)
+                    if (file_extension==".hd5" or file_extension==".hdf5" or file_extension==".hdf"):
+                        surface_data_file = filename + "_srw.dat"
+
+                    SU.write_error_profile_file(self.oasys_data.zz, self.oasys_data.xx, self.oasys_data.yy, surface_data_file)
 
                     error_profile_x_dim = abs(self.oasys_data.xx[-1] - self.oasys_data.xx[0])
                     error_profile_y_dim = abs(self.oasys_data.yy[-1] - self.oasys_data.yy[0])
 
-                    self.send("PreProcessor_Data", SRWPreProcessorData(error_profile_data=SRWErrorProfileData(error_profile_data_file= error_profile_data_file,
+                    self.send("PreProcessor_Data", SRWPreProcessorData(error_profile_data=SRWErrorProfileData(error_profile_data_file=surface_data_file,
                                                                                                               error_profile_x_dim=error_profile_x_dim,
                                                                                                               error_profile_y_dim=error_profile_y_dim)))
 
