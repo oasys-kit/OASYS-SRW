@@ -19,7 +19,7 @@ from syned.beamline.element_coordinates import ElementCoordinates
 from syned.beamline.beamline_element import BeamlineElement
 
 from wofry.propagator.propagator import PropagationManager, PropagationElements, PropagationParameters
-from wofrysrw.propagator.wavefront2D.srw_wavefront import PolarizationComponent, WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront, PolarizationComponent, WavefrontPropagationParameters, WavefrontPropagationOptionalParameters
 from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
 from wofrysrw.propagator.propagators2D.srw_fresnel_native import FresnelSRWNative, SRW_APPLICATION
 from wofrysrw.propagator.propagators2D.srw_fresnel_wofry import FresnelSRWWofry
@@ -448,7 +448,9 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             if trigger and trigger.new_object == True:
                 if trigger.has_additional_parameter("variable_name"):
                     variable_name = trigger.get_additional_parameter("variable_name").strip()
+                    variable_display_name = trigger.get_additional_parameter("variable_display_name").strip()
                     variable_value = trigger.get_additional_parameter("variable_value")
+                    variable_um = trigger.get_additional_parameter("variable_um")
 
                     if "," in variable_name:
                         variable_names = variable_name.split(",")
@@ -457,6 +459,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                             setattr(self, variable_name.strip(), variable_value)
                     else:
                         setattr(self, variable_name, variable_value)
+
+                    self.input_srw_data.get_srw_wavefront().setScanningData(SRWWavefront.ScanningData(variable_name, variable_value, variable_display_name, variable_um))
 
                     self.propagate_wavefront()
 
@@ -552,6 +556,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.progressBarSet(50)
 
             if not output_wavefront is None:
+                output_wavefront.setScanningData(self.input_srw_data.get_srw_wavefront().scanned_variable_data)
+
                 self.output_wavefront = output_wavefront
                 self.initializeTabs()
 
