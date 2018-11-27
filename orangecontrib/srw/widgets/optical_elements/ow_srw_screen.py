@@ -23,7 +23,7 @@ class OWSRWScreen(OWSRWOpticalElement):
     is_final_screen = Setting(0)
 
     def __init__(self):
-        super().__init__(has_orientation_angles=False, has_oe_wavefront_propagation_parameters_tab=False)
+        super().__init__(has_orientation_angles=False, has_oe_wavefront_propagation_parameters_tab=False, has_displacement_tab=False)
 
         self.cb_is_final_screen = gui.comboBox(self.tab_bas, self, "is_final_screen", label="Compute Wavefront Propagation", items=["No", "Yes"],
                                                labelWidth=300, sendSelectedValue=False, orientation="horizontal", callback=self.set_is_final_screen)

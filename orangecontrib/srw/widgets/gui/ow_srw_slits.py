@@ -57,10 +57,10 @@ class OWSRWSlits(OWSRWOpticalElement):
                                        y_top=0.5*self.height + self.vertical_shift)
 
         elif self.shape == 1:
-            boundary_shape = Ellipse(a_axis_min=-0.5*self.radius + self.horizontal_shift,
-                                     a_axis_max=0.5*self.radius + self.horizontal_shift,
-                                     b_axis_min=-0.5*self.radius + self.vertical_shift,
-                                     b_axis_max=0.5*self.radius + self.vertical_shift)
+            boundary_shape = Ellipse(a_axis_min=-self.radius + self.horizontal_shift,
+                                     a_axis_max=self.radius + self.horizontal_shift,
+                                     b_axis_min=-self.radius + self.vertical_shift,
+                                     b_axis_max=self.radius + self.vertical_shift)
 
         return self.get_srw_object(boundary_shape=boundary_shape)
 
@@ -93,11 +93,11 @@ class OWSRWSlits(OWSRWOpticalElement):
                 if isinstance(optical_element._boundary_shape, Ellipse):
                     self.shape = 1
 
-                    self.radius  = 0.5*(numpy.abs(optical_element._boundary_shape._a_axis_max - optical_element._boundary_shape._a_axis_min) +
-                                        numpy.abs(optical_element._boundary_shape._b_axis_max - optical_element._boundary_shape._b_axis_min))
+                    self.radius  = 0.25*(numpy.abs(optical_element._boundary_shape._a_axis_max - optical_element._boundary_shape._a_axis_min) +
+                                         numpy.abs(optical_element._boundary_shape._b_axis_max - optical_element._boundary_shape._b_axis_min))
 
-                    self.horizontal_shift = optical_element._boundary_shape._a_axis_min + 0.5 * self.radius
-                    self.vertical_shift = optical_element._boundary_shape._b_axis_min + 0.5 * self.radius
+                    self.horizontal_shift = optical_element._boundary_shape._a_axis_min + self.radius
+                    self.vertical_shift = optical_element._boundary_shape._b_axis_min + self.radius
             else:
                 raise Exception("Syned Data not correct: Optical Element is not a Slit")
         else:

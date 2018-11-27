@@ -23,6 +23,7 @@ from wofrysrw.propagator.wavefront2D.srw_wavefront import PolarizationComponent,
 from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagationMode
 from wofrysrw.propagator.propagators2D.srw_fresnel_native import FresnelSRWNative, SRW_APPLICATION
 from wofrysrw.propagator.propagators2D.srw_fresnel_wofry import FresnelSRWWofry
+from wofrysrw.beamline.optical_elements.srw_optical_element import SRWOpticalElementDisplacement
 
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
@@ -119,6 +120,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     oe_orientation_of_the_horizontal_base_vector_x     = Setting(0.0)
     oe_orientation_of_the_horizontal_base_vector_y     = Setting(0.0)
 
+    has_displacement = Setting(0)
+    where = Setting(0)
+    shift_x = Setting(0.0)
+    shift_y = Setting(0.0)
+    rotation_x = Setting(0.0)
+    rotation_y = Setting(0.0)
+
     input_srw_data = None
 
     has_orientation_angles=True
@@ -127,11 +135,12 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     has_p = True
     has_q = True
     check_positive_distances = True
+    has_displacement_tab=True
 
     TABS_AREA_HEIGHT = 555
     CONTROL_AREA_WIDTH = 405
 
-    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False, has_p=True, has_q=True, check_positive_distances=True, has_oe_wavefront_propagation_parameters_tab=True):
+    def __init__(self, has_orientation_angles=True, azimuth_hor_vert=False, has_p=True, has_q=True, check_positive_distances=True, has_oe_wavefront_propagation_parameters_tab=True, has_displacement_tab=True):
         super().__init__()
 
         self.has_orientation_angles=has_orientation_angles
@@ -140,6 +149,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.has_q = has_q
         self.check_positive_distances = check_positive_distances
         self.has_oe_wavefront_propagation_parameters_tab = has_oe_wavefront_propagation_parameters_tab
+        self.has_displacement_tab=has_displacement_tab
 
 
         self.runaction = widget.OWAction("Propagate Wavefront", self)
@@ -175,8 +185,9 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.tabs_setting.setFixedHeight(self.TABS_AREA_HEIGHT)
         self.tabs_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-5)
 
-        self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "O.E. Setting")
-        self.tab_pro = oasysgui.createTabPage(self.tabs_setting, "Wavefront Propagation Setting")
+        self.tab_bas = oasysgui.createTabPage(self.tabs_setting, "Optical Element")
+        self.tab_pro = oasysgui.createTabPage(self.tabs_setting, "Wavefront Propagation")
+        if self.has_displacement_tab: self.tab_dis = oasysgui.createTabPage(self.tabs_setting, "Displacement")
 
         self.coordinates_box = oasysgui.widgetBox(self.tab_bas, "Coordinates", addSpace=True, orientation="vertical")
 
@@ -249,7 +260,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
-
 
         # OE
         if self.has_oe_wavefront_propagation_parameters_tab:
@@ -335,6 +345,39 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
 
+        #DISPLACEMENTS
+
+        if self.has_displacement_tab:
+
+            gui.comboBox(self.tab_dis, self, "has_displacement", label="Has Displacement",
+                         items=["No", "Yes"], labelWidth=280,
+                         sendSelectedValue=False, orientation="horizontal", callback=self.set_displacement)
+
+            gui.separator(self.tab_dis)
+
+            self.displacement_box = oasysgui.widgetBox(self.tab_dis, "", addSpace=False, orientation="vertical", height=250)
+            self.displacement_box_empty = oasysgui.widgetBox(self.tab_dis, "", addSpace=False, orientation="vertical", height=250)
+
+            gui.comboBox(self.displacement_box, self, "where", label="Apply Displacement",
+                         items=["Before O.E.", "After O.E."], labelWidth=280,
+                         sendSelectedValue=False, orientation="horizontal")
+
+            shift_box = oasysgui.widgetBox(self.displacement_box, "Shift", addSpace=False, orientation="vertical")
+
+            oasysgui.lineEdit(shift_box, self, "shift_x", "Horizontal [m]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(shift_box, self, "shift_y", "Vertical [m]", labelWidth=280, valueType=float, orientation="horizontal")
+
+            rotation_box = oasysgui.widgetBox(self.displacement_box, "Rotation", addSpace=False, orientation="vertical")
+
+            oasysgui.lineEdit(rotation_box, self, "rotation_y", "Around Horizontal Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(rotation_box, self, "rotation_x", "Around Vertical Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+
+            self.set_displacement()
+
+    def set_displacement(self):
+        self.displacement_box.setVisible(self.has_displacement==1)
+        self.displacement_box_empty.setVisible(self.has_displacement==0)
+
     class PropagatorInfoDialog(QDialog):
 
         usage_path = os.path.join(resources.package_dirname("orangecontrib.srw.widgets.gui"), "misc", "propagator_info.png")
@@ -400,6 +443,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.angle_radial = 0.0
             self.angle_azimuthal = 0.0
 
+        if self.has_displacement:
+            congruence.checkAngle(self.rotation_x, "Rotation Around Horizontal Axis")
+            congruence.checkAngle(self.rotation_y, "Rotation Around Vertical Axis")
+
     def propagate_wavefront(self):
         try:
             self.progressBarInit()
@@ -421,9 +468,15 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             srw_beamline = self.input_srw_data.get_srw_beamline().duplicate()
             working_srw_beamline = self.input_srw_data.get_working_srw_beamline().duplicate()
 
-
             optical_element = self.get_optical_element()
             optical_element.name = self.oe_name if not self.oe_name is None else self.windowTitle()
+
+            if self.has_displacement==1:
+                optical_element.displacement = SRWOpticalElementDisplacement(shift_x=self.shift_x,
+                                                                             shift_y=self.shift_y,
+                                                                             rotation_x=numpy.radians(self.rotation_x),
+                                                                             rotation_y=numpy.radians(self.rotation_y),
+                                                                             where=self.where)
 
             beamline_element = BeamlineElement(optical_element=optical_element,
                                                coordinates=ElementCoordinates(p=self.p,
