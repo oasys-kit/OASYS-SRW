@@ -6,6 +6,7 @@ from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
+from oasys.util.oasys_util import TriggerOut
 
 from syned.beamline.optical_elements.mirrors.mirror import Mirror
 from syned.widget.widget_decorator import WidgetDecorator
@@ -47,6 +48,7 @@ class OWSRWMirror(OWSRWOpticalElement):
     reflectivity_angle_scale_type = Setting(0)
 
     inputs = [("SRWData", SRWData, "set_input"),
+              ("Trigger", TriggerOut, "propagate_new_wavefront"),
               ("PreProcessor Data #1", SRWPreProcessorData, "setPreProcessorData"),
               ("PreProcessor Data #2", SRWPreProcessorData, "setPreProcessorData"),
               WidgetDecorator.syned_input_data()[0]]

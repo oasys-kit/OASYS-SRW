@@ -39,7 +39,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     keywords = ["data", "file", "load", "read"]
     category = "SRW Optical Elements"
 
-
     outputs = [{"name":"SRWData",
                 "type":SRWData,
                 "doc":"SRW Optical Element Data",
@@ -50,6 +49,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                 "id":"Trigger"}]
 
     inputs = [("SRWData", SRWData, "set_input"),
+              ("Trigger", TriggerOut, "propagate_new_wavefront"),
               WidgetDecorator.syned_input_data()[0]]
 
     oe_name         = None
@@ -446,6 +446,28 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         if self.has_displacement:
             congruence.checkAngle(self.rotation_x, "Rotation Around Horizontal Axis")
             congruence.checkAngle(self.rotation_y, "Rotation Around Vertical Axis")
+
+    def propagate_new_wavefront(self, trigger):
+        try:
+            if trigger and trigger.new_object == True:
+                if trigger.has_additional_parameter("variable_name"):
+                    variable_name = trigger.get_additional_parameter("variable_name").strip()
+                    variable_value = trigger.get_additional_parameter("variable_value")
+
+                    if "," in variable_name:
+                        variable_names = variable_name.split(",")
+
+                        for variable_name in variable_names:
+                            setattr(self, variable_name.strip(), variable_value)
+                    else:
+                        setattr(self, variable_name, variable_value)
+
+                    self.propagate_wavefront()
+
+        except Exception as exception:
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+            if self.IS_DEVELOP: raise exception
 
     def propagate_wavefront(self):
         try:
