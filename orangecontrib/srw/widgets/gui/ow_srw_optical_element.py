@@ -121,7 +121,7 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     oe_orientation_of_the_horizontal_base_vector_y     = Setting(0.0)
 
     has_displacement = Setting(0)
-    where = Setting(0)
+    #where = Setting(0)
     shift_x = Setting(0.0)
     shift_y = Setting(0.0)
     rotation_x = Setting(0.0)
@@ -358,10 +358,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             self.displacement_box = oasysgui.widgetBox(self.tab_dis, "", addSpace=False, orientation="vertical", height=250)
             self.displacement_box_empty = oasysgui.widgetBox(self.tab_dis, "", addSpace=False, orientation="vertical", height=250)
 
-            gui.comboBox(self.displacement_box, self, "where", label="Apply Displacement",
-                         items=["Before O.E.", "After O.E."], labelWidth=280,
-                         sendSelectedValue=False, orientation="horizontal")
-
             shift_box = oasysgui.widgetBox(self.displacement_box, "Shift", addSpace=False, orientation="vertical")
 
             oasysgui.lineEdit(shift_box, self, "shift_x", "Horizontal [m]", labelWidth=280, valueType=float, orientation="horizontal")
@@ -369,8 +365,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             rotation_box = oasysgui.widgetBox(self.displacement_box, "Rotation", addSpace=False, orientation="vertical")
 
-            oasysgui.lineEdit(rotation_box, self, "rotation_y", "Around Horizontal Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
-            oasysgui.lineEdit(rotation_box, self, "rotation_x", "Around Vertical Axis [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(rotation_box, self, "rotation_y", "Around Horizontal Axis [CCW, deg]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(rotation_box, self, "rotation_x", "Around Vertical Axis [CCW, deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
             self.set_displacement()
 
@@ -496,9 +492,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             if self.has_displacement==1:
                 optical_element.displacement = SRWOpticalElementDisplacement(shift_x=self.shift_x,
                                                                              shift_y=self.shift_y,
-                                                                             rotation_x=numpy.radians(self.rotation_x),
-                                                                             rotation_y=numpy.radians(self.rotation_y),
-                                                                             where=self.where)
+                                                                             rotation_x=numpy.radians(-self.rotation_x),
+                                                                             rotation_y=numpy.radians(-self.rotation_y))
 
             beamline_element = BeamlineElement(optical_element=optical_element,
                                                coordinates=ElementCoordinates(p=self.p,
