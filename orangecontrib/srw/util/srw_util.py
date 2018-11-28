@@ -146,11 +146,18 @@ class SRWPlot:
 
             self.setLayout(layout)
 
-        def plot_1D(self, ticket, col, title, xtitle, ytitle, xum="", xrange=None):
+        def plot_1D(self, ticket, col, title, xtitle, ytitle, xum="", xrange=None, use_default_factor=True):
 
-            factor=SRWPlot.get_factor(col)
+            if use_default_factor:
+                factor = SRWPlot.get_factor(col)
+            else:
+                factor = 1.0
 
-            histogram = ticket['histogram'][0]
+            if isinstance(ticket['histogram'].shape, list):
+                histogram = ticket['histogram'][0]
+            else:
+                histogram = ticket['histogram']
+
             bins = ticket['bins']
 
             if not xrange is None:
@@ -226,12 +233,16 @@ class SRWPlot:
 
             self.plot_canvas.toolBar()
 
-        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None):
+        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True):
 
             matplotlib.rcParams['axes.formatter.useoffset']='False'
 
-            factor1=SRWPlot.get_factor(var_x)
-            factor2=SRWPlot.get_factor(var_y)
+            if use_default_factor:
+                factor1=SRWPlot.get_factor(var_x)
+                factor2=SRWPlot.get_factor(var_y)
+            else:
+                factor1 = 1.0
+                factor2 = 1.0
 
             if plotting_range == None:
                 xx = ticket['bin_h']

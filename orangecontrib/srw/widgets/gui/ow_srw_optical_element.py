@@ -121,7 +121,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     oe_orientation_of_the_horizontal_base_vector_y     = Setting(0.0)
 
     has_displacement = Setting(0)
-    #where = Setting(0)
     shift_x = Setting(0.0)
     shift_y = Setting(0.0)
     rotation_x = Setting(0.0)
@@ -447,6 +446,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         try:
             if trigger and trigger.new_object == True:
                 if trigger.has_additional_parameter("variable_name"):
+                    if self.input_srw_data is None: raise Exception("No Input Data")
+
                     variable_name = trigger.get_additional_parameter("variable_name").strip()
                     variable_display_name = trigger.get_additional_parameter("variable_display_name").strip()
                     variable_value = trigger.get_additional_parameter("variable_value")
@@ -461,7 +462,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                         setattr(self, variable_name, variable_value)
 
                     self.input_srw_data.get_srw_wavefront().setScanningData(SRWWavefront.ScanningData(variable_name, variable_value, variable_display_name, variable_um))
-
                     self.propagate_wavefront()
 
         except Exception as exception:
