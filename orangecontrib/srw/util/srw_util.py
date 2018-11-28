@@ -146,12 +146,20 @@ class SRWPlot:
 
             self.setLayout(layout)
 
-        def plot_1D(self, ticket, col, title, xtitle, ytitle, xum=""):
+        def plot_1D(self, ticket, col, title, xtitle, ytitle, xum="", xrange=None):
 
             factor=SRWPlot.get_factor(col)
 
-            histogram = ticket['histogram']
-            bins = ticket['bins']*factor
+            histogram = ticket['histogram'][0]
+            bins = ticket['bins']
+
+            if not xrange is None:
+                good = numpy.where((bins >= xrange[0]) & (bins <= xrange[1]))
+
+                bins = bins[good]
+                histogram = histogram[good]
+
+            bins *= factor
 
             self.plot_canvas.addCurve(bins, histogram, title, symbol='', color='blue', replace=True) #'+', '^', ','
             if not xtitle is None: self.plot_canvas.setGraphXLabel(xtitle)
