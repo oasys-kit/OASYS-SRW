@@ -169,7 +169,7 @@ class SRWWavefrontViewer(SRWWidget):
         self.tab = []
         self.plot_canvas = []
 
-        for title in self.getTitles():
+        for title in titles:
             self.tab.append(oasysgui.createTabPage(self.tabs, title))
             self.plot_canvas.append(None)
 

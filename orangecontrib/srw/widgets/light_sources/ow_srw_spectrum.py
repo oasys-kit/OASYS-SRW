@@ -8,6 +8,7 @@ from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
+from oasys.widgets.exchange import DataExchangeObject
 from oasys.util.oasys_util import EmittingStream
 
 from syned.storage_ring.light_source import ElectronBeam
@@ -35,6 +36,10 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     priority = 5
 
     inputs = [("SRWData", SRWData, "receive_srw_data")]
+
+    outputs = [{"name": "srw_data",
+                "type": DataExchangeObject,
+                "doc": ""}]
 
     want_main_area=1
 
@@ -202,6 +207,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
                 self.setStatusMessage("")
 
+                self.send("srw_data", self.create_exchange_data(tickets))
+
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
@@ -359,6 +366,24 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
         self.progressBarSet(progress_bar_value)
 
+    def create_exchange_data(self, tickets):
+        ticket = tickets[0]
+
+        if isinstance(ticket['histogram'].shape, list):
+            f = ticket['histogram'][0]
+        else:
+            f = ticket['histogram']
+
+        e = ticket['bins']
+
+        data = numpy.zeros((len(e), 2))
+        data[:, 0] = numpy.array(e)
+        data[:, 1] = numpy.array(f)
+
+        calculated_data = DataExchangeObject(program_name="SRW", widget_name="UNDULATOR_SPECTRUM")
+        calculated_data.add_content("srw_data", data)
+
+        return calculated_data
 
     def getVariablesToPlot(self):
         return [[1], [1]]
