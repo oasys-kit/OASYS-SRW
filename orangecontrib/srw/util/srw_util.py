@@ -1,10 +1,18 @@
 import numpy, decimal
 from PyQt5.QtGui import QFont, QPalette, QColor
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox
+
+from matplotlib import cm
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from matplotlib.figure import Figure
 from matplotlib.patches import FancyArrowPatch, ArrowStyle
+try:
+    from mpl_toolkits.mplot3d import Axes3D  # necessario per caricare i plot 3D
+except:
+    pass
 
 from oasys.widgets import gui
-
+from srxraylib.metrology import profiles_simulation
 from silx.gui.plot.ImageView import ImageView
 
 import matplotlib
@@ -461,6 +469,82 @@ class SRWPlot:
 
         return ticket
 
+
+class ShowErrorProfileDialog(QDialog):
+
+    def __init__(self, parent=None, file_name="", dimension=2):
+        QDialog.__init__(self, parent)
+        self.setWindowTitle('File: Surface Error Profile')
+        layout = QVBoxLayout(self)
+
+        if dimension == 2:
+            figure = Figure(figsize=(100, 100))
+            figure.patch.set_facecolor('white')
+
+            axis = figure.add_subplot(111, projection='3d')
+
+            axis.set_xlabel("X [m]")
+            axis.set_ylabel("Y [m]")
+            axis.set_zlabel("Z [nm]")
+
+            figure_canvas = FigureCanvasQTAgg(figure)
+            figure_canvas.setFixedWidth(500)
+            figure_canvas.setFixedHeight(500)
+
+            x_coords, y_coords, z_values = read_error_profile_file(file_name, dimension=2)
+
+            x_to_plot, y_to_plot = numpy.meshgrid(x_coords, y_coords)
+
+            axis.plot_surface(x_to_plot, y_to_plot, (z_values*parent.workspace_units_to_m*1e9).T,
+                              rstride=1, cstride=1, cmap=cm.autumn, linewidth=0.5, antialiased=True)
+
+            sloperms = profiles_simulation.slopes(z_values, x_coords, y_coords, return_only_rms=1)
+
+            title = ' Slope error rms in X direction: %f $\mu$rad' % (sloperms[0]*1e6) + '\n' + \
+                    ' Slope error rms in Y direction: %f $\mu$rad' % (sloperms[1]*1e6) + '\n' + \
+                    ' Figure error rms in X direction: %f nm' % (round(z_values[0, :].std()*1e9, 6)) + '\n' + \
+                    ' Figure error rms in Y direction: %f nm' % (round(z_values[:, 0].std()*1e9, 6))
+
+            axis.set_title(title)
+
+            figure_canvas.draw()
+
+            axis.mouse_init()
+
+        elif dimension==1:
+            figure_canvas = gui.plotWindow(resetzoom=False,
+                                           autoScale=False,
+                                           logScale=False,
+                                           grid=False,
+                                           curveStyle=False,
+                                           colormap=False,
+                                           aspectRatio=False, yInverted=False,
+                                           copy=False, save=False, print_=False,
+                                           control=False, position=False,
+                                           roi=False, mask=False, fit=False)
+            figure_canvas.setDefaultPlotLines(True)
+            figure_canvas.setActiveCurveColor(color='blue')
+            figure_canvas.setMinimumWidth(500)
+            figure_canvas.setMaximumWidth(500)
+
+            x_coords, z_values = read_error_profile_file(file_name, dimension=1)
+
+            figure_canvas.addCurve(x_coords, z_values*1e9, "Height Error Profile", symbol='', color='blue', replace=True) #'+', '^', ','
+            figure_canvas.setGraphXLabel("X [m]")
+            figure_canvas.setGraphYLabel("Height Error [nm]")
+            figure_canvas.setGraphTitle("Height Error Profile")
+            figure_canvas.setDrawModeEnabled(True, 'rectangle')
+            figure_canvas.setZoomModeEnabled(True)
+
+            figure_canvas.replot()
+
+        bbox = QDialogButtonBox(QDialogButtonBox.Ok)
+
+        bbox.accepted.connect(self.accept)
+        layout.addWidget(figure_canvas)
+        layout.addWidget(bbox)
+
+
 #_height_prof_data: a matrix (2D array) containing the Height Profile data in [m];
 # if _ar_height_prof_x is None and _ar_height_prof_y is None: the first column in _height_prof_data is assumed to be the "longitudinal" position [m]
 # and first row the "transverse" position [m], and _height_prof_data[0][0] is not used;
@@ -492,6 +576,40 @@ def write_error_profile_file(zz, xx, yy, output_file, separator = '\t'):
 
     buffer.close()
 
+from oasys.widgets import congruence
+
+def read_error_profile_file(file_name, separator = '\t', dimension=2):
+    if dimension == 2:
+        rows = open(congruence.checkFile(file_name), "r").readlines()
+
+        # first row: x positions
+
+        x_pos = rows[0].split(separator)
+        n_x = len(x_pos)-1
+        n_y = len(rows)-1
+
+        x_coords = numpy.zeros(n_x)
+        y_coords = numpy.zeros(n_y)
+        z_values = numpy.zeros((n_x, n_y))
+
+        for i_x in range(n_x):
+            x_coords[i_x] = float(x_pos[i_x+1])
+
+        for i_y in range(n_y):
+            data = rows[i_y+1].split(separator)
+            y_coords[i_y] = float(data[0])
+
+            for i_x in range(n_x):
+                z_values[i_x, i_y] = float(data[i_x+1])
+
+        return x_coords, y_coords, z_values
+    else:
+        data = numpy.loadtxt(congruence.checkFile(file_name), delimiter=separator )
+
+        x_coords = data[:, 0]
+        z_values = data[:, 1]
+
+        return x_coords, z_values
 
 ###############################################################
 #

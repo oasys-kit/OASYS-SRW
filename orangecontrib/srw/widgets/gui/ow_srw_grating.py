@@ -12,6 +12,7 @@ from syned.beamline.optical_elements.gratings.grating import Grating
 from syned.widget.widget_decorator import WidgetDecorator
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
+from orangecontrib.srw.util.srw_util import ShowErrorProfileDialog
 from orangecontrib.srw.util.srw_objects import SRWData, SRWPreProcessorData, SRWErrorProfileData
 
 class OWSRWGrating(OWSRWOpticalElement):
@@ -86,18 +87,21 @@ class OWSRWGrating(OWSRWOpticalElement):
 
         gui.separator(self.error_box)
 
-        self.height_profile_box_1 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=80)
-
-        self.height_profile_box_2 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=80)
+        self.height_profile_box_1 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=110)
+        self.height_profile_box_2 = oasysgui.widgetBox(self.error_box, "", addSpace=False, orientation="vertical", height=110)
 
         file_box =  oasysgui.widgetBox(self.height_profile_box_2, "", addSpace=False, orientation="horizontal")
 
-        self.le_height_profile_data_file = oasysgui.lineEdit(file_box, self, "height_profile_data_file", "Height profile data file", labelWidth=185, valueType=str, orientation="horizontal")
+        self.le_height_profile_data_file = oasysgui.lineEdit(file_box, self, "height_profile_data_file", "Height profile data file", labelWidth=155, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectHeightProfileDataFile)
 
-        gui.comboBox(self.height_profile_box_2, self, "height_profile_data_file_dimension", label="Dimension",
-                     items=["1", "2"], labelWidth=300,
+        file_box_2 =  oasysgui.widgetBox(self.height_profile_box_2, "", addSpace=False, orientation="horizontal")
+
+        gui.comboBox(file_box_2, self, "height_profile_data_file_dimension", label="Dimension",
+                     items=["1", "2"], labelWidth=280,
                      sendSelectedValue=False, orientation="horizontal")
+
+        gui.button(file_box_2, self, "View", callback=self.view_height_profile)
 
         oasysgui.lineEdit(self.height_profile_box_2, self, "height_amplification_coefficient", "Height Amplification Coefficient", labelWidth=260, valueType=float, orientation="horizontal")
 
@@ -218,4 +222,14 @@ class OWSRWGrating(OWSRWOpticalElement):
                                                               QMessageBox.Ok)
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+    def view_height_profile(self):
+        pass
+        try:
+            dialog = ShowErrorProfileDialog(parent=self,
+                                            file_name=self.height_profile_data_file,
+                                            dimension=self.height_profile_data_file_dimension+1)
+            dialog.show()
+        except Exception as exception:
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
