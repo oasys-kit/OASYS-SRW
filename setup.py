@@ -8,7 +8,7 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-SRW'
-VERSION = '1.0.52'
+VERSION = '1.0.53'
 ISRELEASED = False
 
 DESCRIPTION = 'SRW in OASYS'

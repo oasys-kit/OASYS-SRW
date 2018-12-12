@@ -310,7 +310,7 @@ class OWSRWRadiation(SRWWavefrontViewer):
         else: energy_step = 1.0
 
         import scipy.constants as codata
-        pd = i_se.sum(axis=0)*energy_step*codata.e*1e3
+        pd = i_me.sum(axis=0)*energy_step*codata.e*1e3
 
         self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, pd)
 
