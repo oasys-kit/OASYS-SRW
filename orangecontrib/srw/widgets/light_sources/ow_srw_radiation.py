@@ -21,9 +21,9 @@ from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUn
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
-from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
+from orangecontrib.srw.widgets.gui.ow_srw_power_density_viewer import SRWPowerDensityViewer
 
-class OWSRWRadiation(SRWWavefrontViewer):
+class OWSRWRadiation(SRWPowerDensityViewer):
 
     maintainer = "Luca Rebuffi"
     maintainer_email = "lrebuffi(@at@)anl.gov"
