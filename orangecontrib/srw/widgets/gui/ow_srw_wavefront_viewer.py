@@ -3,7 +3,7 @@ import numpy
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
 from PyQt5.QtGui import QPalette, QColor, QFont
 
 from orangewidget import gui
@@ -236,7 +236,9 @@ class SRWWavefrontViewer(SRWWidget):
     def plot_1D(self, ticket, progressBarValue, var, plot_canvas_index, title, xtitle, ytitle, xum=""):
         if self.plot_canvas[plot_canvas_index] is None:
             self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed1DWidget()
-            self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
+
+            plot_canvas_box = oasysgui.widgetBox(self.tab[plot_canvas_index], "", addSpace=False, orientation="horizontal")
+            plot_canvas_box.layout().addWidget(self.plot_canvas[plot_canvas_index])
 
         self.plot_canvas[plot_canvas_index].plot_1D(ticket, var, title, xtitle, ytitle, xum=xum)
 
@@ -244,7 +246,7 @@ class SRWWavefrontViewer(SRWWidget):
 
     def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False):
         if self.plot_canvas[plot_canvas_index] is None:
-            self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed2DWidget()
+            self.plot_canvas[plot_canvas_index] =  SRWPlot.Detailed2DWidget()
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
 
         if self.use_range == 1 and not ignore_range:

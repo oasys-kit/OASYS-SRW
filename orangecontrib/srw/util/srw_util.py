@@ -13,7 +13,7 @@ except:
 
 from oasys.widgets import gui
 from srxraylib.metrology import profiles_simulation
-from silx.gui.plot.ImageView import ImageView
+from silx.gui.plot.ImageView import ImageView, PlotWindow
 
 import matplotlib
 
@@ -146,7 +146,7 @@ class SRWPlot:
 
             layout = QGridLayout()
 
-            layout.addWidget(   self.info_box, 0, 1, 1, 1)
+            layout.addWidget(self.info_box,    0, 1, 1, 1)
             layout.addWidget(self.plot_canvas, 0, 0, 1, 1)
 
             layout.setColumnMinimumWidth(0, 600*x_scale_factor)
@@ -220,7 +220,7 @@ class SRWPlot:
             self.x_scale_factor = x_scale_factor
             self.y_scale_factor = y_scale_factor
 
-            self.plot_canvas = ImageView()
+            self.plot_canvas = ImageView(parent=self)
 
             self.plot_canvas.setColormap({"name":"gray", "normalization":"linear", "autoscale":True, "vmin":0, "vmax":0, "colors":256})
             self.plot_canvas.setMinimumWidth(590 * x_scale_factor)
@@ -230,16 +230,13 @@ class SRWPlot:
 
             layout = QGridLayout()
 
-            layout.addWidget(             self.info_box, 0, 1, 2, 1)
-            layout.addWidget(self.plot_canvas.toolBar(), 0, 0, 1, 1)
-            layout.addWidget(          self.plot_canvas, 1, 0, 1, 1)
+            layout.addWidget(   self.info_box, 0, 1, 1, 1)
+            layout.addWidget(self.plot_canvas, 0, 0, 1, 1)
 
             layout.setColumnMinimumWidth(0, 600*x_scale_factor)
             layout.setColumnMinimumWidth(1, 230*x_scale_factor)
 
             self.setLayout(layout)
-
-            self.plot_canvas.toolBar()
 
         def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True):
 
@@ -646,8 +643,23 @@ def showCriticalMessage(message, parent=None):
     msgBox.setStandardButtons(QMessageBox.Ok)
     msgBox.exec_()
 
+from PyQt5.QtWidgets import QApplication
+
 if __name__=="__main__":
     print(SRWPlot.get_SRW_label(1))
     print(SRWPlot.get_SRW_label(2))
     print(SRWPlot.get_SRW_label(3))
     print("--", SRWPlot.get_SRW_label(5), "--")
+
+    app = QApplication([])
+
+    widget = QWidget()
+
+    layout = QVBoxLayout()
+    layout.addWidget(ImageView())
+
+    widget.setLayout(layout)
+
+    widget.show()
+
+    app.exec_()
