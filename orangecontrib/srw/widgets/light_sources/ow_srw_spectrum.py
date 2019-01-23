@@ -336,7 +336,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                                  flux_precision_parameters=FluxPrecisionParameters(initial_UR_harmonic=self.spe_initial_UR_harmonic,
                                                                                                    final_UR_harmonic=self.spe_final_UR_harmonic,
                                                                                                    longitudinal_integration_precision_parameter=self.spe_longitudinal_integration_precision_parameter,
-                                                                                                   azimuthal_integration_precision_parameter=self.spe_azimuthal_integration_precision_parameter))
+                                                                                                   azimuthal_integration_precision_parameter=self.spe_azimuthal_integration_precision_parameter,
+                                                                                                   calculation_type=1))
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
 
