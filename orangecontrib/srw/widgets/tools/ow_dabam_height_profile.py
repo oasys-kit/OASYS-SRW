@@ -19,7 +19,8 @@ class OWdabam_height_profile(OWAbstractDabamHeightProfile):
     category = ""
     keywords = ["dabam_height_profile"]
 
-    outputs = [{"name": "PreProcessor_Data",
+    outputs = [OWAbstractDabamHeightProfile.get_dabam_output(),
+               {"name": "PreProcessor_Data",
                 "type": SRWPreProcessorData,
                 "doc": "PreProcessor Data",
                 "id": "PreProcessor_Data"}]
