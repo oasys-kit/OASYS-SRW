@@ -391,7 +391,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
     def getTitles(self, with_um=False):
         if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from 0-Emittance Beam"]
-        else: return ["Spectral Flux Density (ME) vs E", "Spectral Spatial Flux Density (SE) vs E"]
+        else: return ["Spectral Flux (ME) vs E", "Spectral Spatial Flux Density (SE) vs E"]
 
     def getXTitles(self):
         return ["E [eV]", "E [eV]"]
@@ -400,7 +400,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         if not self.received_light_source  is None and isinstance(self.received_light_source, SRWBendingMagnetLightSource):
             return ["Spectral Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
         else:
-            return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
+            return ["Spectral Flux [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
 
     def getXUM(self):
         return ["E [eV]", "E [eV]"]
@@ -409,7 +409,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         if not self.received_light_source  is None and isinstance(self.received_light_source, SRWBendingMagnetLightSource):
             return ["Spectral Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
         else:
-            return ["Spectral Flux Density [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
+            return ["Spectral Flux [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
 
     def receive_srw_data(self, data):
         if not data is None:
