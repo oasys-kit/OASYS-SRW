@@ -139,7 +139,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
         left_box_1 = oasysgui.widgetBox(self.tab_source, "Electron Beam Parameters", addSpace=True, orientation="vertical", height=380)
 
-        oasysgui.lineEdit(left_box_1, self, "electron_energy_in_GeV", "Energy [GeV]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_1, self, "electron_energy_in_GeV", "Energy [GeV]", labelWidth=260, valueType=float, orientation="horizontal", callback=self.callback_electron_energy)
         oasysgui.lineEdit(left_box_1, self, "electron_energy_spread", "Energy Spread", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "ring_current", "Ring Current [A]", labelWidth=260, valueType=float, orientation="horizontal")
 
@@ -544,7 +544,6 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
                                                                                                         number_of_points_for_trajectory_calculation=self.wf_number_of_points_for_trajectory_calculation,
                                                                                                         use_terminating_terms=self.wf_use_terminating_terms,
                                                                                                         sampling_factor_for_adjusting_nx_ny=self.wf_sampling_factor_for_adjusting_nx_ny))
-
         return srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
@@ -613,3 +612,5 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     def receive_specific_syned_data(self, data):
         raise NotImplementedError()
 
+    def callback_electron_energy(self):
+        pass

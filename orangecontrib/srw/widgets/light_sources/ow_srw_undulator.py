@@ -1,7 +1,7 @@
-import sys, os
+import sys, os, numpy
 
 from PyQt5.QtWidgets import QApplication, QDialog, QVBoxLayout, QLabel, QDialogButtonBox
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QPalette, QColor, QFont
 import orangecanvas.resources as resources
 from orangewidget import gui
 from orangewidget.settings import Setting
@@ -14,6 +14,10 @@ from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUn
 from wofrysrw.storage_ring.magnetic_structures.srw_undulator import SRWUndulator
 
 from orangecontrib.srw.widgets.gui.ow_srw_source import OWSRWSource
+
+import scipy.constants as codata
+
+m2ev = codata.c * codata.h / codata.e
 
 class OWSRWUndulator(OWSRWSource):
 
@@ -38,6 +42,7 @@ class OWSRWUndulator(OWSRWSource):
 
     wf_use_harmonic = Setting(0)
     wf_harmonic_number = Setting(1)
+    wf_harmonic_energy = 0.0
 
     want_main_area=1
 
@@ -47,6 +52,9 @@ class OWSRWUndulator(OWSRWSource):
     symmetry_vs_longitudinal_position_vertical = Setting(1)
     symmetry_vs_longitudinal_position_horizontal = Setting(0)
 
+    auto_energy = Setting(0.0)
+    auto_harmonic_number = Setting(1)
+
     def __init__(self):
         super().__init__()
 
@@ -55,7 +63,7 @@ class OWSRWUndulator(OWSRWSource):
         left_box_2 = oasysgui.createTabPage(tabs, "ID Parameters")
         left_box_3 = oasysgui.createTabPage(tabs, "ID Magnetic Field")
 
-        oasysgui.lineEdit(left_box_2, self, "period_length", "Period Length [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2, self, "period_length", "Period Length [m]", labelWidth=260, valueType=float, orientation="horizontal", callback=self.set_harmonic_energy)
         oasysgui.lineEdit(left_box_2, self, "number_of_periods", "Number of Periods", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "horizontal_central_position", "Horizontal Central Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2, self, "vertical_central_position", "Vertical Central Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -80,16 +88,15 @@ class OWSRWUndulator(OWSRWSource):
         self.magnetic_field_box_1_v = oasysgui.widgetBox(vertical_box, "", addSpace=False, orientation="vertical")
         self.magnetic_field_box_2_v = oasysgui.widgetBox(vertical_box, "", addSpace=False, orientation="vertical")
 
-        oasysgui.lineEdit(self.magnetic_field_box_1_h, self, "K_horizontal", "K", labelWidth=70, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.magnetic_field_box_1_v, self, "K_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.magnetic_field_box_2_h, self, "B_horizontal", "B [T]", labelWidth=70, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.magnetic_field_box_2_v, self, "B_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.magnetic_field_box_1_h, self, "K_horizontal", "K", labelWidth=70, valueType=float, orientation="horizontal", callback=self.set_harmonic_energy)
+        oasysgui.lineEdit(self.magnetic_field_box_1_v, self, "K_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal", callback=self.set_harmonic_energy)
+        oasysgui.lineEdit(self.magnetic_field_box_2_h, self, "B_horizontal", "B [T]", labelWidth=70, valueType=float, orientation="horizontal", callback=self.set_harmonic_energy)
+        oasysgui.lineEdit(self.magnetic_field_box_2_v, self, "B_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal", callback=self.set_harmonic_energy)
 
         self.set_MagneticField()
 
         oasysgui.lineEdit(horizontal_box, self, "initial_phase_horizontal", "\u03c6\u2080 [rad]", labelWidth=70, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(vertical_box, self, "initial_phase_vertical", " ", labelWidth=2, valueType=float, orientation="horizontal")
-
 
         gui.comboBox(horizontal_box, self, "symmetry_vs_longitudinal_position_horizontal", label="Symmetry", labelWidth=70,
                      items=["Symmetrical", "Anti-Symmetrical"],
@@ -101,6 +108,18 @@ class OWSRWUndulator(OWSRWSource):
                      sendSelectedValue=False, orientation="horizontal")
         gui.button(symmetry_v_box, self, "?", callback=self.open_help, width=12)
 
+        ####################################################################################
+        # Utility
+
+        tab_util = oasysgui.createTabPage(self.tabs_setting, "Utility")
+
+        left_box_1 = oasysgui.widgetBox(tab_util, "Auto Setting of Undulator", addSpace=False, orientation="vertical")
+
+        oasysgui.lineEdit(left_box_1, self, "auto_energy", "Set Undulator at Energy [eV]", labelWidth=250, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_1, self, "auto_harmonic_number", "As Harmonic #",  labelWidth=250, valueType=int, orientation="horizontal")
+
+        gui.button(left_box_1, self, "Set Kv value", callback=self.auto_set_undulator)
+
 
         gui.rubber(self.controlArea)
         gui.rubber(self.mainArea)
@@ -111,10 +130,19 @@ class OWSRWUndulator(OWSRWSource):
                      items=["Harmonic", "Other"], labelWidth=260,
                      callback=self.set_WFUseHarmonic, sendSelectedValue=False, orientation="horizontal")
 
-        self.use_harmonic_box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=30)
-        oasysgui.lineEdit(self.use_harmonic_box_1, self, "wf_harmonic_number", "Harmonic #", labelWidth=260, valueType=int, orientation="horizontal")
+        self.use_harmonic_box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=50)
+        oasysgui.lineEdit(self.use_harmonic_box_1, self, "wf_harmonic_number", "Harmonic #", labelWidth=260, valueType=int, orientation="horizontal", callback=self.set_harmonic_energy)
+        le_he = oasysgui.lineEdit(self.use_harmonic_box_1, self, "wf_harmonic_energy", "Harmonic Energy", labelWidth=260, valueType=float, orientation="horizontal")
+        le_he.setReadOnly(True)
+        font = QFont(le_he.font())
+        font.setBold(True)
+        le_he.setFont(font)
+        palette = QPalette(le_he.palette())
+        palette.setColor(QPalette.Text, QColor('dark blue'))
+        palette.setColor(QPalette.Base, QColor(243, 240, 160))
+        le_he.setPalette(palette)
 
-        self.use_harmonic_box_2 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=30)
+        self.use_harmonic_box_2 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=50)
         oasysgui.lineEdit(self.use_harmonic_box_2, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
 
         self.set_WFUseHarmonic()
@@ -148,9 +176,36 @@ class OWSRWUndulator(OWSRWSource):
         self.magnetic_field_box_1_v.setVisible(self.magnetic_field_from==0)
         self.magnetic_field_box_2_v.setVisible(self.magnetic_field_from==1)
 
+        self.set_harmonic_energy()
+
     def set_WFUseHarmonic(self):
         self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
         self.use_harmonic_box_2.setVisible(self.wf_use_harmonic==1)
+
+        self.set_harmonic_energy()
+
+    def auto_set_undulator(self):
+        congruence.checkStrictlyPositiveNumber(self.auto_energy, "Set Undulator at Energy")
+        congruence.checkStrictlyPositiveNumber(self.auto_harmonic_number, "As Harmonic #")
+        congruence.checkStrictlyPositiveNumber(self.electron_energy_in_GeV, "Energy")
+        congruence.checkStrictlyPositiveNumber(self.period_length, "Period Length")
+
+        wavelength = self.auto_harmonic_number*m2ev/self.auto_energy
+
+        self.magnetic_field_from = 0
+        self.K_vertical = round(numpy.sqrt(2 * (((wavelength * 2 * self.__gamma() ** 2) / self.period_length) - 1)), 6)
+        self.K_horizontal = 0
+
+        self.set_MagneticField()
+
+    def set_harmonic_energy(self):
+        if self.wf_use_harmonic==0:
+            self.wf_harmonic_energy = round(self.__resonance_energy(harmonic=self.wf_harmonic_number), 2)
+        else:
+            self.wf_harmonic_energy = numpy.nan
+
+    def callback_electron_energy(self):
+        self.set_harmonic_energy()
 
     def get_default_initial_z(self):
         return -0.5*self.period_length*(self.number_of_periods + 4) # initial Longitudinal Coordinate (set before the ID)
@@ -229,6 +284,27 @@ class OWSRWUndulator(OWSRWSource):
             self.set_MagneticField()
         else:
             raise ValueError("Syned data not correct")
+
+    def __gamma(self):
+        return 1e9*self.electron_energy_in_GeV / (codata.m_e *  codata.c**2 / codata.e)
+
+    def __K_from_magnetic_field(self, B):
+        return B /(2 * numpy.pi * codata.m_e * codata.c / (codata.e * self.period_length))
+
+    def __resonance_energy(self, theta_x=0.0, theta_z=0.0, harmonic=1):
+        if self.magnetic_field_from == 1:
+            self.K_vertical   = self.__K_from_magnetic_field(self.B_vertical)
+            self.K_horizontal = self.__K_from_magnetic_field(self.B_horizontal)
+
+        gamma = self.__gamma()
+
+        wavelength = (self.period_length / (2.0*gamma **2)) * \
+                     (1 + self.K_vertical**2 / 2.0 + self.K_horizontal**2 / 2.0 + \
+                      gamma**2 * (theta_x**2 + theta_z ** 2))
+
+        wavelength /= harmonic
+
+        return m2ev/wavelength
 
 
 if __name__ == "__main__":
