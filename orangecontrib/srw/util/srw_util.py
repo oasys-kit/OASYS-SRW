@@ -499,8 +499,8 @@ class ShowErrorProfileDialog(QDialog):
 
             title = ' Slope error rms in X direction: %f $\mu$rad' % (sloperms[0]*1e6) + '\n' + \
                     ' Slope error rms in Y direction: %f $\mu$rad' % (sloperms[1]*1e6) + '\n' + \
-                    ' Figure error rms in X direction: %f nm' % (round(z_values[0, :].std()*1e9, 6)) + '\n' + \
-                    ' Figure error rms in Y direction: %f nm' % (round(z_values[:, 0].std()*1e9, 6))
+                    ' Figure error rms in X direction: %f nm' % (round(z_values[:, 0].std()*1e9, 6)) + '\n' + \
+                    ' Figure error rms in Y direction: %f nm' % (round(z_values[0, :].std()*1e9, 6))
 
             axis.set_title(title)
 
