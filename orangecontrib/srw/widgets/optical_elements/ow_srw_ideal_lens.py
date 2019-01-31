@@ -48,8 +48,8 @@ class OWSRWIdealLens(OWSRWOpticalElement):
     def check_data(self):
         super().check_data()
 
-        congruence.checkStrictlyPositiveNumber(self.focal_x, "Horizontal Focal Length")
-        congruence.checkStrictlyPositiveNumber(self.focal_y, "Vertical Focal Length")
+        congruence.checkNumber(self.focal_x, "Horizontal Focal Length")
+        congruence.checkNumber(self.focal_y, "Vertical Focal Length")
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
