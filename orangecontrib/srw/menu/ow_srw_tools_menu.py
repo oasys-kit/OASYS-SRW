@@ -24,6 +24,8 @@ class SRWToolsMenu(OMenu):
         self.addSubMenu("Element by Element (Wofry)")
         self.addSubMenu("Element by Element (SRW Native)")
         self.addSubMenu("Whole beamline at Final Screen (SRW Native)")
+        self.addSeparator()
+        self.addSubMenu("Disable Wavefront Propagation on all the Final Screens")
         self.closeContainer()
         self.openContainer()
         self.addContainer("Plotting")
@@ -63,6 +65,22 @@ class SRWToolsMenu(OMenu):
             for node in self.canvas_main_window.current_document().scheme().nodes:
                 widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
 
+                if isinstance(widget, OWSRWScreen):
+                    if hasattr(widget, "is_final_screen") and hasattr(widget, "set_is_final_screen"):
+                        if (PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION) != SRWPropagationMode.WHOLE_BEAMLINE):
+                            raise Exception("Action possibile only while Propagation Mode: Whole beamline at Final Screen (SRW Native)")
+
+                        if hasattr(widget, "show_view_box") and getattr(widget, "show_view_box"):
+                            widget.is_final_screen = 0
+                            widget.set_is_final_screen()
+        except Exception as exception:
+            showCriticalMessage(exception.args[0])
+
+    def executeAction_5(self, action):
+        try:
+            for node in self.canvas_main_window.current_document().scheme().nodes:
+                widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
+
                 if isinstance(widget, SRWWidget) and not (isinstance(widget, OWSRWIntensityPlotter) or
                                                           isinstance(widget, OWSRWDegCohPlotter) or
                                                           isinstance(widget, OWSRWAccumulationPoint)):
@@ -77,7 +95,7 @@ class SRWToolsMenu(OMenu):
         except Exception as exception:
             showCriticalMessage(exception.args[0])
 
-    def executeAction_5(self, action):
+    def executeAction_6(self, action):
         try:
             for node in self.canvas_main_window.current_document().scheme().nodes:
                 widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
