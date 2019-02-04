@@ -8,7 +8,6 @@ class SRWData(object):
 
         self.__srw_beamline = srw_beamline
         self.__srw_wavefront = srw_wavefront
-        self.__working_srw_beamline = srw_beamline
 
     def get_srw_beamline(self):
         return self.__srw_beamline
@@ -17,10 +16,11 @@ class SRWData(object):
         return self.__srw_wavefront
 
     def reset_working_srw_beamline(self):
-        self.__working_srw_beamline = SRWBeamline(light_source=None)
+        if hasattr(self, "__working_srw_beamline"): self.__working_srw_beamline = SRWBeamline(light_source=None)
 
     def get_working_srw_beamline(self):
-        return self.__working_srw_beamline
+        if hasattr(self, "__working_srw_beamline"): return self.__working_srw_beamline
+        else: return self.__srw_beamline.duplicate()
 
     def set_working_srw_beamline(self, working_srw_beamline):
         self.__working_srw_beamline = working_srw_beamline
