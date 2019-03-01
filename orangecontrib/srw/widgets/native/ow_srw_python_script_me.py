@@ -138,14 +138,14 @@ class SRWPythonScriptME(SRWWidget):
                                               "File " + file_name + " written to disk",
                                               QtWidgets.QMessageBox.Ok)
 
-    def set_input(self, srw_data=SRWData()):
+    def set_input(self, srw_data):
         if not srw_data is None:
             self.input_srw_data = srw_data
 
             if self.is_automatic_run:
                 self.refresh_script()
         else:
-            QtWidgets.QMessageBox.critical(self, "Error", str(e), QtWidgets.QMessageBox.Ok)
+            QtWidgets.QMessageBox.critical(self, "Error", "Input Wavefront is None", QtWidgets.QMessageBox.Ok)
 
     def refresh_script(self):
         if not self.input_srw_data is None:
