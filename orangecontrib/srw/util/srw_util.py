@@ -492,7 +492,7 @@ class ShowErrorProfileDialog(QDialog):
 
             x_to_plot, y_to_plot = numpy.meshgrid(x_coords, y_coords)
 
-            axis.plot_surface(x_to_plot, y_to_plot, (z_values*parent.workspace_units_to_m*1e9).T,
+            axis.plot_surface(x_to_plot, y_to_plot, (z_values*1e9).T,
                               rstride=1, cstride=1, cmap=cm.autumn, linewidth=0.5, antialiased=True)
 
             sloperms = profiles_simulation.slopes(z_values, x_coords, y_coords, return_only_rms=1)
