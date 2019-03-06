@@ -8,7 +8,7 @@ from PyQt5.QtGui import QFont, QPalette, QColor, QPixmap
 
 import orangecanvas.resources as resources
 
-from orangewidget import gui, widget
+from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui, congruence
 

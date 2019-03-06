@@ -1,17 +1,20 @@
-import numpy
+import os, numpy
 
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMessageBox, QLabel, QSizePolicy
+from PyQt5.QtGui import QPixmap
+
+import orangecanvas.resources as resources
 
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
+from oasys.widgets.exchange import DataExchangeObject
 from oasys.util.oasys_util import TriggerOut
 
 from syned.beamline.optical_elements.crystals.crystal import Crystal
 from syned.widget.widget_decorator import WidgetDecorator
-
-from oasys.widgets.exchange import DataExchangeObject
 
 from wofrysrw.beamline.optical_elements.crystals.srw_crystal import SRWCrystal
 
@@ -39,10 +42,13 @@ class OWSRWCrystal(OWSRWOpticalElement):
 
     notes = Setting("")
 
+    usage_path = os.path.join(resources.package_dirname("orangecontrib.srw.widgets.gui"), "misc", "crystal_usage.png")
+
     def __init__(self):
         super().__init__(azimuth_hor_vert=True)
 
     def draw_specific_box(self):
+
         self.crystal_box = oasysgui.widgetBox(self.tab_bas, "Crystal Setting", addSpace=False, orientation="vertical")
 
         oasysgui.lineEdit(self.crystal_box, self, "d_spacing", "d-spacing [Å]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -68,6 +74,19 @@ class OWSRWCrystal(OWSRWOpticalElement):
         self.notes_area.setText(self.notes)
 
         self.crystal_box.layout().addWidget(self.notes_area)
+
+        tab_usa = oasysgui.createTabPage(self.tabs_setting, "Use of the Widget")
+        tab_usa.setStyleSheet("background-color: white;")
+
+        usage_box = oasysgui.widgetBox(tab_usa, "", addSpace=True, orientation="horizontal")
+
+        label = QLabel("")
+        label.setAlignment(Qt.AlignCenter)
+        label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        label.setPixmap(QPixmap(self.usage_path))
+
+        usage_box.layout().addWidget(label)
+
 
     def get_optical_element(self):
         return SRWCrystal(orientation_of_reflection_plane = self.orientation_azimuthal,
