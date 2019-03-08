@@ -514,8 +514,6 @@ class OWReflectivityGenerator(SRWWidget):
 
         self.plot_canvas[plot_canvas_index].addCurve(x, y, title, symbol='', color=color, xlabel=xtitle, ylabel=ytitle, replace=replace) #'+', '^', ','
 
-        self.plot_canvas[plot_canvas_index].setDrawModeEnabled(True, 'rectangle')
-        self.plot_canvas[plot_canvas_index].setInteractiveMode('zoom',color='orange')
         self.plot_canvas[plot_canvas_index].resetZoom()
         self.plot_canvas[plot_canvas_index].replot()
 

@@ -180,8 +180,6 @@ class SRWPlot:
             if not xtitle is None: self.plot_canvas.setGraphXLabel(xtitle)
             if not ytitle is None: self.plot_canvas.setGraphYLabel(ytitle)
             if not title is None: self.plot_canvas.setGraphTitle(title)
-            self.plot_canvas.setDrawModeEnabled(True, 'rectangle')
-            self.plot_canvas.setZoomModeEnabled(True)
 
             if ticket['fwhm'] == None: ticket['fwhm'] = 0.0
 
@@ -530,8 +528,6 @@ class ShowErrorProfileDialog(QDialog):
             figure_canvas.setGraphXLabel("X [m]")
             figure_canvas.setGraphYLabel("Height Error [nm]")
             figure_canvas.setGraphTitle("Height Error Profile")
-            figure_canvas.setDrawModeEnabled(True, 'rectangle')
-            figure_canvas.setZoomModeEnabled(True)
 
             figure_canvas.replot()
 
