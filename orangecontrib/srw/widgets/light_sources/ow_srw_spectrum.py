@@ -1,6 +1,7 @@
 __author__ = 'labx'
 
 import os, sys, numpy
+import scipy.constants as codata
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -359,11 +360,19 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                                                                                         use_terminating_terms=self.spe_use_terminating_terms,
                                                                                                         sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
 
+        power = i * 1e3 * (e[1]-e[0]) * codata.e
+        cumulated_power = numpy.cumsum(power)
+        self.calculated_total_power = cumulated_power[-1]
+
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
         e, i = srw_wavefront.get_flux(multi_electron=False, polarization_component_to_be_extracted=self.spe_polarization_component_to_be_extracted)
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
+
+        tickets.append(SRWPlot.get_ticket_1D(e, power))
+
+        tickets.append(SRWPlot.get_ticket_1D(e, cumulated_power))
 
         self.progressBarSet(progress_bar_value)
 
@@ -387,29 +396,29 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         return calculated_data
 
     def getVariablesToPlot(self):
-        return [[1], [1]]
+        return [[1], [1], [1], [1]]
 
     def getTitles(self, with_um=False):
-        if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from 0-Emittance Beam"]
-        else: return ["Spectral Flux (ME) vs E", "Spectral Spatial Flux Density (SE) vs E"]
+        if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from 0-Emittance Beam", "Spectral Power, " + self.getCalculatedTotalPowerString(), "Cumulated Power, " + self.getCalculatedTotalPowerString()]
+        else: return ["Spectral Flux (ME) vs E", "Spectral Spatial Flux Density (SE) vs E", "Spectral Power", "Cumulated Power"]
 
     def getXTitles(self):
-        return ["E [eV]", "E [eV]"]
+        return ["E [eV]", "E [eV]", "E [eV]", "E [eV]"]
 
     def getYTitles(self):
         if not self.received_light_source  is None and isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-            return ["Spectral Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
+            return ["Spectral Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Power [W/eV]", "Cumulated Power [W]"]
         else:
-            return ["Spectral Flux [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
+            return ["Spectral Flux [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Power [W/eV]", "Cumulated Power [W]"]
 
     def getXUM(self):
-        return ["E [eV]", "E [eV]"]
+        return ["E [eV]", "E [eV]", "E [eV]", "E [eV]"]
 
     def getYUM(self):
         if not self.received_light_source  is None and isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-            return ["Spectral Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
+            return ["Spectral Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Power [W/eV]", "Cumulated Power [W]"]
         else:
-            return ["Spectral Flux [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]"]
+            return ["Spectral Flux [ph/s/.1%bw]", "Spectral Spatial Flux Density [ph/s/.1%bw/mm\u00b2]", "Spectral Power [W/eV]", "Cumulated Power [W]"]
 
     def receive_srw_data(self, data):
         if not data is None:
