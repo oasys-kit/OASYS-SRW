@@ -182,7 +182,6 @@ class SRWWavefrontViewer(SRWWidget):
     def set_PlottingRange(self):
         self.plot_range_box_1.setVisible(self.use_range==1)
         self.plot_range_box_2.setVisible(self.use_range==0)
-        self.refresh_button.setEnabled(self.use_range==1)
 
     def replot(self):
         self.progressBarInit()

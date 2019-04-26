@@ -136,7 +136,7 @@ class SRWPlot:
         def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0):
             super(SRWPlot.Detailed1DWidget, self).__init__()
 
-            self.plot_canvas = gui.plotWindow(roi=False, control=False, position=True, logScale=False)
+            self.plot_canvas = gui.plotWindow(roi=False, control=False, position=True, logScale=True)
             self.plot_canvas.setDefaultPlotLines(True)
             self.plot_canvas.setActiveCurveColor(color='blue')
             self.plot_canvas.setMinimumWidth(590*x_scale_factor)
