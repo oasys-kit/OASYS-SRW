@@ -250,7 +250,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
                      items=["No", "Yes"], labelWidth=260,
                      sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(pre_box, self, "wf_sampling_factor_for_adjusting_nx_ny", "Sampling factor for adjusting nx/ny\n(effective if > 0)", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(pre_box, self, "wf_sampling_factor_for_adjusting_nx_ny", "Sampling factor for adjusting nx/ny\n(effective if > 0)", labelWidth=260, valueType=float, orientation="horizontal")
 
         gui.rubber(self.controlArea)
 
