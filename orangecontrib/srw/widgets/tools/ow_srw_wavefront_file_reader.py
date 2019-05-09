@@ -1,7 +1,6 @@
 #TODO: this widget is valid for 1D and 2D wavefronts. Is there a better way to discriminate without duplicating widgets?
 
 import os
-import h5py
 from PyQt5.QtWidgets import QMessageBox
 
 try:
@@ -16,7 +15,7 @@ from oasys.widgets import widget as oasyswidget
 
 from orangecontrib.srw.util.srw_objects import SRWData
 from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront
-from orangecontrib.srw.util.srw_hdf5 import load_hdf5_2_wfr
+from wofrysrw.util.srw_hdf5 import load_hdf5_2_wfr
 
 class OWWavefrontFileReader(oasyswidget.OWWidget):
     name = "SRW Wavefront File Reader"

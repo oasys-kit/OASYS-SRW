@@ -9,7 +9,7 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui, congruence
 
 from orangecontrib.srw.util.srw_objects import SRWData
-from orangecontrib.srw.util.srw_hdf5 import save_wfr_2_hdf5
+from wofrysrw.util.srw_hdf5 import save_wfr_2_hdf5
 
 class OWSRWWavefrontFileWriter(widget.OWWidget):
     name = "SRW Wavefront  File Writer"
