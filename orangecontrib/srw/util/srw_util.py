@@ -1,4 +1,5 @@
 import numpy, decimal
+from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox
 
@@ -220,7 +221,6 @@ class SRWPlot:
 
             self.plot_canvas = ImageView(parent=self)
 
-            self.plot_canvas.setColormap({"name":"gray", "normalization":"linear", "autoscale":True, "vmin":0, "vmax":0, "colors":256})
             self.plot_canvas.setMinimumWidth(590 * x_scale_factor)
             self.plot_canvas.setMaximumWidth(590 * y_scale_factor)
 
@@ -239,6 +239,13 @@ class SRWPlot:
         def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True):
 
             matplotlib.rcParams['axes.formatter.useoffset']='False'
+
+            self.plot_canvas.setColormap({"name":QSettings().value("output/srw-default-colormap", "gray", str),
+                                          "normalization":"linear",
+                                          "autoscale":True,
+                                          "vmin":0,
+                                          "vmax":0,
+                                          "colors":256})
 
             if use_default_factor:
                 factor1=SRWPlot.get_factor(var_x)

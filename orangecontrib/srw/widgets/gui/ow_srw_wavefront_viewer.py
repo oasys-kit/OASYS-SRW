@@ -2,8 +2,8 @@ import sys
 import numpy
 
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtCore import Qt, QRect
-from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout
+from PyQt5.QtCore import Qt, QSettings
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QPalette, QColor, QFont
 
 from orangewidget import gui
@@ -27,7 +27,14 @@ def initialize_propagator_2D():
         if not propagation_manager.has_propagator(FresnelSRWNative.HANDLER_NAME, WavefrontDimension.TWO): propagation_manager.add_propagator(FresnelSRWNative())
         if not propagation_manager.has_propagator(FresnelSRWWofry.HANDLER_NAME, WavefrontDimension.TWO): propagation_manager.add_propagator(FresnelSRWWofry())
 
-        propagation_manager.set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
+        propagation_mode = QSettings().value("output/srw-default-propagation-mode", 1, int)
+
+        if propagation_mode == 0:
+            propagation_manager.set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP_WOFRY)
+        elif propagation_mode == 1:
+            propagation_manager.set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
+        elif propagation_mode == 2:
+            propagation_manager.set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.WHOLE_BEAMLINE)
 
         propagation_manager.set_initialized(True)
 try:
