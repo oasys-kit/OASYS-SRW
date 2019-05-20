@@ -10,7 +10,9 @@ from wofry.propagator.wavefront2D.generic_wavefront import GenericWavefront2D
 
 from orangecontrib.srw.util.srw_objects import SRWData
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront
+from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront, WavefrontPropagationParameters
+
+from oasys_srw.srwlib import *
 
 class OWFromWofryWavefront2d(widget.OWWidget):
     name = "From Wofry Wavefront 2D"
@@ -84,6 +86,11 @@ class OWFromWofryWavefront2d(widget.OWWidget):
                 srw_wavefront.dRx = self.dRx
                 srw_wavefront.Ry  = self.Ry
                 srw_wavefront.dRy = self.dRy
+
+                # to properly setup the wavefront a propagation with the standard propagator is needed
+
+                optBL = SRWLOptC([SRWLOptD(0.01), SRWLOptD(-0.01)], [WavefrontPropagationParameters().to_SRW_array(), WavefrontPropagationParameters().to_SRW_array()])
+                srwl.PropagElecField(srw_wavefront, optBL)
 
                 self.send("SRWData", SRWData(srw_wavefront=srw_wavefront))
             except Exception as exception:
