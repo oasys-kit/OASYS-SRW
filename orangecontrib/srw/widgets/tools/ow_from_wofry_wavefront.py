@@ -87,11 +87,6 @@ class OWFromWofryWavefront2d(widget.OWWidget):
                 srw_wavefront.Ry  = self.Ry
                 srw_wavefront.dRy = self.dRy
 
-                # to properly setup the wavefront a propagation with the standard propagator is needed
-
-                optBL = SRWLOptC([SRWLOptD(0.01), SRWLOptD(-0.01)], [WavefrontPropagationParameters().to_SRW_array(), WavefrontPropagationParameters().to_SRW_array()])
-                srwl.PropagElecField(srw_wavefront, optBL)
-
                 self.send("SRWData", SRWData(srw_wavefront=srw_wavefront))
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
