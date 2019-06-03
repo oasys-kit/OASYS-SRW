@@ -8,14 +8,14 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-SRW'
-VERSION = '1.1.0'
+VERSION = '1.1.1'
 ISRELEASED = False
 
 DESCRIPTION = 'SRW in OASYS'
 README_FILE = os.path.join(os.path.dirname(__file__), 'README.txt')
 LONG_DESCRIPTION = open(README_FILE).read()
 AUTHOR = 'Luca Rebuffi'
-AUTHOR_EMAIL = 'luca.rebuffi@elettra.eu'
+AUTHOR_EMAIL = 'lrebuffi@anl.gov'
 URL = 'https://github.com/lucarebuffi/OASYS-SRW'
 DOWNLOAD_URL = 'https://github.com/lucarebuffi/OASYS-SRW'
 LICENSE = 'GPLv3'
@@ -41,7 +41,7 @@ SETUP_REQUIRES = (
 
 INSTALL_REQUIRES = (
     'oasys1>=1.2.3',
-    'wofrysrw>=1.0.29'
+    'wofrysrw>=1.1.0'
 )
 
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
@@ -66,13 +66,6 @@ ENTRY_POINTS = {
     'oasys.menus' : ("srwmenu = orangecontrib.srw.menu",)
 }
 
-from oasys.application.addons import PipInstaller
-
-class Package:
-    def __init__(self, package_url="http://", name=""):
-        self.package_url = package_url
-        self.name = name
-
 if __name__ == '__main__':
     try:
         import PyMca5, PyQt4
@@ -93,11 +86,8 @@ if __name__ == '__main__':
               classifiers = CLASSIFIERS,
               packages = PACKAGES,
               package_data = PACKAGE_DATA,
-              #          py_modules = PY_MODULES,
               setup_requires = SETUP_REQUIRES,
               install_requires = INSTALL_REQUIRES,
-              #extras_require = EXTRAS_REQUIRE,
-              #dependency_links = DEPENDENCY_LINKS,
               entry_points = ENTRY_POINTS,
               namespace_packages=NAMESPACE_PACAKGES,
               include_package_data = True,
