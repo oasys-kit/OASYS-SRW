@@ -328,6 +328,7 @@ class SRWWavefrontViewer(SRWWidget):
 
                     try:
                         for i in range(0, len(tickets)):
+
                             if type(tickets[i]) is tuple:
                                 if len(tickets[i]) == 4:
                                     self.plot_3D(tickets[i][0], tickets[i][1], tickets[i][2], tickets[i][3], progressBarValue + (i+1)*progress, plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i])
