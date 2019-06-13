@@ -377,18 +377,39 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         self.progressBarSet(progress_bar_value)
 
     def create_exchange_data(self, tickets):
-        ticket = tickets[0]
+        ticket_f = tickets[0]
+        ticket_sf = tickets[1]
+        ticket_p = tickets[2]
+        ticket_cp = tickets[3]
 
-        if isinstance(ticket['histogram'].shape, list):
-            f = ticket['histogram'][0]
+        if isinstance(ticket_f['histogram'].shape, list):
+            f = ticket_f['histogram'][0]
         else:
-            f = ticket['histogram']
+            f = ticket_f['histogram']
 
-        e = ticket['bins']
+        if isinstance(ticket_sf['histogram'].shape, list):
+            sf = ticket_sf['histogram'][0]
+        else:
+            sf = ticket_sf['histogram']
 
-        data = numpy.zeros((len(e), 2))
+        if isinstance(ticket_p['histogram'].shape, list):
+            p = ticket_p['histogram'][0]
+        else:
+            p = ticket_p['histogram']
+
+        if isinstance(ticket_cp['histogram'].shape, list):
+            cp = ticket_cp['histogram'][0]
+        else:
+            cp = ticket_cp['histogram']
+
+        e = ticket_f['bins']
+
+        data = numpy.zeros((len(e), 5))
         data[:, 0] = numpy.array(e)
         data[:, 1] = numpy.array(f)
+        data[:, 2] = numpy.array(sf)
+        data[:, 3] = numpy.array(p)
+        data[:, 4] = numpy.array(cp)
 
         calculated_data = DataExchangeObject(program_name="SRW", widget_name="UNDULATOR_SPECTRUM")
         calculated_data.add_content("srw_data", data)
