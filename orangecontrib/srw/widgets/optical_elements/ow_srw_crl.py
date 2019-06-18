@@ -9,6 +9,8 @@ from wofrysrw.beamline.optical_elements.other.srw_crl import CRLShape, PlaneOfFo
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
+import xraylib
+
 class OWSRWCRL(OWSRWOpticalElement):
 
     name = "CRL"
@@ -17,6 +19,8 @@ class OWSRWCRL(OWSRWOpticalElement):
     priority = 16
 
     plane_of_focusing = Setting(2)
+    material_data = Setting(0)
+    material = Setting("Be")
     refractive_index = Setting(1e-6)
     attenuation_length = Setting(1e-3)
     shape = Setting(0)
@@ -43,9 +47,20 @@ class OWSRWCRL(OWSRWOpticalElement):
         gui.comboBox(self.filter_box, self, "plane_of_focusing", label="Plane of Focusing",
                      labelWidth=220, items=PlaneOfFocusing.items(), sendSelectedValue=False, orientation="horizontal")
 
+        gui.comboBox(self.filter_box, self, "material_data", label="Material Properties from", labelWidth=180,
+                             items=["Chemical Formula", "Absorption Parameters"],
+                             callback=self.set_MaterialData,
+                             sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.filter_box, self, "refractive_index", "Refractive Index (\u03b4)", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.filter_box, self, "attenuation_length", "Attenuation Lenght [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        self.filter_box_1 = oasysgui.widgetBox(self.filter_box, "", addSpace=False, orientation="vertical", height=30, width=self.CONTROL_AREA_WIDTH-40)
+        self.filter_box_2 = oasysgui.widgetBox(self.filter_box, "", addSpace=False, orientation="horizontal", height=30, width=self.CONTROL_AREA_WIDTH-40)
+
+        oasysgui.lineEdit(self.filter_box_1, self, "material", "Chemical Formula", labelWidth=260, valueType=str, orientation="horizontal")
+
+        oasysgui.lineEdit(self.filter_box_2, self, "refractive_index", "Refr. Index (\u03b4)", valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.filter_box_2, self, "attenuation_length", "Att. Lenght [m]", valueType=float, orientation="horizontal")
+
+        self.set_MaterialData()
 
         gui.comboBox(self.filter_box, self, "shape", label="Shape",
                      labelWidth=220, items=CRLShape.items(), sendSelectedValue=False, orientation="horizontal")
@@ -77,12 +92,24 @@ class OWSRWCRL(OWSRWOpticalElement):
 
         gui.separator(self.filter_box)
 
+    def set_MaterialData(self):
+        self.filter_box_1.setVisible(self.material_data==0)
+        self.filter_box_2.setVisible(self.material_data==1)
 
     def get_optical_element(self):
+        if self.material_data==0:
+            refractive_index, attenuation_length = self.get_absorption_parameters(self.input_srw_data.get_srw_wavefront())
+        else:
+            refractive_index = self.refractive_index
+            attenuation_length = self.attenuation_length
+
+        print("Refractive Index (\u03b4) :" + str(refractive_index) + "\n" + \
+              "Attenuation Length [m]    :" + str(attenuation_length))
+
         return SRWCRL(name=self.oe_name,
                       plane_of_focusing=self.plane_of_focusing+1,
-                      refractive_index=self.refractive_index,
-                      attenuation_length=self.attenuation_length,
+                      refractive_index=refractive_index,
+                      attenuation_length=attenuation_length,
                       shape=self.shape+1,
                       horizontal_aperture_size=self.horizontal_aperture_size,
                       vertical_aperture_size=self.vertical_aperture_size,
@@ -113,8 +140,12 @@ class OWSRWCRL(OWSRWOpticalElement):
     def check_data(self):
         super().check_data()
 
-        congruence.checkStrictlyPositiveNumber(self.refractive_index, "Refractive Index")
-        congruence.checkStrictlyPositiveNumber(self.attenuation_length, "Attenuation Length")
+        if self.material_data==0:
+            self.material = congruence.checkEmptyString(self.material, "Chemical Formula")
+        else:
+            congruence.checkStrictlyPositiveNumber(self.refractive_index, "Refractive Index")
+            congruence.checkStrictlyPositiveNumber(self.attenuation_length, "Attenuation Length")
+
         congruence.checkStrictlyPositiveNumber(self.horizontal_aperture_size, "Horizontal Aperture Size")
         congruence.checkStrictlyPositiveNumber(self.vertical_aperture_size, "Vertical Aperture Size")
 
@@ -135,4 +166,15 @@ class OWSRWCRL(OWSRWOpticalElement):
         raise NotImplementedError("This element is not supported by Syned")
 
 
+    def get_absorption_parameters(self, input_wavefront):
+        density = xraylib.ElementDensity(xraylib.SymbolToAtomicNumber(self.material))
+
+        energy_in_KeV = input_wavefront.get_photon_energy() / 1000
+
+        delta =  1 - xraylib.Refractive_Index_Re(self.material, energy_in_KeV, density)
+        mu = xraylib.CS_Total_CP(self.material, energy_in_KeV) # energy in KeV
+
+        attenuation_length = 0.01/(mu*density)
+
+        return delta, attenuation_length
 
