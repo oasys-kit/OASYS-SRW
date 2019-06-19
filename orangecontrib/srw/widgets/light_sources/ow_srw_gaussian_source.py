@@ -1,6 +1,7 @@
 __author__ = 'labx'
 
-import os, sys, numpy
+import sys
+from numpy import nan
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -12,14 +13,9 @@ from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
 from oasys.util.oasys_util import TriggerIn, TriggerOut
 
-from syned.beamline.beamline import Beamline
-from syned.beamline.optical_elements.absorbers.slit import Slit
-from syned.storage_ring.light_source import ElectronBeam, LightSource
 from syned.widget.widget_decorator import WidgetDecorator
-from syned.beamline.shape import Rectangle
 
 from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
-from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 from wofrysrw.storage_ring.light_sources.srw_gaussian_light_source import SRWGaussianLightSource, Polarization
 
@@ -275,6 +271,12 @@ class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
 
     def getVariablesToPlot(self):
         return [[1, 2], [1, 2]]
+
+    def getWeightedPlots(self):
+        return [False, True]
+
+    def getWeightTickets(self):
+        return [nan, 0]
 
     def getTitles(self, with_um=False):
         if with_um: return ["Intensity [ph/s/.1%bw/mm\u00b2]",

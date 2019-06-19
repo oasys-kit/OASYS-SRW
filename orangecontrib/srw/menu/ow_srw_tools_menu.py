@@ -35,30 +35,68 @@ class SRWToolsMenu(OMenu):
 
     def executeAction_1(self, action):
         try:
-            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP_WOFRY)
-            showWarningMessage("Propagation Mode: Element by Element (Wofry)")
+            propagation_mode =  PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
 
-            self.set_srw_live_propagation_mode()
-        except Exception as exception:
-            showCriticalMessage(exception.args[0])
+            try:
+                PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP_WOFRY)
+
+                self.set_srw_live_propagation_mode()
+
+                showWarningMessage("Propagation Mode: Element by Element (Wofry)")
+            except Exception as exception:
+                showCriticalMessage(exception.args[0])
+
+                try:
+                    PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, propagation_mode)
+                    self.set_srw_live_propagation_mode()
+                except:
+                    pass
+        except:
+            pass
 
     def executeAction_2(self, action):
         try:
-            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
-            showWarningMessage("Propagation Mode: Element by Element (SRW Native)")
+            propagation_mode =  PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
 
-            self.set_srw_live_propagation_mode()
-        except Exception as exception:
-            showCriticalMessage(exception.args[0])
+            try:
+                PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.STEP_BY_STEP)
+
+                self.set_srw_live_propagation_mode()
+
+                showWarningMessage("Propagation Mode: Element by Element (SRW Native)")
+            except Exception as exception:
+                showCriticalMessage(exception.args[0])
+
+                try:
+                    PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, propagation_mode)
+                    self.set_srw_live_propagation_mode()
+                except:
+                    pass
+        except:
+            pass
 
     def executeAction_3(self, action):
         try:
-            PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.WHOLE_BEAMLINE)
-            showWarningMessage("Propagation Mode: Whole beamline at Final Screen (SRW Native)")
+            propagation_mode =  PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
 
-            self.set_srw_live_propagation_mode()
-        except Exception as exception:
-            showCriticalMessage(exception.args[0])
+            try:
+                PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, SRWPropagationMode.WHOLE_BEAMLINE)
+
+                self.set_srw_live_propagation_mode()
+
+                showWarningMessage("Propagation Mode: Whole beamline at Final Screen (SRW Native)")
+            except Exception as exception:
+                showCriticalMessage(exception.args[0])
+
+                try:
+                    PropagationManager.Instance().set_propagation_mode(SRW_APPLICATION, propagation_mode)
+                    self.set_srw_live_propagation_mode()
+                except:
+                    pass
+        except:
+            pass
+
+
 
     def executeAction_4(self, action):
         try:

@@ -1,5 +1,6 @@
 import sys
 import numpy
+from numpy import nan
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings
@@ -19,6 +20,34 @@ from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagatio
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
+
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.cm as cm
+
+cdict_temperature = {'red': ((0.0, 0.0, 0.0),
+                             (0.5, 0.0, 0.0),
+                             (0.75, 1.0, 1.0),
+                             (1.0, 1.0, 1.0)),
+                     'green': ((0.0, 0.0, 0.0),
+                               (0.25, 1.0, 1.0),
+                               (0.75, 1.0, 1.0),
+                               (1.0, 0.0, 0.0)),
+                     'blue': ((0.0, 1.0, 1.0),
+                              (0.25, 1.0, 1.0),
+                              (0.5, 0.0, 0.0),
+                              (1.0, 0.0, 0.0))}
+
+        # reversed gray
+cdict_reversed_gray = {'red': ((0.0, 1.0, 1.0),
+                              (1.0, 0.0, 0.0)),
+                       'green': ((0.0, 1.0, 1.0),
+                                 (1.0, 0.0, 0.0)),
+                       'blue': ((0.0, 1.0, 1.0),
+                                (1.0, 0.0, 0.0))}
+
+cmap_temperature = LinearSegmentedColormap('temperature', cdict_temperature, 256)
+cmap_reversed_gray = LinearSegmentedColormap('reversed gray', cdict_reversed_gray, 256)
+cmap_gray = cm.get_cmap("gray")
 
 def initialize_propagator_2D():
     propagation_manager = PropagationManager.Instance()
@@ -52,6 +81,7 @@ class SRWWavefrontViewer(SRWWidget):
 
     want_main_area=1
     view_type=Setting(1)
+    weight_phase = Setting(0)
 
     output_wavefront=None
 
@@ -61,6 +91,7 @@ class SRWWavefrontViewer(SRWWidget):
     range_x_max = Setting(50)
     range_y_min = Setting(-50)
     range_y_max = Setting(50)
+
 
     def __init__(self, show_general_option_box=True, show_automatic_box=True, show_view_box=True):
         super().__init__(show_general_option_box=show_general_option_box, show_automatic_box=show_automatic_box)
@@ -78,9 +109,12 @@ class SRWWavefrontViewer(SRWWidget):
             view_box_1 = oasysgui.widgetBox(self.view_box, "", addSpace=False, orientation="vertical", width=350)
 
             self.view_type_combo = gui.comboBox(view_box_1, self, "view_type", label="Plot Results",
-                                                labelWidth=120,
-                                                items=["No", "Yes (Total Polarization)", "Yes (Polarization Components)"],
+                                                labelWidth=120, items=["No", "Yes (Total Polarization)", "Yes (Polarization Components)"],
                                                 callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
+
+            self.weight_phase_combo = gui.comboBox(view_box_1, self, "weight_phase", label="Weight Phase with Intensity of Radiation",
+                                                   labelWidth=250, items=["No", "Yes"],
+                                                   callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
 
 
             range_tab = oasysgui.createTabPage(plot_tabs, "Plot Setting")
@@ -114,6 +148,7 @@ class SRWWavefrontViewer(SRWWidget):
         else:
             self.view_type = 1
             self.view_type_combo = QtWidgets.QWidget()
+            self.weight_phase_combo = QtWidgets.QWidget()
 
         self.show_view_box = show_view_box
 
@@ -270,9 +305,7 @@ class SRWWavefrontViewer(SRWWidget):
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
 
         xmin = numpy.min(dataX)
-        xmax = numpy.max(dataX)
         ymin = numpy.min(dataY)
-        ymax = numpy.max(dataY)
 
         stepX = dataX[1]-dataX[0]
         stepY = dataY[1]-dataY[0]
@@ -314,6 +347,7 @@ class SRWWavefrontViewer(SRWWidget):
                         congruence.checkGreaterThan(self.range_y_max, self.range_y_min, "Range Y Max", "Range Y Min")
 
                     self.view_type_combo.setEnabled(False)
+                    self.weight_phase_combo.setEnabled(False)
 
                     SRWPlot.set_conversion_active(self.getConversionActive())
 
@@ -323,6 +357,9 @@ class SRWWavefrontViewer(SRWWidget):
                     ytitles = self.getYTitles()
                     xums = self.getXUM()
                     yums = self.getYUM()
+
+                    weighted_plots = self.getWeightedPlots()
+                    weight_tickets = self.getWeightTickets()
 
                     progress = (100 - progressBarValue) / len(tickets)
 
@@ -337,14 +374,93 @@ class SRWWavefrontViewer(SRWWidget):
                                     self.plot_1D(tickets[i], progressBarValue + (i+1)*progress, variables[i],                     plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i])
                                 else:
                                     self.plot_2D(tickets[i], progressBarValue + (i+1)*progress, variables[i][0], variables[i][1], plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i], ignore_range=ignore_range)
+
+                                    if self.weight_phase==1 and weighted_plots[i]==True:
+                                        self.apply_alpha_channel(ticket_to_plot=tickets[i], weight_ticket=tickets[weight_tickets[i]],
+                                                                 plot_canvas_index=i, title=titles[i], xum=xums[i], yum=yums[i], ignore_range=ignore_range)
+
                     except Exception as e:
                         self.view_type_combo.setEnabled(True)
+                        self.weight_phase_combo.setEnabled(True)
 
                         raise Exception("Data not plottable: bad content\nexception: " + str(e))
 
                     self.view_type_combo.setEnabled(True)
+                    self.weight_phase_combo.setEnabled(True)
             else:
                 raise Exception("Nothing to Plot")
+
+
+    def apply_alpha_channel(self, ticket_to_plot, weight_ticket, plot_canvas_index=0, title="", xum="", yum="", ignore_range=False):
+        if self.use_range == 1 and not ignore_range:
+            plotting_range = [self.range_x_min/1000, self.range_x_max/1000, self.range_y_min/1000, self.range_y_max/1000]
+        else:
+            plotting_range = None
+
+        if plotting_range == None:
+            xx = weight_ticket['bin_h']
+            yy = weight_ticket['bin_v']
+
+            intensity = weight_ticket["histogram"]
+            phase = ticket_to_plot["histogram"]
+
+        else:
+            range_x  = numpy.where(numpy.logical_and(weight_ticket['bin_h']>=plotting_range[0], weight_ticket['bin_h']<=plotting_range[1]))
+            range_y  = numpy.where(numpy.logical_and(weight_ticket['bin_v']>=plotting_range[2], weight_ticket['bin_v']<=plotting_range[3]))
+
+            xx = weight_ticket['bin_h'][range_x]
+            yy = weight_ticket['bin_v'][range_y]
+
+            intensity = []
+            for row in weight_ticket['histogram'][range_x]:
+                intensity.append(row[range_y])
+
+            phase = []
+            for row in ticket_to_plot['histogram'][range_x]:
+                phase.append(row[range_y])
+
+        xx_t = xx*SRWPlot.get_factor(1)
+        yy_t = yy*SRWPlot.get_factor(2)
+
+        extent=[min(xx_t), max(xx_t), min(yy_t), max(yy_t)]
+
+        alpha = intensity
+        alpha -= numpy.min(alpha)
+        alpha /= numpy.max(alpha)
+
+        colors = phase
+        colors -= numpy.min(colors)
+        colors /= numpy.max(colors)
+
+        colormap = QSettings().value("output/srw-default-colormap", "gray", str)
+
+        if colormap == "gray":
+            cmap = cmap_gray
+        elif colormap == "temperature":
+            cmap = cmap_temperature
+        elif colormap == "reversed gray":
+            cmap = cmap_reversed_gray
+        else:
+            cmap = cmap_gray
+
+        colors = cmap(colors)
+        colors[..., -1] = alpha
+
+        plot_canvas = self.plot_canvas[plot_canvas_index].plot_canvas
+
+        axis = plot_canvas._backend.ax
+
+        axis.clear()
+        axis.set_title(title)
+        axis.set_xlabel(xum)
+        axis.set_ylabel(yum)
+        axis.set_xlim(min(xx_t), max(xx_t))
+        axis.set_ylim(min(yy_t), max(yy_t))
+
+        axis.imshow(colors, cmap=cmap, extent=extent)
+
+        plot_canvas.setKeepDataAspectRatio(False)
+
 
     def writeStdOut(self, text):
         cursor = self.srw_output.textCursor()
@@ -361,6 +477,18 @@ class SRWWavefrontViewer(SRWWidget):
             return [[1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2]]
         else:
             return [[1, 2], [1, 2], [1, 2]]
+
+    def getWeightedPlots(self):
+        if self.view_type == 2:
+            return [False, False, True, True, False, False]
+        else:
+            return [False, True, False]
+
+    def getWeightTickets(self):
+        if self.view_type == 2:
+            return [nan, nan, 0, 1, nan, nan]
+        else:
+            return [nan, 0, nan]
 
     def getTitles(self, with_um=False):
         if self.view_type == 2:

@@ -1,6 +1,7 @@
 __author__ = 'labx'
 
-import os, sys, numpy
+import sys
+from numpy import nan
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -322,6 +323,12 @@ class OWSRWRadiation(SRWPowerDensityViewer):
 
     def getVariablesToPlot(self):
         return [[1, 2], [1, 2], [1, 2]]
+
+    def getWeightedPlots(self):
+        return [False, False, False]
+
+    def getWeightTickets(self):
+        return [nan, nan, nan]
 
     def getTitles(self, with_um=False):
         if with_um: return ["Intensity SE vs E,X,Y [ph/s/.1%bw/mm\u00b2]",

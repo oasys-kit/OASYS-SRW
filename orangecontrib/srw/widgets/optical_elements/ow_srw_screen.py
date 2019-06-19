@@ -1,3 +1,5 @@
+from numpy import nan
+
 from syned.beamline.optical_elements.ideal_elements.screen import Screen
 
 from wofry.propagator.propagator import PropagationManager
@@ -34,8 +36,8 @@ class OWSRWScreen(OWSRWOpticalElement):
         propagation_mode = PropagationManager.Instance().get_propagation_mode(SRW_APPLICATION)
 
         self.cb_is_final_screen.setEnabled(propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE)
+        self.view_type = 0 if propagation_mode == SRWPropagationMode.WHOLE_BEAMLINE and self.is_final_screen == 0 else self.view_type
 
-        self.view_type = self.is_final_screen
         self.set_PlotQuality()
 
     def draw_specific_box(self):
@@ -77,6 +79,18 @@ class OWSRWScreen(OWSRWOpticalElement):
             return [[1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2]]
         else:
             return [[1, 2], [1, 2], [1, 2]]
+
+    def getWeightedPlots(self):
+        if self.view_type == 2:
+            return [False, False, True, True, False, False]
+        else:
+            return [False, True, False]
+
+    def getWeightTickets(self):
+        if self.view_type == 2:
+            return [nan, nan, 0, 1, nan, nan]
+        else:
+            return [nan, 0, nan]
 
     def getTitles(self, with_um=False):
         if self.view_type == 2:

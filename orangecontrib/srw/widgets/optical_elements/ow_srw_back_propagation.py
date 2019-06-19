@@ -1,3 +1,4 @@
+from numpy import nan
 from syned.beamline.optical_elements.ideal_elements.screen import Screen
 
 from wofrysrw.beamline.optical_elements.ideal_elements.srw_screen import SRWScreen
@@ -59,6 +60,18 @@ class OWSRWBackPropagation(OWSRWOpticalElement):
             return [[1, 2], [1, 2], [1, 2], [1, 2], [1, 2], [1, 2]]
         else:
             return [[1, 2], [1, 2], [1, 2]]
+
+    def getWeightedPlots(self):
+        if self.view_type == 2:
+            return [False, False, True, True, False, False]
+        else:
+            return [False, True, False]
+
+    def getWeightTickets(self):
+        if self.view_type == 2:
+            return [nan, nan, 0, 1, nan, nan]
+        else:
+            return [nan, 0, nan]
 
     def getTitles(self, with_um=False):
         if self.view_type == 2:

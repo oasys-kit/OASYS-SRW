@@ -1,4 +1,5 @@
 import os, numpy
+from numpy import nan
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPalette, QColor, QFont, QPixmap
@@ -735,15 +736,15 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
 
-            e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
+            e, h, v, p = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, p[int(e.size/2)]))
 
             self.progressBarSet(progress_bar_value + 10)
 
-            e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
+            e, h, v, p = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, p[int(e.size/2)]))
         elif self.view_type==1:
             e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False)
 
@@ -751,9 +752,9 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
             self.progressBarSet(progress_bar_value)
 
-            e, h, v, i = self.output_wavefront.get_phase()
+            e, h, v, p = self.output_wavefront.get_phase()
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, p[int(e.size/2)]))
 
             self.progressBarSet(progress_bar_value + 10)
 
@@ -802,23 +803,24 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             except:
                 pass
 
-    def getXTitles(self):
-        return ["X [\u03bcm]", "X [\u03bcm]"]
-
-    def getYTitles(self):
-        return ["Y [\u03bcm]", "Y [\u03bcm]"]
-
-    def getXUM(self):
-        return ["X [\u03bcm]", "X [\u03bcm]"]
-
-    def getYUM(self):
-        return ["Y [\u03bcm]", "Y [\u03bcm]"]
-
     def getVariablesToPlot(self):
         if self.view_type == 2:
             return [[1, 2], [1, 2], [1, 2], [1, 2]]
         else:
             return [[1, 2], [1, 2]]
+
+    def getWeightedPlots(self):
+        if self.view_type == 2:
+            return [False, False, True, True]
+        else:
+            return [False, True]
+
+    def getWeightTickets(self):
+        if self.view_type == 2:
+            return [nan, nan, 0, 1]
+        else:
+            return [nan, 0]
+
 
     def getTitles(self, with_um=False):
         if self.view_type == 2:

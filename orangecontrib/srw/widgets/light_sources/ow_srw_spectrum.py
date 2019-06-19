@@ -1,6 +1,7 @@
 __author__ = 'labx'
 
-import os, sys, numpy
+import sys, numpy
+from numpy import nan
 import scipy.constants as codata
 
 from PyQt5.QtGui import QPalette, QColor, QFont
@@ -418,6 +419,12 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
     def getVariablesToPlot(self):
         return [[1], [1], [1], [1]]
+
+    def getWeightedPlots(self):
+        return [False, False, False, False]
+
+    def getWeightTickets(self):
+        return [nan, nan, nan, nan]
 
     def getTitles(self, with_um=False):
         if with_um: return ["Flux Through Finite Aperture", "On Axis Spectrum from 0-Emittance Beam", "Spectral Power, " + self.getCalculatedTotalPowerString(), "Cumulated Power, " + self.getCalculatedTotalPowerString()]

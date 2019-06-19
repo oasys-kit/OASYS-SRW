@@ -1,6 +1,6 @@
 __author__ = 'labx'
 
-import os, sys, numpy
+from numpy import nan
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -132,6 +132,12 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
 
     def getVariablesToPlot(self):
         return [[1, 2]]
+
+    def getWeightedPlots(self):
+        return [False]
+
+    def getWeightTickets(self):
+        return [nan]
 
     def getTitles(self, with_um=False):
         if with_um: return ["Intensity [ph/s/.1%bw/mm\u00b2]"]
