@@ -21,33 +21,6 @@ from wofrysrw.propagator.propagators2D.srw_propagation_mode import SRWPropagatio
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
-from matplotlib.colors import LinearSegmentedColormap
-import matplotlib.cm as cm
-
-cdict_temperature = {'red': ((0.0, 0.0, 0.0),
-                             (0.5, 0.0, 0.0),
-                             (0.75, 1.0, 1.0),
-                             (1.0, 1.0, 1.0)),
-                     'green': ((0.0, 0.0, 0.0),
-                               (0.25, 1.0, 1.0),
-                               (0.75, 1.0, 1.0),
-                               (1.0, 0.0, 0.0)),
-                     'blue': ((0.0, 1.0, 1.0),
-                              (0.25, 1.0, 1.0),
-                              (0.5, 0.0, 0.0),
-                              (1.0, 0.0, 0.0))}
-
-        # reversed gray
-cdict_reversed_gray = {'red': ((0.0, 1.0, 1.0),
-                              (1.0, 0.0, 0.0)),
-                       'green': ((0.0, 1.0, 1.0),
-                                 (1.0, 0.0, 0.0)),
-                       'blue': ((0.0, 1.0, 1.0),
-                                (1.0, 0.0, 0.0))}
-
-cmap_temperature = LinearSegmentedColormap('temperature', cdict_temperature, 256)
-cmap_reversed_gray = LinearSegmentedColormap('reversed gray', cdict_reversed_gray, 256)
-cmap_gray = cm.get_cmap("gray")
 
 def initialize_propagator_2D():
     propagation_manager = PropagationManager.Instance()
@@ -285,7 +258,7 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.progressBarSet(progressBarValue)
 
-    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False):
+    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False, apply_alpha_channel=False, alpha_ticket=None):
         if self.plot_canvas[plot_canvas_index] is None:
             self.plot_canvas[plot_canvas_index] =  SRWPlot.Detailed2DWidget()
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
@@ -295,7 +268,7 @@ class SRWWavefrontViewer(SRWWidget):
         else:
             plotting_range = None
 
-        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range)
+        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket)
 
         self.progressBarSet(progressBarValue)
 
@@ -373,12 +346,10 @@ class SRWWavefrontViewer(SRWWidget):
                                 if len(variables[i]) == 1:
                                     self.plot_1D(tickets[i], progressBarValue + (i+1)*progress, variables[i],                     plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i])
                                 else:
-                                    self.plot_2D(tickets[i], progressBarValue + (i+1)*progress, variables[i][0], variables[i][1], plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i], ignore_range=ignore_range)
+                                    apply_alpha_channel = self.weight_phase==1 and weighted_plots[i]==True
 
-                                    if self.weight_phase==1 and weighted_plots[i]==True:
-                                        self.apply_alpha_channel(ticket_to_plot=tickets[i], weight_ticket=tickets[weight_tickets[i]],
-                                                                 plot_canvas_index=i, title=titles[i], xum=xums[i], yum=yums[i], ignore_range=ignore_range)
-
+                                    self.plot_2D(tickets[i], progressBarValue + (i+1)*progress, variables[i][0], variables[i][1], plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i], ignore_range=ignore_range,
+                                                 apply_alpha_channel=apply_alpha_channel, alpha_ticket=tickets[weight_tickets[i]] if apply_alpha_channel else None)
                     except Exception as e:
                         self.view_type_combo.setEnabled(True)
                         self.weight_phase_combo.setEnabled(True)
@@ -389,78 +360,6 @@ class SRWWavefrontViewer(SRWWidget):
                     self.weight_phase_combo.setEnabled(True)
             else:
                 raise Exception("Nothing to Plot")
-
-
-    def apply_alpha_channel(self, ticket_to_plot, weight_ticket, plot_canvas_index=0, title="", xum="", yum="", ignore_range=False):
-        if self.use_range == 1 and not ignore_range:
-            plotting_range = [self.range_x_min/1000, self.range_x_max/1000, self.range_y_min/1000, self.range_y_max/1000]
-        else:
-            plotting_range = None
-
-        if plotting_range == None:
-            xx = weight_ticket['bin_h']
-            yy = weight_ticket['bin_v']
-
-            intensity = weight_ticket["histogram"]
-            phase = ticket_to_plot["histogram"]
-
-        else:
-            range_x  = numpy.where(numpy.logical_and(weight_ticket['bin_h']>=plotting_range[0], weight_ticket['bin_h']<=plotting_range[1]))
-            range_y  = numpy.where(numpy.logical_and(weight_ticket['bin_v']>=plotting_range[2], weight_ticket['bin_v']<=plotting_range[3]))
-
-            xx = weight_ticket['bin_h'][range_x]
-            yy = weight_ticket['bin_v'][range_y]
-
-            intensity = []
-            for row in weight_ticket['histogram'][range_x]:
-                intensity.append(row[range_y])
-
-            phase = []
-            for row in ticket_to_plot['histogram'][range_x]:
-                phase.append(row[range_y])
-
-        xx_t = xx*SRWPlot.get_factor(1)
-        yy_t = yy*SRWPlot.get_factor(2)
-
-        extent=[min(xx_t), max(xx_t), min(yy_t), max(yy_t)]
-
-        alpha = intensity
-        alpha -= numpy.min(alpha)
-        alpha /= numpy.max(alpha)
-
-        colors = phase
-        colors -= numpy.min(colors)
-        colors /= numpy.max(colors)
-
-        colormap = QSettings().value("output/srw-default-colormap", "gray", str)
-
-        if colormap == "gray":
-            cmap = cmap_gray
-        elif colormap == "temperature":
-            cmap = cmap_temperature
-        elif colormap == "reversed gray":
-            cmap = cmap_reversed_gray
-        else:
-            cmap = cmap_gray
-
-        colors = cmap(colors)
-        colors[..., -1] = alpha
-
-        plot_canvas = self.plot_canvas[plot_canvas_index].plot_canvas
-
-        axis = plot_canvas._backend.ax
-
-        axis.clear()
-        axis.set_title(title)
-        axis.set_xlabel(xum)
-        axis.set_ylabel(yum)
-        axis.set_xlim(min(xx_t), max(xx_t))
-        axis.set_ylim(min(yy_t), max(yy_t))
-
-        axis.imshow(colors, cmap=cmap, extent=extent)
-
-        plot_canvas.setKeepDataAspectRatio(False)
-
 
     def writeStdOut(self, text):
         cursor = self.srw_output.textCursor()

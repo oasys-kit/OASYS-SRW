@@ -17,6 +17,33 @@ from srxraylib.metrology import profiles_simulation
 from silx.gui.plot.ImageView import ImageView, PlotWindow
 
 import matplotlib
+from matplotlib.colors import LinearSegmentedColormap
+import matplotlib.cm as cm
+
+cdict_temperature = {'red': ((0.0, 0.0, 0.0),
+                             (0.5, 0.0, 0.0),
+                             (0.75, 1.0, 1.0),
+                             (1.0, 1.0, 1.0)),
+                     'green': ((0.0, 0.0, 0.0),
+                               (0.25, 1.0, 1.0),
+                               (0.75, 1.0, 1.0),
+                               (1.0, 0.0, 0.0)),
+                     'blue': ((0.0, 1.0, 1.0),
+                              (0.25, 1.0, 1.0),
+                              (0.5, 0.0, 0.0),
+                              (1.0, 0.0, 0.0))}
+
+        # reversed gray
+cdict_reversed_gray = {'red': ((0.0, 1.0, 1.0),
+                              (1.0, 0.0, 0.0)),
+                       'green': ((0.0, 1.0, 1.0),
+                                 (1.0, 0.0, 0.0)),
+                       'blue': ((0.0, 1.0, 1.0),
+                                (1.0, 0.0, 0.0))}
+
+cmap_temperature = LinearSegmentedColormap('temperature', cdict_temperature, 256)
+cmap_reversed_gray = LinearSegmentedColormap('reversed gray', cdict_reversed_gray, 256)
+cmap_gray = cm.get_cmap("gray")
 
 class SRWStatisticData:
     def __init__(self, total = 0.0):
@@ -236,7 +263,7 @@ class SRWPlot:
 
             self.setLayout(layout)
 
-        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True):
+        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True, apply_alpha_channel=False, alpha_ticket=None):
 
             matplotlib.rcParams['axes.formatter.useoffset']='False'
 
@@ -359,6 +386,71 @@ class SRWPlot:
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_v.setText("FWHM " + yum)
+
+            if apply_alpha_channel==True:
+                if plotting_range == None:
+                    xx = alpha_ticket['bin_h']
+                    yy = alpha_ticket['bin_v']
+
+                    alpha_channel = numpy.flipud(alpha_ticket["histogram"].T)
+                    plotted_histo = numpy.flipud(ticket["histogram"].T)
+                else:
+                    range_x  = numpy.where(numpy.logical_and(alpha_ticket['bin_h']>=plotting_range[0], alpha_ticket['bin_h']<=plotting_range[1]))
+                    range_y  = numpy.where(numpy.logical_and(alpha_ticket['bin_v']>=plotting_range[2], alpha_ticket['bin_v']<=plotting_range[3]))
+
+                    xx = alpha_ticket['bin_h'][range_x]
+                    yy = alpha_ticket['bin_v'][range_y]
+
+                    alpha_channel = []
+                    for row in alpha_ticket['histogram'][range_x]:
+                        alpha_channel.append(row[range_y])
+
+                    alpha_channel = numpy.flipud(numpy.array(alpha_channel).T)
+
+                    plotted_histo = []
+                    for row in ticket['histogram'][range_x]:
+                        plotted_histo.append(row[range_y])
+
+                    plotted_histo = numpy.flipud(numpy.array(plotted_histo).T)
+
+                xx_t = xx*SRWPlot.get_factor(var_x)
+                yy_t = yy*SRWPlot.get_factor(var_y)
+
+                extent=[min(xx_t), max(xx_t), min(yy_t), max(yy_t)]
+
+                alpha_channel -= numpy.min(alpha_channel)
+                alpha_channel /= numpy.max(alpha_channel)
+
+                plotted_histo -= numpy.min(plotted_histo)
+                plotted_histo /= numpy.max(plotted_histo)
+
+                colormap = QSettings().value("output/srw-default-colormap", "gray", str)
+
+                if colormap == "gray":
+                    cmap = cmap_gray
+                elif colormap == "temperature":
+                    cmap = cmap_temperature
+                elif colormap == "reversed gray":
+                    cmap = cmap_reversed_gray
+                else:
+                    cmap = cmap_gray
+
+                plotted_histo = cmap(plotted_histo)
+                plotted_histo[..., -1] = alpha_channel
+
+                axis = self.plot_canvas._backend.ax
+
+                axis.clear()
+                axis.set_title(title)
+                axis.set_xlabel(xum)
+                axis.set_ylabel(yum)
+                axis.set_xlim(min(xx_t), max(xx_t))
+                axis.set_ylim(min(yy_t), max(yy_t))
+
+                axis.imshow(plotted_histo, cmap=cmap, extent=extent)
+
+                self.plot_canvas.setKeepDataAspectRatio(False)
+
 
         def clear(self):
             self.plot_canvas.clear()
