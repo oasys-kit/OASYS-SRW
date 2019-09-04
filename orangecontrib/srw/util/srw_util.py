@@ -95,6 +95,8 @@ class SRWPlot:
         total_field = ""
         fwhm_h_field = ""
         fwhm_v_field = ""
+        sigma_h_field = ""
+        sigma_v_field = ""
 
         def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, is_2d=True):
             super(SRWPlot.InfoBoxWidget, self).__init__()
@@ -126,6 +128,27 @@ class SRWPlot:
                 label_box_2.layout().addWidget(self.label_v)
                 self.fwhm_v = gui.lineEdit(label_box_2, self, "fwhm_v_field", "", tooltip="FWHM", labelWidth=115, valueType=str, orientation="horizontal")
 
+            label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+
+            self.label_s_h = QLabel("\u03c3 ")
+            self.label_s_h.setFixedWidth(115)
+            palette =  QPalette(self.label_s_h.palette())
+            palette.setColor(QPalette.Foreground, QColor('blue'))
+            self.label_s_h.setPalette(palette)
+            label_box_1.layout().addWidget(self.label_s_h)
+            self.sigma_h = gui.lineEdit(label_box_1, self, "sigma_h_field", "", tooltip="Sigma", labelWidth=115, valueType=str, orientation="horizontal")
+
+            if is_2d:
+                label_box_2 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+
+                self.label_s_v = QLabel("\u03c3 ")
+                self.label_s_v.setFixedWidth(115)
+                palette =  QPalette(self.label_s_v.palette())
+                palette.setColor(QPalette.Foreground, QColor('red'))
+                self.label_s_v.setPalette(palette)
+                label_box_2.layout().addWidget(self.label_s_v)
+                self.sigma_v = gui.lineEdit(label_box_2, self, "sigma_v_field", "", tooltip="Sigma", labelWidth=115, valueType=str, orientation="horizontal")
+
             self.total.setReadOnly(True)
             font = QFont(self.total.font())
             font.setBold(True)
@@ -136,13 +159,22 @@ class SRWPlot:
             self.total.setPalette(palette)
 
             self.fwhm_h.setReadOnly(True)
-            font = QFont(self.total.font())
+            font = QFont(self.fwhm_h.font())
             font.setBold(True)
             self.fwhm_h.setFont(font)
             palette = QPalette(self.fwhm_h.palette())
             palette.setColor(QPalette.Text, QColor('dark blue'))
             palette.setColor(QPalette.Base, QColor(243, 240, 160))
             self.fwhm_h.setPalette(palette)
+
+            self.sigma_h.setReadOnly(True)
+            font = QFont(self.sigma_h.font())
+            font.setBold(True)
+            self.sigma_h.setFont(font)
+            palette = QPalette(self.sigma_h.palette())
+            palette.setColor(QPalette.Text, QColor('dark blue'))
+            palette.setColor(QPalette.Base, QColor(243, 240, 160))
+            self.sigma_h.setPalette(palette)
 
             if is_2d:
                 self.fwhm_v.setReadOnly(True)
@@ -154,10 +186,21 @@ class SRWPlot:
                 palette.setColor(QPalette.Base, QColor(243, 240, 160))
                 self.fwhm_v.setPalette(palette)
 
+                self.sigma_v.setReadOnly(True)
+                font = QFont(self.sigma_v.font())
+                font.setBold(True)
+                self.sigma_v.setFont(font)
+                palette = QPalette(self.sigma_v.palette())
+                palette.setColor(QPalette.Text, QColor('dark blue'))
+                palette.setColor(QPalette.Base, QColor(243, 240, 160))
+                self.sigma_v.setPalette(palette)
+
         def clear(self):
             self.total.setText("0.0")
             self.fwhm_h.setText("0.0000")
             if hasattr(self, "fwhm_v"):  self.fwhm_v.setText("0.0000")
+            self.sigma_h.setText("0.0000")
+            if hasattr(self, "sigma_v"):  self.sigma_v.setText("0.0000")
 
     class Detailed1DWidget(QWidget):
 
@@ -234,6 +277,9 @@ class SRWPlot:
             self.info_box.total.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
+            self.info_box.label_h.setText("FWHM " + xum)
+            self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram"], ticket['bin_center'])*factor))
+            self.info_box.label_s_h.setText("\u03c3 " + xum)
 
         def clear(self):
             self.plot_canvas.clear()
@@ -386,6 +432,10 @@ class SRWPlot:
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_v.setText("FWHM " + yum)
+            self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram_h"], ticket['bin_h'])*factor1))
+            self.info_box.sigma_v.setText("{:5.4f}".format(get_sigma(ticket["histogram_v"], ticket['bin_h'])*factor2))
+            self.info_box.label_s_h.setText("\u03c3 " + xum)
+            self.info_box.label_s_v.setText("\u03c3 " + yum)
 
             if apply_alpha_channel==True:
                 if plotting_range == None:
@@ -563,6 +613,14 @@ class SRWPlot:
 
         return ticket
 
+def get_sigma(histogram, bins):
+    total = numpy.sum(histogram)
+    average = numpy.sum(histogram*bins)/total
+
+    return numpy.sqrt(numpy.sum(histogram*((bins-average)**2))/total)
+
+def get_rms(histogram, bins):
+    return numpy.sqrt(numpy.sum((histogram*bins)**2)/numpy.sum(histogram))
 
 class ShowErrorProfileDialog(QDialog):
 
