@@ -278,7 +278,7 @@ class SRWPlot:
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_h.setText("FWHM " + xum)
-            self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram"], ticket['bin_center'])*factor))
+            self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram"], ticket['bins'])*factor))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
 
         def clear(self):
@@ -433,7 +433,7 @@ class SRWPlot:
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_v.setText("FWHM " + yum)
             self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram_h"], ticket['bin_h'])*factor1))
-            self.info_box.sigma_v.setText("{:5.4f}".format(get_sigma(ticket["histogram_v"], ticket['bin_h'])*factor2))
+            self.info_box.sigma_v.setText("{:5.4f}".format(get_sigma(ticket["histogram_v"], ticket['bin_v'])*factor2))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
             self.info_box.label_s_v.setText("\u03c3 " + yum)
 
