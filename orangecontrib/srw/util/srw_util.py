@@ -367,7 +367,13 @@ class SRWPlot:
 
                 data_to_plot.append(x_values)
 
-            self.plot_canvas.setImage(numpy.array(data_to_plot), origin=origin, scale=scale)
+            data_to_plot = numpy.array(data_to_plot)
+
+            sigma_h = get_sigma(numpy.sum(data_to_plot, axis=0), xx)
+            sigma_v = get_sigma(numpy.sum(data_to_plot, axis=1), yy)
+            total = numpy.sum(data_to_plot)
+
+            self.plot_canvas.setImage(data_to_plot, origin=origin, scale=scale)
 
             if xtitle is None: xtitle=SRWPlot.get_SRW_label(var_x)
             if ytitle is None: ytitle=SRWPlot.get_SRW_label(var_y)
@@ -427,13 +433,13 @@ class SRWPlot:
             self.plot_canvas._histoVPlot.replot()
             self.plot_canvas.replot()
 
-            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(ticket['total'])))
+            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(total)))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm_h'] * factor1))
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_v.setText("FWHM " + yum)
-            self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram_h"], ticket['bin_h'])*factor1))
-            self.info_box.sigma_v.setText("{:5.4f}".format(get_sigma(ticket["histogram_v"], ticket['bin_v'])*factor2))
+            self.info_box.sigma_h.setText("{:5.4f}".format(sigma_h*factor1))
+            self.info_box.sigma_v.setText("{:5.4f}".format(sigma_v*factor2))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
             self.info_box.label_s_v.setText("\u03c3 " + yum)
 
