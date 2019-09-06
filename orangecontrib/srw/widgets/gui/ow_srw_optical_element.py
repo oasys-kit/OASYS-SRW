@@ -824,14 +824,14 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
     def getTitles(self, with_um=False):
         if self.view_type == 2:
-            if with_um: return ["Intensity SE \u03c0 [ph/s/.1%bw/mm\u00b2]",
-                                "Intensity SE \u03c3 [ph/s/.1%bw/mm\u00b2]",
-                                "Phase SE \u03c0 [rad]",
-                                "Phase SE \u03c3 [rad]"]
-            else: return ["Intensity SE \u03c0",
-                          "Intensity SE \u03c3",
-                          "Phase SE \u03c0",
-                          "Phase SE \u03c3"]
+            if with_um: return ["Intensity SE \u03c3 [ph/s/.1%bw/mm\u00b2]",
+                                "Intensity SE \u03c0 [ph/s/.1%bw/mm\u00b2]",
+                                "Phase SE \u03c3 [rad]",
+                                "Phase SE \u03c0 [rad]"]
+            else: return ["Intensity SE \u03c3",
+                          "Intensity SE \u03c0",
+                          "Phase SE \u03c3",
+                          "Phase SE \u03c0"]
         else:
             if with_um: return ["Intensity SE [ph/s/.1%bw/mm\u00b2]",
                                 "Phase SE [rad]"]
