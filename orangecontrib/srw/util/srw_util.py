@@ -245,6 +245,10 @@ class SRWPlot:
                 bins = bins[good]
                 histogram = histogram[good]
 
+            ticket['total'] = numpy.sum(histogram)
+            ticket['fwhm'], ticket['fwhm_quote'], ticket['fwhm_coordinates'] = get_fwhm(histogram, bins)
+            ticket['sigma'] = get_sigma(histogram, bins)
+
             bins *= factor
 
             self.plot_canvas.addCurve(bins, histogram, title, symbol='', color='blue', replace=True) #'+', '^', ','
@@ -278,7 +282,7 @@ class SRWPlot:
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_h.setText("FWHM " + xum)
-            self.info_box.sigma_h.setText("{:5.4f}".format(get_sigma(ticket["histogram"], ticket['bins'])*factor))
+            self.info_box.sigma_h.setText("{:5.4f}".format(ticket['sigma']*factor))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
 
         def clear(self):
@@ -369,9 +373,16 @@ class SRWPlot:
 
             data_to_plot = numpy.array(data_to_plot)
 
-            sigma_h = get_sigma(numpy.sum(data_to_plot, axis=0), xx)
-            sigma_v = get_sigma(numpy.sum(data_to_plot, axis=1), yy)
-            total = numpy.sum(data_to_plot)
+            histogram_h = numpy.sum(data_to_plot, axis=0) # data to plot axis are inverted
+            histogram_v = numpy.sum(data_to_plot, axis=1)
+
+            ticket['total'] = numpy.sum(data_to_plot)
+
+            ticket['fwhm_h'], ticket['fwhm_quote_h'], ticket['fwhm_coordinates_h'] = get_fwhm(histogram_h, xx)
+            ticket['sigma_h'] = get_sigma(histogram_h, xx)
+
+            ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(histogram_v, yy)
+            ticket['sigma_v'] = get_sigma(histogram_v, yy)
 
             self.plot_canvas.setImage(data_to_plot, origin=origin, scale=scale)
 
@@ -398,16 +409,13 @@ class SRWPlot:
                 label.set_color('white')
                 label.set_fontsize(1)
 
-            if ticket['fwhm_h'] == None: ticket['fwhm_h'] = 0.0
-            if ticket['fwhm_v'] == None: ticket['fwhm_v'] = 0.0
-
             n_patches = len(self.plot_canvas._histoHPlot._backend.ax.patches)
             if (n_patches > 0): self.plot_canvas._histoHPlot._backend.ax.patches.remove(self.plot_canvas._histoHPlot._backend.ax.patches[n_patches-1])
 
             if not ticket['fwhm_h'] == 0.0:
                 x_fwhm_i, x_fwhm_f = ticket['fwhm_coordinates_h']
                 x_fwhm_i, x_fwhm_f = x_fwhm_i*factor1, x_fwhm_f*factor1
-                y_fwhm = max(ticket['histogram_h']) * 0.5
+                y_fwhm = ticket['fwhm_quote_h']
 
                 self.plot_canvas._histoHPlot._backend.ax.add_patch(FancyArrowPatch([x_fwhm_i, y_fwhm],
                                                                      [x_fwhm_f, y_fwhm],
@@ -421,7 +429,7 @@ class SRWPlot:
             if not ticket['fwhm_v'] == 0.0:
                 y_fwhm_i, y_fwhm_f = ticket['fwhm_coordinates_v']
                 y_fwhm_i, y_fwhm_f = y_fwhm_i*factor2, y_fwhm_f*factor2
-                x_fwhm = max(ticket['histogram_v']) * 0.5
+                x_fwhm = ticket['fwhm_quote_v']
 
                 self.plot_canvas._histoVPlot._backend.ax.add_patch(FancyArrowPatch([x_fwhm, y_fwhm_i],
                                                                      [x_fwhm, y_fwhm_f],
@@ -433,13 +441,13 @@ class SRWPlot:
             self.plot_canvas._histoVPlot.replot()
             self.plot_canvas.replot()
 
-            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(total)))
+            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(ticket['total'])))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm_h'] * factor1))
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.label_v.setText("FWHM " + yum)
-            self.info_box.sigma_h.setText("{:5.4f}".format(sigma_h*factor1))
-            self.info_box.sigma_v.setText("{:5.4f}".format(sigma_v*factor2))
+            self.info_box.sigma_h.setText("{:5.4f}".format(ticket['sigma_h']*factor1))
+            self.info_box.sigma_v.setText("{:5.4f}".format(ticket['sigma_v']*factor2))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
             self.info_box.label_s_v.setText("\u03c3 " + yum)
 
@@ -563,13 +571,8 @@ class SRWPlot:
         ticket['bins'] = bins
         ticket['xrange'] = xrange
         ticket['total'] = numpy.sum(h)
-        ticket['fwhm'] = None
-
-        tt = numpy.where(h>=max(h)*0.5)
-        if h[tt].size > 1:
-            binSize = bins[1]-bins[0]
-            ticket['fwhm'] = binSize*(tt[0][-1]-tt[0][0])
-            ticket['fwhm_coordinates'] = (bins[tt[0][0]], bins[tt[0][-1]])
+        ticket['fwhm'], ticket['fwhm_quote'], ticket['fwhm_coordinates'] = get_fwhm(h, bins)
+        ticket['sigma'] = get_sigma(h, bins)
 
         return ticket
 
@@ -583,6 +586,8 @@ class SRWPlot:
         yrange = [y_array.min(), y_array.max() ]
 
         hh = z_array
+        hh_h = hh.sum(axis=1)
+        hh_v = hh.sum(axis=0)
         xx = x_array
         yy = y_array
 
@@ -591,33 +596,32 @@ class SRWPlot:
         ticket['bin_h'] = xx
         ticket['bin_v'] = yy
         ticket['histogram'] = hh
-        ticket['histogram_h'] = hh.sum(axis=1)
-        ticket['histogram_v'] = hh.sum(axis=0)
+        ticket['histogram_h'] = hh_h
+        ticket['histogram_v'] = hh_v
         ticket['total'] = numpy.sum(z_array)
 
-        h = ticket['histogram_h']
-        tt = numpy.where(h >= (numpy.min(h) + (numpy.max(h)-numpy.min(h))*0.5))
+        ticket['fwhm_h'], ticket['fwhm_quote_h'], ticket['fwhm_coordinates_h'] = get_fwhm(hh_h, xx)
+        ticket['sigma_h'] = get_sigma(hh_h, xx)
 
-        if h[tt].size > 1:
-            binSize = ticket['bin_h'][1]-ticket['bin_h'][0]
-            ticket['fwhm_h'] = binSize*(tt[0][-1]-tt[0][0])
-
-            ticket['fwhm_coordinates_h'] = (ticket['bin_h'][tt[0][0]],
-                                            ticket['bin_h'][tt[0][-1]])
-        else:
-            ticket["fwhm_h"] = None
-
-        h = ticket['histogram_v']
-        tt = numpy.where(h >= numpy.min(h) + (numpy.max(h)-numpy.min(h))*0.5)
-
-        if h[tt].size > 1:
-            binSize = ticket['bin_v'][1]-ticket['bin_v'][0]
-            ticket['fwhm_v'] = binSize*(tt[0][-1]-tt[0][0])
-            ticket['fwhm_coordinates_v'] =(ticket['bin_v'][tt[0][0]], ticket['bin_v'][tt[0][-1]])
-        else:
-            ticket["fwhm_v"] = None
+        ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(hh_v, yy)
+        ticket['sigma_v'] = get_sigma(hh_v, xx)
 
         return ticket
+
+def get_fwhm(histogram, bins):
+    quote = numpy.min(histogram) + (numpy.max(histogram)-numpy.min(histogram))*0.5
+
+    tt = numpy.where(histogram >= quote)
+
+    if histogram[tt].size > 1:
+        binSize = bins[1]-bins[0]
+        fwhm = binSize*(tt[0][-1]-tt[0][0])
+        coordinates = (bins[tt[0][0]],bins[tt[0][-1]])
+    else:
+        fwhm = 0.0
+        coordinates = None
+
+    return fwhm, quote, coordinates
 
 def get_sigma(histogram, bins):
     total = numpy.sum(histogram)
