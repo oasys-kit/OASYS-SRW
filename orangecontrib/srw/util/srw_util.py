@@ -13,6 +13,8 @@ except:
     pass
 
 from oasys.widgets import gui
+from oasys.util.oasys_util import get_sigma, get_fwhm
+
 from srxraylib.metrology import profiles_simulation
 from silx.gui.plot.ImageView import ImageView, PlotWindow
 
@@ -264,7 +266,7 @@ class SRWPlot:
             if not ticket['fwhm'] == 0.0:
                 x_fwhm_i, x_fwhm_f = ticket['fwhm_coordinates']
                 x_fwhm_i, x_fwhm_f = x_fwhm_i*factor, x_fwhm_f*factor
-                y_fwhm   = max(histogram)*0.5
+                y_fwhm             = ticket['fwhm_quote']
 
                 self.plot_canvas._backend.ax.add_patch(FancyArrowPatch([x_fwhm_i, y_fwhm],
                                                           [x_fwhm_f, y_fwhm],
@@ -607,30 +609,6 @@ class SRWPlot:
         ticket['sigma_v'] = get_sigma(hh_v, xx)
 
         return ticket
-
-def get_fwhm(histogram, bins):
-    quote = numpy.min(histogram) + (numpy.max(histogram)-numpy.min(histogram))*0.5
-
-    tt = numpy.where(histogram >= quote)
-
-    if histogram[tt].size > 1:
-        binSize = bins[1]-bins[0]
-        fwhm = binSize*(tt[0][-1]-tt[0][0])
-        coordinates = (bins[tt[0][0]],bins[tt[0][-1]])
-    else:
-        fwhm = 0.0
-        coordinates = None
-
-    return fwhm, quote, coordinates
-
-def get_sigma(histogram, bins):
-    total = numpy.sum(histogram)
-    average = numpy.sum(histogram*bins)/total
-
-    return numpy.sqrt(numpy.sum(histogram*((bins-average)**2))/total)
-
-def get_rms(histogram, bins):
-    return numpy.sqrt(numpy.sum((histogram*bins)**2)/numpy.sum(histogram))
 
 class ShowErrorProfileDialog(QDialog):
 
