@@ -10,7 +10,7 @@ class SRWPowerDensityViewer(SRWWavefrontViewer):
     def __init__(self, show_general_option_box=True, show_automatic_box=True, show_view_box=True):
         super().__init__(show_general_option_box=show_general_option_box, show_automatic_box=show_automatic_box, show_view_box=show_view_box)
 
-    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False):
+    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False, apply_alpha_channel=False, alpha_ticket=None):
         if self.plot_canvas[plot_canvas_index] is None:
             self.plot_canvas[plot_canvas_index] = Plot2D()
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
