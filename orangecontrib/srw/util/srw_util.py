@@ -606,7 +606,7 @@ class SRWPlot:
         ticket['sigma_h'] = get_sigma(hh_h, xx)
 
         ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(hh_v, yy)
-        ticket['sigma_v'] = get_sigma(hh_v, xx)
+        ticket['sigma_v'] = get_sigma(hh_v, yy)
 
         return ticket
 
