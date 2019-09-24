@@ -1,7 +1,7 @@
 import numpy, decimal
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QFont, QPalette, QColor
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox, QFileDialog
 
 from matplotlib import cm
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -12,8 +12,9 @@ try:
 except:
     pass
 
+from orangewidget import gui as orangegui
 from oasys.widgets import gui
-from oasys.util.oasys_util import get_sigma, get_fwhm
+from oasys.util.oasys_util import get_sigma, get_fwhm, write_surface_file
 
 from srxraylib.metrology import profiles_simulation
 from silx.gui.plot.ImageView import ImageView, PlotWindow
@@ -615,9 +616,12 @@ class ShowErrorProfileDialog(QDialog):
     def __init__(self, parent=None, file_name="", dimension=2):
         QDialog.__init__(self, parent)
         self.setWindowTitle('File: Surface Error Profile')
-        layout = QVBoxLayout(self)
 
         if dimension == 2:
+            self.setFixedHeight(555)
+
+            layout = QGridLayout(self)
+
             figure = Figure(figsize=(100, 100))
             figure.patch.set_facecolor('white')
 
@@ -631,19 +635,19 @@ class ShowErrorProfileDialog(QDialog):
             figure_canvas.setFixedWidth(500)
             figure_canvas.setFixedHeight(500)
 
-            x_coords, y_coords, z_values = read_error_profile_file(file_name, dimension=2)
+            self.x_coords, self.y_coords, self.z_values = read_error_profile_file(file_name, dimension=2)
 
-            x_to_plot, y_to_plot = numpy.meshgrid(x_coords, y_coords)
+            x_to_plot, y_to_plot = numpy.meshgrid(self.x_coords, self.y_coords)
 
-            axis.plot_surface(x_to_plot, y_to_plot, (z_values*1e9).T,
+            axis.plot_surface(x_to_plot, y_to_plot, (self.z_values*1e9).T,
                               rstride=1, cstride=1, cmap=cm.autumn, linewidth=0.5, antialiased=True)
 
-            sloperms = profiles_simulation.slopes(z_values, x_coords, y_coords, return_only_rms=1)
+            sloperms = profiles_simulation.slopes(self.z_values, self.x_coords, self.y_coords, return_only_rms=1)
 
             title = ' Slope error rms in X direction: %f $\mu$rad' % (sloperms[0]*1e6) + '\n' + \
                     ' Slope error rms in Y direction: %f $\mu$rad' % (sloperms[1]*1e6) + '\n' + \
-                    ' Figure error rms in X direction: %f nm' % (round(z_values[:, 0].std()*1e9, 6)) + '\n' + \
-                    ' Figure error rms in Y direction: %f nm' % (round(z_values[0, :].std()*1e9, 6))
+                    ' Figure error rms in X direction: %f nm' % (round(self.z_values[:, 0].std()*1e9, 6)) + '\n' + \
+                    ' Figure error rms in Y direction: %f nm' % (round(self.z_values[0, :].std()*1e9, 6))
 
             axis.set_title(title)
 
@@ -651,7 +655,20 @@ class ShowErrorProfileDialog(QDialog):
 
             axis.mouse_init()
 
+            widget = QWidget(parent=self)
+
+            container = gui.widgetBox(widget, "", addSpace=False, orientation="horizontal", width=500)
+
+            orangegui.button(container, self, "Export Surface (.dat)", callback=self.save_srw_surface)
+            orangegui.button(container, self, "Export Surface (.hdf5)", callback=self.save_oasys_surface)
+            orangegui.button(container, self, "Close", callback=self.accept)
+
+            layout.addWidget(figure_canvas, 0, 0)
+            layout.addWidget(widget, 1, 0)
+
         elif dimension==1:
+            layout = QVBoxLayout(self)
+
             figure_canvas = gui.plotWindow(resetzoom=False,
                                            autoScale=False,
                                            logScale=False,
@@ -676,12 +693,31 @@ class ShowErrorProfileDialog(QDialog):
 
             figure_canvas.replot()
 
-        bbox = QDialogButtonBox(QDialogButtonBox.Ok)
+            bbox = QDialogButtonBox(QDialogButtonBox.Ok)
 
-        bbox.accepted.connect(self.accept)
-        layout.addWidget(figure_canvas)
-        layout.addWidget(bbox)
+            bbox.accepted.connect(self.accept)
+            layout.addWidget(figure_canvas)
+            layout.addWidget(bbox)
 
+        self.setLayout(layout)
+
+    def save_srw_surface(self):
+        try:
+            file_path = QFileDialog.getSaveFileName(self, "Save Surface in SRW (dat) Format", ".", "SRW format (*.dat)")[0]
+
+            if not file_path is None and not file_path.strip() == "":
+                write_error_profile_file(self.z_values.T, numpy.round(self.x_coords, 8), numpy.round(self.y_coords, 8), file_path)
+        except Exception as exception:
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
+
+    def save_oasys_surface(self):
+        try:
+            file_path = QFileDialog.getSaveFileName(self, "Save Surface in Oasys (hdf5) Format", ".", "HDF5 format (*.hdf5)")[0]
+
+            if not file_path is None and not file_path.strip() == "":
+                write_surface_file(self.z_values.T, numpy.round(self.x_coords, 8), numpy.round(self.y_coords, 8), file_path)
+        except Exception as exception:
+            QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
 #_height_prof_data: a matrix (2D array) containing the Height Profile data in [m];
 # if _ar_height_prof_x is None and _ar_height_prof_y is None: the first column in _height_prof_data is assumed to be the "longitudinal" position [m]
