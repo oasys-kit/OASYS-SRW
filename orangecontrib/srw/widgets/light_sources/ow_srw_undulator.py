@@ -19,6 +19,10 @@ import scipy.constants as codata
 
 m2ev = codata.c * codata.h / codata.e
 
+VERTICAL = 1
+HORIZONTAL = 2
+BOTH = 3
+
 class OWSRWUndulator(OWSRWSource):
 
     name = "Undulator"
@@ -118,8 +122,11 @@ class OWSRWUndulator(OWSRWSource):
         oasysgui.lineEdit(left_box_1, self, "auto_energy", "Set Undulator at Energy [eV]", labelWidth=250, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_1, self, "auto_harmonic_number", "As Harmonic #",  labelWidth=250, valueType=int, orientation="horizontal")
 
-        gui.button(left_box_1, self, "Set Kv value", callback=self.auto_set_undulator)
+        button_box = oasysgui.widgetBox(left_box_1, "", addSpace=False, orientation="horizontal")
 
+        gui.button(button_box, self, "Set Kv value", callback=self.auto_set_undulator_V)
+        gui.button(button_box, self, "Set Kh value", callback=self.auto_set_undulator_H)
+        gui.button(button_box, self, "Set Both K values", callback=self.auto_set_undulator_B)
 
         gui.rubber(self.controlArea)
         gui.rubber(self.mainArea)
@@ -184,17 +191,27 @@ class OWSRWUndulator(OWSRWSource):
 
         self.set_harmonic_energy()
 
-    def auto_set_undulator(self):
+    def auto_set_undulator_V(self):
+        self.auto_set_undulator(VERTICAL)
+
+    def auto_set_undulator_H(self):
+        self.auto_set_undulator(HORIZONTAL)
+
+    def auto_set_undulator_B(self):
+        self.auto_set_undulator(BOTH)
+
+    def auto_set_undulator(self, which=VERTICAL):
         congruence.checkStrictlyPositiveNumber(self.auto_energy, "Set Undulator at Energy")
         congruence.checkStrictlyPositiveNumber(self.auto_harmonic_number, "As Harmonic #")
         congruence.checkStrictlyPositiveNumber(self.electron_energy_in_GeV, "Energy")
         congruence.checkStrictlyPositiveNumber(self.period_length, "Period Length")
 
-        wavelength = self.auto_harmonic_number*m2ev/self.auto_energy
+        wavelength = self.auto_harmonic_number * m2ev / self.auto_energy
+        K = round(numpy.sqrt(2 * (((wavelength * 2 * self.__gamma() ** 2) / self.period_length) - 1)), 6)
 
         self.magnetic_field_from = 0
-        self.K_vertical = round(numpy.sqrt(2 * (((wavelength * 2 * self.__gamma() ** 2) / self.period_length) - 1)), 6)
-        self.K_horizontal = 0
+        if which == VERTICAL   or which == BOTH: self.K_vertical = K
+        if which == HORIZONTAL or which == BOTH: self.K_horizontal = K
 
         self.set_MagneticField()
 
