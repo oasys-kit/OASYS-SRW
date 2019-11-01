@@ -2,6 +2,7 @@ __author__ = 'labx'
 
 import sys
 from numpy import nan
+import scipy.constants as codata
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -308,10 +309,9 @@ class OWSRWRadiation(SRWPowerDensityViewer):
         tickets.append((i_me, e, h*1e3, v*1e3))
 
         if len(e) > 1: energy_step = e[1]-e[0]
-        else: energy_step = 1.0
+        else:          energy_step = 1.0
 
-        import scipy.constants as codata
-        pd = i_me[:-1].sum(axis=0)*energy_step*codata.e*1e3
+        pd = i_me.sum(axis=0)*energy_step*codata.e*1e3
 
         self.calculated_total_power = SRWLightSource.get_total_power_from_power_density(h, v, pd)
 
