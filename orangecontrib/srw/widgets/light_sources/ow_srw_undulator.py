@@ -210,8 +210,19 @@ class OWSRWUndulator(OWSRWSource):
         K = round(numpy.sqrt(2 * (((wavelength * 2 * self.__gamma() ** 2) / self.period_length) - 1)), 6)
 
         self.magnetic_field_from = 0
-        if which == VERTICAL   or which == BOTH: self.K_vertical = K
-        if which == HORIZONTAL or which == BOTH: self.K_horizontal = K
+
+        if which == VERTICAL:
+            self.K_vertical = K
+            self.K_horizontal = 0.0
+
+        if which == BOTH:
+            Kboth = round(K / numpy.sqrt(2), 6)
+            self.K_vertical =  Kboth
+            self.K_horizontal = Kboth
+
+        if which == HORIZONTAL:
+            self.K_horizontal = K
+            self.K_vertical = 0.0
 
         self.set_MagneticField()
 
