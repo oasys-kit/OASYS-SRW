@@ -396,7 +396,7 @@ class SRWPlot:
             self.plot_canvas.setGraphYLabel(ytitle)
             self.plot_canvas.setGraphTitle(title)
 
-            self.plot_canvas._histoHPlot.setGraphYLabel('Frequency')
+            self.plot_canvas._histoHPlot.setGraphYLabel('A.U.')
 
             self.plot_canvas._histoHPlot._backend.ax.xaxis.get_label().set_color('white')
             self.plot_canvas._histoHPlot._backend.ax.xaxis.get_label().set_fontsize(1)
@@ -404,7 +404,7 @@ class SRWPlot:
                 label.set_color('white')
                 label.set_fontsize(1)
 
-            self.plot_canvas._histoVPlot.setGraphXLabel('Frequency')
+            self.plot_canvas._histoVPlot.setGraphXLabel('A.U.')
 
             self.plot_canvas._histoVPlot._backend.ax.yaxis.get_label().set_color('white')
             self.plot_canvas._histoVPlot._backend.ax.yaxis.get_label().set_fontsize(1)
@@ -537,8 +537,8 @@ class SRWPlot:
                 label.set_color('white')
                 label.set_fontsize(1)
 
-            self.plot_canvas._histoHPlot.setGraphYLabel('Frequency')
-            self.plot_canvas._histoVPlot.setGraphXLabel('Frequency')
+            self.plot_canvas._histoHPlot.setGraphYLabel('A.U.')
+            self.plot_canvas._histoVPlot.setGraphXLabel('A.U.')
 
             self.plot_canvas._histoHPlot.replot()
             self.plot_canvas._histoVPlot.replot()
