@@ -108,7 +108,7 @@ class SRWPlot:
             info_box_inner.setFixedHeight(515*y_scale_factor)
             info_box_inner.setFixedWidth(230*x_scale_factor)
 
-            self.total = gui.lineEdit(info_box_inner, self, "total_field", "Total", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
+            self.total = gui.lineEdit(info_box_inner, self, "total_field", "\u03a6 [ph/s/0.1%BW]", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
 
             label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
 
@@ -444,7 +444,15 @@ class SRWPlot:
             self.plot_canvas._histoVPlot.replot()
             self.plot_canvas.replot()
 
-            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(ticket['total'])))
+            if not (numpy.logical_and(numpy.min(data_to_plot)>= -numpy.pi, numpy.max(data_to_plot)<=numpy.pi)):
+                dx = (xx[1]-xx[0]) # mm
+                dy = (yy[1]-yy[0])
+
+                total_flux = data_to_plot.sum()*dx*dy
+            else:
+                total_flux = numpy.nan
+
+            self.info_box.total.setText("{:.3e}".format(decimal.Decimal(total_flux)))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm_h'] * factor1))
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
