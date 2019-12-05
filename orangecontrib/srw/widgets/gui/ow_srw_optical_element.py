@@ -192,9 +192,11 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.coordinates_box = oasysgui.widgetBox(self.tab_bas, "Coordinates", addSpace=True, orientation="vertical")
 
         if self.has_p:
-            oasysgui.lineEdit(self.coordinates_box, self, "p", "Distance from previous Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.coordinates_box, self, "p", "Distance from previous Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal",
+                              callback=self.set_p)
         if self.has_q:
-            oasysgui.lineEdit(self.coordinates_box, self, "q", "Distance to next Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.coordinates_box, self, "q", "Distance to next Continuation Plane [m]", labelWidth=280, valueType=float, orientation="horizontal",
+                              callback=self.set_q)
 
         if self.has_orientation_angles:
             self.le_angle_radial = oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
@@ -218,6 +220,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         if self.has_oe_wavefront_propagation_parameters_tab: self.tab_oe = oasysgui.createTabPage(self.tabs_prop_setting, "Optical Element")
         self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space After")
 
+        self.set_p()
+        self.set_q()
 
         # DRIFT SPACE
 
@@ -369,6 +373,18 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
             oasysgui.lineEdit(rotation_box, self, "rotation_x", "Around Vertical Axis [CCW, deg]", labelWidth=280, valueType=float, orientation="horizontal")
 
             self.set_displacement()
+
+    def set_p(self):
+        if self.p == 0.0:
+            self.tab_drift_before.setEnabled(False)
+        else:
+            self.tab_drift_before.setEnabled(True)
+
+    def set_q(self):
+        if self.q  == 0.0:
+            self.tab_drift.setEnabled(False)
+        else:
+            self.tab_drift.setEnabled(True)
 
     def set_displacement(self):
         self.displacement_box.setVisible(self.has_displacement==1)
