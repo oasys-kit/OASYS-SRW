@@ -1,6 +1,7 @@
 import sys
 import numpy
 from numpy import nan
+from skimage.restoration import unwrap_phase as unwrap
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings
@@ -272,7 +273,7 @@ class SRWWavefrontViewer(SRWWidget):
         else:
             plotting_range = None
 
-        if do_unwrap: ticket['histogram'] = numpy.unwrap(ticket['histogram'])
+        if do_unwrap: ticket['histogram'] = unwrap(ticket['histogram'])
 
         self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket)
 
