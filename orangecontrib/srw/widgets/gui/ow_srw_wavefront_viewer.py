@@ -55,6 +55,7 @@ class SRWWavefrontViewer(SRWWidget):
     want_main_area=1
     view_type=Setting(1)
     weight_phase = Setting(0)
+    unwrap_phase = Setting(0)
 
     output_wavefront=None
 
@@ -89,6 +90,9 @@ class SRWWavefrontViewer(SRWWidget):
                                                    labelWidth=250, items=["No", "Yes"],
                                                    callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
 
+            self.unwrap_phase_combo = gui.comboBox(view_box_1, self, "unwrap_phase", label="Unwrap Phase",
+                                                   labelWidth=250, items=["No", "Yes"],
+                                                   callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
 
             range_tab = oasysgui.createTabPage(plot_tabs, "Plot Setting")
             
@@ -258,7 +262,7 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.progressBarSet(progressBarValue)
 
-    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False, apply_alpha_channel=False, alpha_ticket=None):
+    def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False, apply_alpha_channel=False, alpha_ticket=None, do_unwrap=False):
         if self.plot_canvas[plot_canvas_index] is None:
             self.plot_canvas[plot_canvas_index] =  SRWPlot.Detailed2DWidget()
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
@@ -267,6 +271,8 @@ class SRWWavefrontViewer(SRWWidget):
             plotting_range = [self.range_x_min/1000, self.range_x_max/1000, self.range_y_min/1000, self.range_y_max/1000]
         else:
             plotting_range = None
+
+        if do_unwrap: ticket['histogram'] = numpy.unwrap(ticket['histogram'])
 
         self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket)
 
@@ -344,12 +350,13 @@ class SRWWavefrontViewer(SRWWidget):
                                     self.plot_3D(tickets[i][0], tickets[i][1], tickets[i][2], tickets[i][3], progressBarValue + (i+1)*progress, plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i])
                             else:
                                 if len(variables[i]) == 1:
-                                    self.plot_1D(tickets[i], progressBarValue + (i+1)*progress, variables[i],                     plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i])
+                                    self.plot_1D(tickets[i], progressBarValue + (i+1)*progress, variables[i], plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i])
                                 else:
                                     apply_alpha_channel = self.weight_phase==1 and weighted_plots[i]==True
+                                    do_unwrap = self.unwrap_phase == 1 and weighted_plots[i]==True
 
                                     self.plot_2D(tickets[i], progressBarValue + (i+1)*progress, variables[i][0], variables[i][1], plot_canvas_index=i, title=titles[i], xtitle=xtitles[i], ytitle=ytitles[i], xum=xums[i], yum=yums[i], ignore_range=ignore_range,
-                                                 apply_alpha_channel=apply_alpha_channel, alpha_ticket=tickets[weight_tickets[i]] if apply_alpha_channel else None)
+                                                 apply_alpha_channel=apply_alpha_channel, alpha_ticket=tickets[weight_tickets[i]] if apply_alpha_channel else None, do_unwrap=do_unwrap)
                     except Exception as e:
                         self.view_type_combo.setEnabled(True)
                         self.weight_phase_combo.setEnabled(True)
