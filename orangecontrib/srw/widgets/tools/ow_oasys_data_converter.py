@@ -85,7 +85,7 @@ class OWOasysDataConverter(widget.OWWidget):
 
                     filename, file_extension = os.path.splitext(error_profile_data_file)
 
-                    if (file_extension==".hd5" or file_extension==".hdf5" or file_extension==".hdf"):
+                    if (file_extension==".hd5" or file_extension==".hdf5" or file_extension==".hdf" or file_extension==".h5"):
                         error_profile_data_file = filename + "_srw.dat"
 
                     SU.write_error_profile_file(surface_data.zz, surface_data.xx, surface_data.yy, error_profile_data_file)
@@ -98,7 +98,7 @@ class OWOasysDataConverter(widget.OWWidget):
 
                     filename, file_extension = os.path.splitext(surface_data_file)
 
-                    if (file_extension==".hd5" or file_extension==".hdf5" or file_extension==".hdf"):
+                    if (file_extension==".hd5" or file_extension==".hdf5" or file_extension==".hdf" or file_extension==".h5"):
                         surface_data_file = filename + "_srw.dat"
 
                     SU.write_error_profile_file(self.oasys_data.zz, self.oasys_data.xx, self.oasys_data.yy, surface_data_file)
