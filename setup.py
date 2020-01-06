@@ -45,6 +45,7 @@ INSTALL_REQUIRES = (
     'scikit-image'
 )
 
+
 PACKAGES = find_packages(exclude=('*.tests', '*.tests.*', 'tests.*', 'tests'))
 
 PACKAGE_DATA = {
