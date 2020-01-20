@@ -1,7 +1,12 @@
 import sys
 import numpy
 from numpy import nan
-from skimage.restoration import unwrap_phase as unwrap
+
+try:
+    from skimage.restoration import unwrap_phase as unwrap
+    scikit_loaded = True
+except:
+    scikit_loaded = False
 
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt, QSettings
@@ -94,6 +99,10 @@ class SRWWavefrontViewer(SRWWidget):
             self.unwrap_phase_combo = gui.comboBox(view_box_1, self, "unwrap_phase", label="Unwrap Phase",
                                                    labelWidth=250, items=["No", "Yes"],
                                                    callback=self.set_PlotQuality, sendSelectedValue=False, orientation="horizontal")
+
+            if not scikit_loaded:
+                self.unwrap_phase_combo.setCurrentIndex(0)
+                self.unwrap_phase_combo.setEnabled(False)
 
             range_tab = oasysgui.createTabPage(plot_tabs, "Plot Setting")
             
@@ -273,7 +282,8 @@ class SRWWavefrontViewer(SRWWidget):
         else:
             plotting_range = None
 
-        if do_unwrap: ticket['histogram'] = unwrap(ticket['histogram'])
+        if do_unwrap:
+            ticket['histogram'] = unwrap(ticket['histogram'])
 
         self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket)
 
