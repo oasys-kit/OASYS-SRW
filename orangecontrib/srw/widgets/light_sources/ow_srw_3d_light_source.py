@@ -20,6 +20,7 @@ class OWSRW3DLightSource(OWSRWSource):
 
     file_name = Setting("")
     comment_character = Setting("#")
+    interpolation_method = Setting(0)
 
     want_main_area=1
 
@@ -35,6 +36,11 @@ class OWSRW3DLightSource(OWSRWSource):
 
         oasysgui.lineEdit(left_box_2, self, "comment_character", "Comment Character", labelWidth=320, valueType=str, orientation="horizontal")
 
+        gui.comboBox(left_box_2, self, "interpolation_method", label="Interpolation Method",
+                     items=["bi-linear", "bi-quadratic", "bi-cubic"], labelWidth=260,
+                     sendSelectedValue=False, orientation="horizontal")
+
+
         gui.rubber(self.controlArea)
         gui.rubber(self.mainArea)
 
@@ -42,6 +48,9 @@ class OWSRW3DLightSource(OWSRWSource):
         self.le_file_name.setText(oasysgui.selectFileFromDialog(self, self.file_name, "3D data file"))
 
     # TODO: these methods maker sense only after reading the file, must be fixed
+
+    def get_automatic_sr_method(self):
+        return 2
 
     def get_default_initial_z(self):
         try:
@@ -57,7 +66,7 @@ class OWSRW3DLightSource(OWSRWSource):
 
     def get_srw_source(self, electron_beam):
         return SRW3DLightSource(electron_beam=electron_beam,
-                                magnet_magnetic_structure=SRW3DMagneticStructure(self.file_name, self.comment_character))
+                                magnet_magnetic_structure=SRW3DMagneticStructure(self.file_name, self.comment_character, self.interpolation_method+1))
 
     def print_specific_infos(self, srw_source):
         pass
