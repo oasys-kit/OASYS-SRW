@@ -17,7 +17,7 @@ from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 class SRWToolsMenu(OMenu):
 
     def __init__(self):
-        super().__init__(name="SRW Tools")
+        super().__init__(name="SRW")
 
         self.openContainer()
         self.addContainer("Propagation Mode")
