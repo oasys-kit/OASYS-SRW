@@ -365,16 +365,7 @@ class SRWPlot:
             origin = (xmin*factor1, ymin*factor2)
             scale = (abs((xmax-xmin)/nbins_h)*factor1, abs((ymax-ymin)/nbins_v)*factor2)
 
-            # PyMCA inverts axis!!!! histogram must be calculated reversed
-            data_to_plot = []
-            for y_index in range(0, nbins_v):
-                x_values = []
-                for x_index in range(0, nbins_h):
-                    x_values.append(histogram[x_index][y_index])
-
-                data_to_plot.append(x_values)
-
-            data_to_plot = numpy.array(data_to_plot)
+            data_to_plot = ticket['histogram'].T
 
             histogram_h = numpy.sum(data_to_plot, axis=0) # data to plot axis are inverted
             histogram_v = numpy.sum(data_to_plot, axis=1)
@@ -387,6 +378,7 @@ class SRWPlot:
             ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(histogram_v, yy)
             ticket['sigma_v'] = get_sigma(histogram_v, yy)
 
+            # PyMCA inverts axis!!!! histogram must be calculated reversed
             self.plot_canvas.setImage(data_to_plot, origin=origin, scale=scale)
 
             if xtitle is None: xtitle=SRWPlot.get_SRW_label(var_x)

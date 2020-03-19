@@ -67,18 +67,10 @@ class SRWPowerDensityViewer(SRWWavefrontViewer):
         origin = (xmin*factor1, ymin*factor2)
         scale = (abs((xmax-xmin)/nbins_h)*factor1, abs((ymax-ymin)/nbins_v)*factor2)
 
-        # PyMCA inverts axis!!!! histogram must be calculated reversed
-        data_to_plot = []
-        for y_index in range(0, nbins_v):
-            x_values = []
-            for x_index in range(0, nbins_h):
-                x_values.append(histogram[x_index][y_index])
-
-            data_to_plot.append(x_values)
-
         colormap = {"name":"temperature", "normalization":"linear", "autoscale":True, "vmin":0, "vmax":0, "colors":256}
 
-        self.plot_canvas[plot_canvas_index].addImage(numpy.array(data_to_plot),
+        # PyMCA inverts axis!!!! histogram must be calculated reversed
+        self.plot_canvas[plot_canvas_index].addImage(ticket['histogram'].T,
                                   legend="Power Density",
                                   scale=scale,
                                   origin=origin,
