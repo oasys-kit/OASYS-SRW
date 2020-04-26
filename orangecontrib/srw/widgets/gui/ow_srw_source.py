@@ -197,7 +197,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.set_TypeOfProperties()
 
         gui.comboBox(tab_traj, self, "type_of_initialization", label="Trajectory Initialization", labelWidth=140,
-                     items=["At Zero Point", "At Fixed Position", "Sampled from Phase Space"],
+                     items=["Automatic", "At Fixed Position", "Sampled from Phase Space"],
                      callback=self.set_TypeOfInitialization,
                      sendSelectedValue=False, orientation="horizontal")
 

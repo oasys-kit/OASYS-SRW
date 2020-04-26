@@ -236,7 +236,7 @@ class OWSRWUndulator(OWSRWSource):
         self.set_harmonic_energy()
 
     def get_default_initial_z(self):
-        return -0.5*self.period_length*(self.number_of_periods + 4) # initial Longitudinal Coordinate (set before the ID)
+        return self.longitudinal_central_position-0.5*self.period_length*(self.number_of_periods + 8) # initial Longitudinal Coordinate (set before the ID)
 
     def get_srw_source(self, electron_beam):
         symmetry_vs_longitudinal_position_horizontal = 1 if self.symmetry_vs_longitudinal_position_horizontal == 0 else -1
