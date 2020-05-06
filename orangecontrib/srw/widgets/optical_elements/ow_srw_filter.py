@@ -145,8 +145,6 @@ class OWSRWFilter(OWSRWOpticalElement):
                 self.thickness_error_profile = thickness_error_profile_data_files[0]
                 self.set_ThicknessError()
         except Exception as exception:
-            QMessageBox.critical(self, "Error",
-                                 exception.args[0],
-                                 QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", exception.args[0], QMessageBox.Ok)
 
             if self.IS_DEVELOP: raise exception

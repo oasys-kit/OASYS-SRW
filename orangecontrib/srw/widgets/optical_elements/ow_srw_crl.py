@@ -100,15 +100,23 @@ class OWSRWCRL(OWSRWOpticalElement):
 
         tab_thick = oasysgui.createTabPage(tabs_crl, "Thickness Error")
 
-        input_box = oasysgui.widgetBox(tab_thick, "Thickness Error Files", addSpace=True, orientation="vertical", height=390, width=self.CONTROL_AREA_WIDTH-20)
+        gui.comboBox(tab_thick, self, "has_thickness_error", label="Use Thickness Error Profile",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal", callback=self.set_ThicknessError)
 
-        self.files_area = oasysgui.textArea(height=315)
+        gui.separator(tab_thick)
 
-        input_box.layout().addWidget(self.files_area)
+        self.thickness_error_box_1 = oasysgui.widgetBox(tab_thick, "Thickness Error Files", addSpace=False, orientation="vertical", height=340, width=self.CONTROL_AREA_WIDTH - 30)
+        self.thickness_error_box_2 = oasysgui.widgetBox(tab_thick, "", addSpace=False, orientation="vertical", height=340, width=self.CONTROL_AREA_WIDTH - 30)
+
+        self.files_area = oasysgui.textArea(height=265)
+        self.thickness_error_box_1.layout().addWidget(self.files_area)
 
         self.refresh_files_text_area()
 
-        oasysgui.lineEdit(input_box, self, "crl_scaling_factor", "Thickness Error Scaling Factor", labelWidth=260, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.thickness_error_box_1, self, "crl_scaling_factor", "Thickness Error Scaling Factor", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.set_ThicknessError()
 
     def refresh_files_text_area(self):
         text = ""
@@ -121,9 +129,15 @@ class OWSRWCRL(OWSRWOpticalElement):
             if not thickness_error_profile_data_files is None:
                 self.crl_error_profiles = thickness_error_profile_data_files
                 self.refresh_files_text_area()
+                self.has_thickness_error = 1
+                self.set_ThicknessError()
         except Exception as exception:
             QMessageBox.critical(self, "Error", exception.args[0], QMessageBox.Ok)
             if self.IS_DEVELOP: raise exception
+
+    def set_ThicknessError(self):
+        self.thickness_error_box_2.setVisible(self.has_thickness_error == 0)
+        self.thickness_error_box_1.setVisible(self.has_thickness_error == 1)
 
     def set_MaterialData(self):
         self.filter_box_1.setVisible(self.material_data==0)
@@ -159,7 +173,7 @@ class OWSRWCRL(OWSRWOpticalElement):
                       final_photon_energy=energy,
                       horizontal_points=self.horizontal_points,
                       vertical_points=self.vertical_points,
-                      thickness_error_profile_files=self.crl_error_profiles,
+                      thickness_error_profile_files=None if self.has_thickness_error==0 else self.crl_error_profiles,
                       scaling_factor=self.crl_scaling_factor)
 
     def parse_void_center_coordinates(self):
