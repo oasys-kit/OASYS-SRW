@@ -820,6 +820,42 @@ def showCriticalMessage(message, parent=None):
     msgBox.setStandardButtons(QMessageBox.Ok)
     msgBox.exec_()
 
+#################################################
+# Physics
+#################################################
+
+import xraylib
+
+def get_absorption_parameters(material, energy):
+    energy_in_KeV = energy / 1000
+
+    mu    = xraylib.CS_Total_CP(material, energy_in_KeV) # energy in KeV
+    rho   = get_material_density(material)
+    delta = 1 - xraylib.Refractive_Index_Re(material, energy_in_KeV, rho)
+
+    return 0.01/(mu*rho), delta
+
+def get_material_density(material_name):
+    if material_name is None: return 0.0
+    if str(material_name.strip()) == "": return 0.0
+
+    try:
+        compoundData = xraylib.CompoundParser(material_name)
+        n_elements = compoundData["nElements"]
+        if  n_elements == 1:
+            return xraylib.ElementDensity(compoundData["Elements"][0])
+        else:
+            density = 0.0
+            mass_fractions = compoundData["massFractions"]
+            elements = compoundData["Elements"]
+            for i in range (n_elements): density += xraylib.ElementDensity(elements[i])*mass_fractions[i]
+            return density
+    except:
+        return 0.0
+
+
+
+
 from PyQt5.QtWidgets import QApplication
 
 if __name__=="__main__":
