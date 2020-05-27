@@ -349,15 +349,13 @@ class SRWPlot:
                 xx = ticket['bin_h'][range_x]
                 yy = ticket['bin_v'][range_y]
 
-                histogram = []
-                for row in ticket['histogram'][range_x]:
-                    histogram.append(row[range_y])
-
                 nbins_h = len(xx)
                 nbins_v = len(yy)
 
-            if len(xx) == 0 or len(yy) == 0:
-                raise Exception("Nothing to plot in the given range")
+                histogram = numpy.zeros((nbins_h, nbins_v))
+                for row, i in zip(ticket['histogram'][range_x], range(nbins_h)): histogram[i, :] = row[range_y]
+
+            if len(xx) == 0 or len(yy) == 0: raise Exception("Nothing to plot in the given range")
 
             xmin, xmax = xx.min(), xx.max()
             ymin, ymax = yy.min(), yy.max()
@@ -365,7 +363,7 @@ class SRWPlot:
             origin = (xmin*factor1, ymin*factor2)
             scale = (abs((xmax-xmin)/nbins_h)*factor1, abs((ymax-ymin)/nbins_v)*factor2)
 
-            data_to_plot = ticket['histogram'].T
+            data_to_plot = histogram.T
 
             histogram_h = numpy.sum(data_to_plot, axis=0) # data to plot axis are inverted
             histogram_v = numpy.sum(data_to_plot, axis=1)
