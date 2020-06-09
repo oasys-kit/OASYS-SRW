@@ -27,7 +27,7 @@ KEYWORDS = (
 )
 
 CLASSIFIERS = (
-    'Development Status :: 4 - Beta',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: X11 Applications :: Qt',
     'Environment :: Console',
     'Environment :: Plugins',
@@ -72,7 +72,7 @@ if __name__ == '__main__':
     try:
         import PyMca5, PyQt4
 
-        raise NotImplementedError("This version of SRW doesn't work with Oasys1 beta.\nPlease install OASYS1 final release: http://www.elettra.eu/oasys.html")
+        raise NotImplementedError("This version of SRW doesn't work with Oasys1 beta.\nPlease install OASYS1 final release: https://www.aps.anl.gov/Science/Scientific-Software/OASYS")
     except:
         setup(
               name = NAME,
