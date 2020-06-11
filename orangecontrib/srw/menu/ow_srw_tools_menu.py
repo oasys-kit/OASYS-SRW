@@ -11,7 +11,7 @@ from orangecontrib.srw.util.srw_util import showWarningMessage, showCriticalMess
 from orangecontrib.srw.widgets.optical_elements.ow_srw_screen import OWSRWScreen
 from orangecontrib.srw.widgets.native.ow_srw_intensity_plotter import OWSRWIntensityPlotter
 from orangecontrib.srw.widgets.native.ow_srw_me_degcoh_plotter import OWSRWDegCohPlotter
-from orangecontrib.srw.widgets.tools.ow_srw_accumulation_point import OWSRWAccumulationPoint
+from srw.widgets.basic_loops.ow_srw_accumulation_point import OWSRWAccumulationPoint
 from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
 class SRWToolsMenu(OMenu):
