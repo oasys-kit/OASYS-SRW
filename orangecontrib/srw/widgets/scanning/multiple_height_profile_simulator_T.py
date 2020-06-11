@@ -45,28 +45,9 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 
-import os, sys
-
-import numpy
-from PyQt5.QtCore import QRect, Qt
-from PyQt5.QtWidgets import QApplication, QMessageBox, QLabel, QSizePolicy
-from PyQt5.QtGui import QTextCursor, QFont, QPalette, QColor, QPixmap
-from srxraylib.metrology import profiles_simulation
-from Shadow import ShadowTools as ST
-from matplotlib import cm
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
-from matplotlib.figure import Figure
+import os
 
 import orangecanvas.resources as resources
-
-from orangewidget import gui, widget
-from orangewidget.settings import Setting
-
-from oasys.widgets.widget import OWWidget
-from oasys.widgets import gui as oasysgui
-from oasys.widgets import congruence
-from oasys.widgets.gui import ConfirmDialog
-from oasys.util.oasys_util import EmittingStream
 
 try:
     from mpl_toolkits.mplot3d import Axes3D  # necessario per caricare i plot 3D
@@ -76,7 +57,7 @@ except:
 from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWErrorProfileData
 import orangecontrib.srw.util.srw_util as SU
 
-from oasys.widgets.error_profile.abstract_multiple_height_profile_simulator_T import OWAbstractMultipleHeightProfileSimulatorT
+from oasys.widgets.abstract.error_profile.abstract_multiple_height_profile_simulator_T import OWAbstractMultipleHeightProfileSimulatorT
 
 class OWMultipleHeightProfileSimulatorT(OWAbstractMultipleHeightProfileSimulatorT):
     name = "Multiple Height Profile Simulator (T)"

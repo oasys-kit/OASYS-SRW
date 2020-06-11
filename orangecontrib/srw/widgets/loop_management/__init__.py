@@ -17,4 +17,4 @@ BACKGROUND = "#b8bcdb"
 
 ICON = "icons/loop_management.png"
 
-PRIORITY = 204.1
+PRIORITY = 203.1

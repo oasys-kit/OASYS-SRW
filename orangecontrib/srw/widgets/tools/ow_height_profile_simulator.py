@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QApplication
 
 import orangecanvas.resources as resources
 
-from oasys.widgets.error_profile.ow_abstract_height_profile_simulator import OWAbstractHeightErrorProfileSimulator
+from oasys.widgets.abstract.error_profile.abstract_height_profile_simulator import OWAbstractHeightErrorProfileSimulator
 
 from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWErrorProfileData
 import orangecontrib.srw.util.srw_util as SU

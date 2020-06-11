@@ -57,7 +57,7 @@ except:
 from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWErrorProfileData
 import orangecontrib.srw.util.srw_util as SU
 
-from oasys.widgets.error_profile.abstract_multiple_height_profile_simulator_S import OWAbstractMultipleHeightProfileSimulatorS
+from oasys.widgets.abstract.error_profile.abstract_multiple_height_profile_simulator_S import OWAbstractMultipleHeightProfileSimulatorS
 
 class OWMultipleHeightProfileSimulatorS(OWAbstractMultipleHeightProfileSimulatorS):
     name = "Multiple Height Profile Simulator (S)"

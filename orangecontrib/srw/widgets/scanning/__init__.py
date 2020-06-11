@@ -17,4 +17,4 @@ BACKGROUND = "#b8bcdb"
 
 ICON = "icons/scanning.png"
 
-PRIORITY = 204.2
+PRIORITY = 203.2
