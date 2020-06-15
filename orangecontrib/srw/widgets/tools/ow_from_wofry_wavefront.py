@@ -34,6 +34,8 @@ class OWFromWofryWavefront2d(widget.OWWidget):
 
     want_main_area = 0
 
+    z = Setting(10.0)
+
     Rx = Setting(10.0)
     dRx = Setting(0.001)
 
@@ -57,7 +59,11 @@ class OWFromWofryWavefront2d(widget.OWWidget):
 
         self.controlArea.setFixedWidth(self.CONTROL_AREA_WIDTH)
 
-        box = oasysgui.widgetBox(self.controlArea, "SRW Wavefront Setting", addSpace=False, orientation="horizontal", height=100)
+        box = oasysgui.widgetBox(self.controlArea, "SRW Wavefront Setting", addSpace=False, orientation="vertical", height=130)
+
+        oasysgui.lineEdit(box, self, "z", "Longitudinal position of the wavefront",labelWidth=250, valueType=float, orientation="horizontal")
+
+        box = oasysgui.widgetBox(box, "", addSpace=False, orientation="horizontal", height=70)
 
         box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=60)
         box_2 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=60)
@@ -81,13 +87,12 @@ class OWFromWofryWavefront2d(widget.OWWidget):
     def convert_wavefront(self):
         if not self.wavefront is None:
             try:
-                srw_wavefront     = SRWWavefront.fromGenericWavefront(self.wavefront)
-                srw_wavefront.Rx  = self.Rx
-                srw_wavefront.dRx = self.dRx
-                srw_wavefront.Ry  = self.Ry
-                srw_wavefront.dRy = self.dRy
-
-                self.send("SRWData", SRWData(srw_wavefront=srw_wavefront))
+                self.send("SRWData", SRWData(srw_wavefront=SRWWavefront.fromGenericWavefront(self.wavefront,
+                                                                                             z=self.z,
+                                                                                             Rx=self.Rx,
+                                                                                             dRx=self.dRx,
+                                                                                             Ry=self.Ry,
+                                                                                             dRy=self.dRy)))
             except Exception as exception:
                 QMessageBox.critical(self, "Error", str(exception), QMessageBox.Ok)
 
