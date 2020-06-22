@@ -61,6 +61,8 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     orientation_azimuthal = Setting(0)
     invert_tangent_component = Setting(0)
 
+    angle_radial_mrad = Setting(0.0)
+
     shape = Setting(0)
     surface_shape = Setting(0)
 
@@ -199,7 +201,10 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                               callback=self.set_q)
 
         if self.has_orientation_angles:
-            self.le_angle_radial = oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=280, valueType=float, orientation="horizontal")
+            self.le_angle_radial      = oasysgui.lineEdit(self.coordinates_box, self, "angle_radial", "Incident Angle (to normal) [deg]", labelWidth=220, valueType=float, orientation="horizontal", callback=self.calculate_angle_radial_mrad)
+            self.le_angle_radial_mrad = oasysgui.lineEdit(self.coordinates_box, self, "angle_radial_mrad", "Incident Angle (from surface) [mrad]", labelWidth=220, valueType=float, orientation="horizontal", callback=self.calculate_angle_radial_deg)
+
+            self.calculate_angle_radial_mrad()
 
             if self.azimuth_hor_vert:
                 gui.comboBox(self.coordinates_box, self, "orientation_azimuthal", label="Orientation of central normal vector",
@@ -389,6 +394,13 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
     def set_displacement(self):
         self.displacement_box.setVisible(self.has_displacement==1)
         self.displacement_box_empty.setVisible(self.has_displacement==0)
+
+
+    def calculate_angle_radial_mrad(self):
+        self.angle_radial_mrad = round(numpy.radians(90-self.angle_radial)*1000, 7)
+
+    def calculate_angle_radial_deg(self):
+        self.angle_radial = round(numpy.degrees(0.5 * numpy.pi - (self.angle_radial_mrad / 1000)), 10)
 
     class PropagatorInfoDialog(QDialog):
 
