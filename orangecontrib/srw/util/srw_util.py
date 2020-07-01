@@ -100,6 +100,8 @@ class SRWPlot:
         fwhm_v_field = ""
         sigma_h_field = ""
         sigma_v_field = ""
+        boundary_h_field = ""
+        boundary_v_field = ""
 
         def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, is_2d=True):
             super(SRWPlot.InfoBoxWidget, self).__init__()
@@ -152,6 +154,27 @@ class SRWPlot:
                 label_box_2.layout().addWidget(self.label_s_v)
                 self.sigma_v = gui.lineEdit(label_box_2, self, "sigma_v_field", "", tooltip="Sigma", labelWidth=115, valueType=str, orientation="horizontal")
 
+            label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="vertical")
+
+            self.label_b_h = QLabel("Range ")
+            self.label_b_h.setFixedWidth(115)
+            palette =  QPalette(self.label_b_h.palette())
+            palette.setColor(QPalette.Foreground, QColor('blue'))
+            self.label_b_h.setPalette(palette)
+            label_box_1.layout().addWidget(self.label_b_h)
+            self.boundary_h = gui.lineEdit(label_box_1, self, "boundary_h_field", "", tooltip="Range", labelWidth=115, valueType=str)
+
+            if is_2d:
+                label_box_2 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="vertical")
+
+                self.label_b_v = QLabel("Range ")
+                self.label_b_v.setFixedWidth(115)
+                palette =  QPalette(self.label_b_v.palette())
+                palette.setColor(QPalette.Foreground, QColor('red'))
+                self.label_b_v.setPalette(palette)
+                label_box_2.layout().addWidget(self.label_b_v)
+                self.boundary_v = gui.lineEdit(label_box_2, self, "boundary_v_field", "", tooltip="Range", labelWidth=115, valueType=str)
+
             self.total.setReadOnly(True)
             font = QFont(self.total.font())
             font.setBold(True)
@@ -179,6 +202,15 @@ class SRWPlot:
             palette.setColor(QPalette.Base, QColor(243, 240, 160))
             self.sigma_h.setPalette(palette)
 
+            self.boundary_h.setReadOnly(True)
+            font = QFont(self.boundary_h.font())
+            font.setBold(True)
+            self.boundary_h.setFont(font)
+            palette = QPalette(self.boundary_h.palette())
+            palette.setColor(QPalette.Text, QColor('dark blue'))
+            palette.setColor(QPalette.Base, QColor(243, 240, 160))
+            self.boundary_h.setPalette(palette)
+
             if is_2d:
                 self.fwhm_v.setReadOnly(True)
                 font = QFont(self.fwhm_v.font())
@@ -198,12 +230,23 @@ class SRWPlot:
                 palette.setColor(QPalette.Base, QColor(243, 240, 160))
                 self.sigma_v.setPalette(palette)
 
+                self.boundary_v.setReadOnly(True)
+                font = QFont(self.boundary_v.font())
+                font.setBold(True)
+                self.boundary_v.setFont(font)
+                palette = QPalette(self.boundary_v.palette())
+                palette.setColor(QPalette.Text, QColor('dark blue'))
+                palette.setColor(QPalette.Base, QColor(243, 240, 160))
+                self.boundary_v.setPalette(palette)
+
         def clear(self):
             self.total.setText("0.0")
             self.fwhm_h.setText("0.0000")
             if hasattr(self, "fwhm_v"):  self.fwhm_v.setText("0.0000")
             self.sigma_h.setText("0.0000")
             if hasattr(self, "sigma_v"):  self.sigma_v.setText("0.0000")
+            self.sigma_h.setText("n.a.")
+            if hasattr(self, "sigma_v"):  self.sigma_v.setText("n.a.")
 
     class Detailed1DWidget(QWidget):
 
@@ -284,9 +327,10 @@ class SRWPlot:
             self.info_box.total.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
-            self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.sigma_h.setText("{:5.4f}".format(ticket['sigma']*factor))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
+            self.info_box.boundary_h.setText("{:5.4f}, {:5.4f}".format(min(bins), max(bins)))
+            self.info_box.label_b_h.setText("Range " + xum)
 
         def clear(self):
             self.plot_canvas.clear()
@@ -451,6 +495,11 @@ class SRWPlot:
             self.info_box.sigma_v.setText("{:5.4f}".format(ticket['sigma_v']*factor2))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
             self.info_box.label_s_v.setText("\u03c3 " + yum)
+
+            self.info_box.boundary_h.setText("{:5.4f}, {:5.4f}".format(xmin*factor1, xmax*factor1))
+            self.info_box.boundary_v.setText("{:5.4f}, {:5.4f}".format(ymin*factor2, ymax*factor2))
+            self.info_box.label_b_h.setText("Range " + xum)
+            self.info_box.label_b_v.setText("Range " + yum)
 
             if apply_alpha_channel==True:
                 if plotting_range == None:
