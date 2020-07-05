@@ -221,54 +221,55 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.tabs_prop_setting = oasysgui.tabWidget(self.tab_pro)
         self.tabs_prop_setting.setFixedWidth(self.CONTROL_AREA_WIDTH-10)
 
-        self.tab_drift_before = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space Before")
+        if self.has_p: self.tab_drift_before = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space Before")
         if self.has_oe_wavefront_propagation_parameters_tab: self.tab_oe = oasysgui.createTabPage(self.tabs_prop_setting, "Optical Element")
-        self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space After")
+        if self.has_q: self.tab_drift = oasysgui.createTabPage(self.tabs_prop_setting, "Drift Space After")
 
-        self.set_p()
-        self.set_q()
+        if self.has_p: self.set_p()
+        if self.has_q: self.set_q()
 
         # DRIFT SPACE
 
-        gui.comboBox(self.tab_drift_before, self, "drift_before_auto_resize_before_propagation", label="Auto Resize Before Propagation",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+        if self.has_p:
+            gui.comboBox(self.tab_drift_before, self, "drift_before_auto_resize_before_propagation", label="Auto Resize Before Propagation",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.comboBox(self.tab_drift_before, self, "drift_before_auto_resize_after_propagation", label="Auto Resize After Propagation",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(self.tab_drift_before, self, "drift_before_auto_resize_after_propagation", label="Auto Resize After Propagation",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
-        propagator_box = oasysgui.widgetBox(self.tab_drift_before, "", addSpace=False, orientation="horizontal")
+            propagator_box = oasysgui.widgetBox(self.tab_drift_before, "", addSpace=False, orientation="horizontal")
 
-        gui.comboBox(propagator_box, self, "drift_before_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
-                     items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(propagator_box, self, "drift_before_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
+                         items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
+            gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
 
-        gui.comboBox(self.tab_drift_before, self, "drift_before_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(self.tab_drift_before, self, "drift_before_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
 
-        # not yet used by SRW
-        #oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+            # not yet used by SRW
+            #oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
+            #oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+            #oasysgui.lineEdit(self.tab_drift_before, self, "drift_before_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
 
-        drift_before_optional_box = oasysgui.widgetBox(self.tab_drift_before, "Optional", addSpace=False, orientation="vertical")
+            drift_before_optional_box = oasysgui.widgetBox(self.tab_drift_before, "Optional", addSpace=False, orientation="vertical")
 
-        oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_before_optional_box, self, "drift_before_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
 
         # OE
         if self.has_oe_wavefront_propagation_parameters_tab:
@@ -314,50 +315,50 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 
         # DRIFT SPACE
 
-        gui.comboBox(self.tab_drift, self, "drift_auto_resize_before_propagation", label="Auto Resize Before Propagation",
+        if self.has_q:
+            gui.comboBox(self.tab_drift, self, "drift_auto_resize_before_propagation", label="Auto Resize Before Propagation",
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
-        gui.comboBox(self.tab_drift, self, "drift_auto_resize_after_propagation", label="Auto Resize After Propagation",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(self.tab_drift, self, "drift_auto_resize_after_propagation", label="Auto Resize After Propagation",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift, self, "drift_relative_precision_for_propagation_with_autoresizing", "Relative precision for propagation with\nautoresizing (1.0 is nominal)", labelWidth=300, valueType=float, orientation="horizontal")
 
-        propagator_box = oasysgui.widgetBox(self.tab_drift, "", addSpace=False, orientation="horizontal")
+            propagator_box = oasysgui.widgetBox(self.tab_drift, "", addSpace=False, orientation="horizontal")
 
-        gui.comboBox(propagator_box, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
-                     items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(propagator_box, self, "drift_allow_semianalytical_treatment_of_quadratic_phase_term", label="Propagator",
+                         items=["Standard", "Quadratic Term", "Quadratic Term Special", "From Waist", "To Waist"], labelWidth=200,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
+            gui.button(propagator_box, self, "?", width=20, callback=self.show_propagator_info)
 
-        gui.comboBox(self.tab_drift, self, "drift_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
-                     items=["No", "Yes"], labelWidth=300,
-                     sendSelectedValue=False, orientation="horizontal")
+            gui.comboBox(self.tab_drift, self, "drift_do_any_resizing_on_fourier_side_using_fft", label="Do any resizing on fourier side using fft",
+                         items=["No", "Yes"], labelWidth=300,
+                         sendSelectedValue=False, orientation="horizontal")
 
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_range_modification_factor_at_resizing", "H range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift, self, "drift_horizontal_resolution_modification_factor_at_resizing", "H resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_range_modification_factor_at_resizing", "V range modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(self.tab_drift, self, "drift_vertical_resolution_modification_factor_at_resizing", "V resolution modification factor at resizing", labelWidth=300, valueType=float, orientation="horizontal")
 
-        # not yet used by SRW
-        #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
-        #oasysgui.lineEdit(self.tab_drift, self, "drift_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+            # not yet used by SRW
+            #oasysgui.lineEdit(self.tab_drift, self, "drift_type_of_wavefront_shift_before_resizing", "Type of wavefront shift before resizing", labelWidth=300, valueType=int, orientation="horizontal")
+            #oasysgui.lineEdit(self.tab_drift, self, "drift_new_horizontal_wavefront_center_position_after_shift", "New horizontal wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
+            #oasysgui.lineEdit(self.tab_drift, self, "drift_new_vertical_wavefront_center_position_after_shift", "New vertical wavefront center position [m]", labelWidth=300, valueType=float, orientation="horizontal")
 
-        drift_optional_box = oasysgui.widgetBox(self.tab_drift, "Optional", addSpace=False, orientation="vertical")
+            drift_optional_box = oasysgui.widgetBox(self.tab_drift, "Optional", addSpace=False, orientation="vertical")
 
-        oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_output_optical_axis_vector_x", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_output_optical_axis_vector_y", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_output_optical_axis_vector_z", "Orientation of the Output Optical Axis vector\nin the Incident Beam Frame: Z", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_horizontal_base_vector_x"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: X", labelWidth=290, valueType=float, orientation="horizontal")
+            oasysgui.lineEdit(drift_optional_box, self, "drift_after_orientation_of_the_horizontal_base_vector_y"    , "Orientation of the Horizontal Base vector of the\nOutput Frame in the Incident Beam Frame: Y", labelWidth=290, valueType=float, orientation="horizontal")
 
         #DISPLACEMENTS
 
         if self.has_displacement_tab:
-
             gui.comboBox(self.tab_dis, self, "has_displacement", label="Has Displacement",
                          items=["No", "Yes"], labelWidth=280,
                          sendSelectedValue=False, orientation="horizontal", callback=self.set_displacement)

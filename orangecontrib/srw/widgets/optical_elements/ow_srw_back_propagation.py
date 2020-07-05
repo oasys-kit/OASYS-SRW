@@ -16,10 +16,11 @@ class OWSRWBackPropagation(OWSRWOpticalElement):
     priority = 30
 
     def __init__(self):
-        super().__init__(has_orientation_angles=False, has_q=False, check_positive_distances=False)
-
-        self.tabs_prop_setting.removeTab(2)
-        self.tabs_prop_setting.removeTab(1)
+        super().__init__(has_orientation_angles=False,
+                         has_q=False,
+                         has_oe_wavefront_propagation_parameters_tab=False,
+                         has_displacement_tab=False,
+                         check_positive_distances=False)
 
     def draw_specific_box(self):
         pass
