@@ -110,7 +110,7 @@ class OWSRWUndulator(OWSRWSource):
         gui.comboBox(symmetry_v_box, self, "symmetry_vs_longitudinal_position_vertical", label=" ", labelWidth=2,
                      items=["Symmetrical", "Anti-Symmetrical"],
                      sendSelectedValue=False, orientation="horizontal")
-        #gui.button(symmetry_v_box, self, "?", callback=self.open_help, width=12)
+        gui.button(symmetry_v_box, self, "?", callback=self.open_help, width=12)
 
         ####################################################################################
         # Utility
