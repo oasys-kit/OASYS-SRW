@@ -81,7 +81,15 @@ class SRWPythonScriptME(SRWWidget):
         oasysgui.lineEdit(gen_box, self, "strIntPropME_OutFileName", "Output File Name", labelWidth=150, valueType=str, orientation="horizontal")
 
         gui.comboBox(gen_box, self, "_char", label="Calculation",
-                     items=["Total Intensity", "Mutual Intensity"], labelWidth=300,
+                     items=["Total Intensity",
+                            "Four Stokes components of Total Intensity",
+                            "Mutual Intensity Cut vs X",
+                            "Mutual Intensity Cut vs Y",
+                            "Mutual Intensity Cuts vs X & Y",
+                            "Total Flux",
+                            "Total Electric Field",
+                            "Total Intensity, Mutual Intensity Cuts vs X & Y"
+                            ], labelWidth=70,
                      sendSelectedValue=False, orientation="horizontal")
 
         tabs_setting = oasysgui.tabWidget(self.mainArea)
@@ -158,6 +166,26 @@ class SRWPythonScriptME(SRWWidget):
                     raise ValueError("ME Script is not available with this source")
 
                 _char = 0 if self._char == 0 else 4
+
+                '''
+                0- Total Intensity, i.e. Flux per Unit Surface Area (s0);
+                1- Four Stokes components of Flux per Unit Surface Area;
+                2- Mutual Intensity Cut vs X;
+                3- Mutual Intensity Cut vs Y;
+                4- Mutual Intensity Cuts and Degree of Coherence vs X & Y;
+                10- Flux
+                20- Electric Field (sum of fields from all macro-electrons, assuming CSR)
+                40- Total Intensity, i.e. Flux per Unit Surface Area (s0), Mutual Intensity Cuts and Degree of Coherence vs X & Y;
+                '''
+
+                if self._char <= 4:
+                    _char = self._char
+                elif self._char == 5:
+                    _char = 10
+                elif self._char == 6:
+                    _char = 20
+                elif self._char == 7:
+                    _char = 40
 
                 parameters = [self.sampFactNxNyForProp,
                               self.nMacroElec,
