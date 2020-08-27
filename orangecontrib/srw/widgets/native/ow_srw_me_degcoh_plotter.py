@@ -28,8 +28,10 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
 
     TABS_AREA_HEIGHT = 618
 
-    horizontal_cut_file_name = Setting("<file_me_degcoh>.dat.1")
-    vertical_cut_file_name = Setting("<file_me_degcoh>.dat.2")
+    calculation = Setting(0)
+    
+    horizontal_cut_file_name = Setting("<file_me_degcoh>.1")
+    vertical_cut_file_name = Setting("<file_me_degcoh>.2")
     mode = Setting(0)
 
     is_final_screen = True
@@ -63,19 +65,40 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
 
         gui.separator(self.tab_bas)
 
-        gui.label(self.tab_bas, self, "Mutual Intensity Files:")
+        gui.comboBox(self.tab_bas, self, "calculation", label="M.E. Output File", items=["Mutual Intensity", "Degree of Coherence"], orientation="horizontal", callback=self.set_calculation)
+
+        self.box_1 = oasysgui.widgetBox(self.tab_bas, "", addSpace=False, orientation="vertical")
+        self.box_2 = oasysgui.widgetBox(self.tab_bas, "", addSpace=False, orientation="vertical")
+
+        gui.label(self.box_1, self, "Mutual Intensity Files:")
         
-        file_box =  oasysgui.widgetBox(self.tab_bas, "", addSpace=False, orientation="horizontal")
+        file_box =  oasysgui.widgetBox(self.box_1, "", addSpace=False, orientation="horizontal")
         self.le_horizontal_cut_file_name = oasysgui.lineEdit(file_box, self, "horizontal_cut_file_name", "Horizontal Cut ", labelWidth=105, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectHorizontalCutFile)
 
-        file_box =  oasysgui.widgetBox(self.tab_bas, "", addSpace=False, orientation="horizontal")
+        file_box =  oasysgui.widgetBox(self.box_1, "", addSpace=False, orientation="horizontal")
         self.le_vertical_cut_file_name = oasysgui.lineEdit(file_box, self, "vertical_cut_file_name", "Vertical Cut ", labelWidth=105, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectVerticalCutFile)
 
-        gui.separator(self.tab_bas)
+        gui.separator(self.box_1)
 
-        gui.comboBox(self.tab_bas, self, "mode", label="Calculation type:", items=["by using Numpy/Scipy (Faster)", "As Original Igor Macro (Slower)"], orientation="horizontal")
+        gui.comboBox(self.box_1, self, "mode", label="Calculation type:", items=["by using Numpy/Scipy (Faster)", "As Original Igor Macro (Slower)"], orientation="horizontal")
+
+        gui.label(self.box_2, self, "Degree of Coherence Files:")
+
+        file_box = oasysgui.widgetBox(self.box_2, "", addSpace=False, orientation="horizontal")
+        self.le_horizontal_cut_file_name = oasysgui.lineEdit(file_box, self, "horizontal_cut_file_name", "Horizontal Cut ", labelWidth=105, valueType=str, orientation="horizontal")
+        gui.button(file_box, self, "...", callback=self.selectHorizontalCutFile)
+
+        file_box = oasysgui.widgetBox(self.box_2, "", addSpace=False, orientation="horizontal")
+        self.le_vertical_cut_file_name = oasysgui.lineEdit(file_box, self, "vertical_cut_file_name", "Vertical Cut ", labelWidth=105, valueType=str, orientation="horizontal")
+        gui.button(file_box, self, "...", callback=self.selectVerticalCutFile)
+
+        self.set_calculation()
+
+    def set_calculation(self):
+        self.box_1.setVisible(self.calculation == 0)
+        self.box_2.setVisible(self.calculation == 1)
 
     def selectHorizontalCutFile(self):
         self.le_horizontal_cut_file_name.setText(oasysgui.selectFileFromDialog(self, self.horizontal_cut_file_name, "Mutual Intensity Horizontal Cut File", file_extension_filter="*.1"))
@@ -89,16 +112,23 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
 
             tickets = []
 
-            mode = "Igor" if self.mode == 1 else "Scipy"
+            if self.calculation == 0:
+                mode = "Igor" if self.mode == 1 else "Scipy"
 
-            sum_x, difference_x, degree_of_coherence_x = native_util.calculate_degree_of_coherence_vs_sum_and_difference_from_file(self.horizontal_cut_file_name, mode=mode)
+                sum_x, difference_x, degree_of_coherence_x = native_util.calculate_degree_of_coherence_vs_sum_and_difference_from_file(self.horizontal_cut_file_name, mode=mode)
+
+                self.progressBarSet(40)
+
+                sum_y, difference_y, degree_of_coherence_y = native_util.calculate_degree_of_coherence_vs_sum_and_difference_from_file(self.vertical_cut_file_name, mode=mode)
+
+            else:
+                sum_x, difference_x, degree_of_coherence_x = native_util.load_mutual_intensity_file(self.horizontal_cut_file_name)
+
+                self.progressBarSet(40)
+
+                sum_y, difference_y, degree_of_coherence_y = native_util.load_mutual_intensity_file(self.vertical_cut_file_name)
 
             tickets.append(SRWPlot.get_ticket_2D(sum_x, difference_x, degree_of_coherence_x))
-
-            self.progressBarSet(40)
-
-            sum_y, difference_y, degree_of_coherence_y = native_util.calculate_degree_of_coherence_vs_sum_and_difference_from_file(self.vertical_cut_file_name, mode=mode)
-
             tickets.append(SRWPlot.get_ticket_2D(sum_y, difference_y, degree_of_coherence_y))
 
             self.plot_results(tickets, progressBarValue=80)
