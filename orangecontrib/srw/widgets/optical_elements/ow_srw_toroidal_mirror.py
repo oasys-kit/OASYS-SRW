@@ -25,7 +25,7 @@ class OWSRWToroidallMirror(OWSRWMirror):
 
     def get_mirror_instance(self):
         return SRWToroidalMirror(tangential_radius=self.tangential_radius,
-                                   sagittal_radius=self.sagittal_radius)
+                                 sagittal_radius=self.sagittal_radius)
 
     def draw_specific_box(self):
         super().draw_specific_box()
@@ -35,11 +35,13 @@ class OWSRWToroidallMirror(OWSRWMirror):
 
 
     def receive_shape_specific_syned_data(self, optical_element):
-        if not isinstance(optical_element._surface_shape, Toroidal):
+        if not isinstance(optical_element.get_surface_shape(), Toroidal):
             raise Exception("Syned Data not correct: Mirror Surface Shape is not Toroidal")
 
-        self.tangential_radius = numpy.round(optical_element._surface_shape._maj_radius, 6)
-        self.sagittal_radius = numpy.round(optical_element._surface_shape._min_radius, 6)
+        rs, rt = optical_element.get_surface_shape().get_radii()
+
+        self.tangential_radius = numpy.round(rt, 6)
+        self.sagittal_radius = numpy.round(rs, 6)
 
     def check_data(self):
         super().check_data()

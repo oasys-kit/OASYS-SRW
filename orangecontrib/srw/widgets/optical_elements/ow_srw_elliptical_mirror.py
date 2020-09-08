@@ -25,7 +25,8 @@ class OWSRWEllipticalMirror(OWSRWMirror):
 
     def get_mirror_instance(self):
         return SRWEllipticalMirror(distance_from_first_focus_to_mirror_center=self.distance_from_first_focus_to_mirror_center,
-                                   distance_from_mirror_center_to_second_focus=self.distance_from_mirror_center_to_second_focus)
+                                   distance_from_mirror_center_to_second_focus=self.distance_from_mirror_center_to_second_focus,
+                                   grazing_angle=numpy.radians(90 - self.angle_radial))
 
     def draw_specific_box(self):
         super().draw_specific_box()
@@ -35,10 +36,10 @@ class OWSRWEllipticalMirror(OWSRWMirror):
 
 
     def receive_shape_specific_syned_data(self, optical_element):
-        if not isinstance(optical_element._surface_shape, Ellipsoid):
+        if not isinstance(optical_element.get_surface_shape(), Ellipsoid):
             raise Exception("Syned Data not correct: Mirror Surface Shape is not Elliptical")
 
-        p, q = optical_element._surface_shape.get_p_q(numpy.radians(90-self.angle_radial))
+        p, q = optical_element.get_surface_shape().get_p_q(numpy.radians(90 - self.angle_radial))
 
         self.distance_from_first_focus_to_mirror_center = numpy.round(p, 6)
         self.distance_from_mirror_center_to_second_focus = numpy.round(q, 6)

@@ -117,8 +117,7 @@ class OWSRWInfo(widget.OWWidget):
                 txt += "%4d %20s %8.4f %8.4f %8.4f %8.4f \n"%(oe, oetype, p, q, oe_to_source, final_screen_to_source)
 
                 if "Elliptical" in oetype:
-                    p = optical_element.distance_from_first_focus_to_mirror_center
-                    q = optical_element.distance_from_mirror_center_to_second_focus
+                    p, q = optical_element.get_p_q()
                     txt_2 += '%4d %8.4f %8.4f %8.4f %8.4f\n'%(oe, p, q, p+q, p/q)
 
             txt += txt_2

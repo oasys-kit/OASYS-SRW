@@ -32,10 +32,10 @@ class OWSRWSphericallMirror(OWSRWMirror):
 
 
     def receive_shape_specific_syned_data(self, optical_element):
-        if not isinstance(optical_element._surface_shape, Sphere):
+        if not isinstance(optical_element.get_surface_shape(), Sphere):
             raise Exception("Syned Data not correct: Mirror Surface Shape is not Spherical")
 
-        self.radius = numpy.round(optical_element._surface_shape.get_radius(), 6)
+        self.radius = numpy.round(optical_element.get_surface_shape().get_radius(), 6)
 
     def check_data(self):
         super().check_data()
