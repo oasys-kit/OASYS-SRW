@@ -651,7 +651,7 @@ class SRWPlot:
         return ticket
 
     @classmethod
-    def get_ticket_2D(cls, x_array, y_array, z_array, divide_by_pixel_area=True):
+    def get_ticket_2D(cls, x_array, y_array, z_array, divide_by_pixel_area=True, is_multi_energy=False):
         ticket = {'error':0}
         ticket['nbins_h'] = len(x_array)
         ticket['nbins_v'] = len(y_array)
@@ -680,6 +680,7 @@ class SRWPlot:
 
         ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(hh_v, yy)
         ticket['sigma_v'] = get_sigma(hh_v, yy)
+        ticket['is_multi_energy'] = is_multi_energy
 
         return ticket
 

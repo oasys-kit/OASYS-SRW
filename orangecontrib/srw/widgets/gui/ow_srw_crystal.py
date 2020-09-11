@@ -29,15 +29,15 @@ class OWSRWCrystal(OWSRWOpticalElement):
               ("ExchangeData", DataExchangeObject, "acceptExchangeData"),
               WidgetDecorator.syned_input_data()[0]]
 
-    d_spacing       = Setting(0.0)
+    d_spacing       = Setting(3.1355)
     asymmetry_angle = Setting(0.0)
-    thickness       = Setting(0.0)
-    psi_0r          = Setting(0.0)
-    psi_0i          = Setting(0.0)
-    psi_hr          = Setting(0.0)
-    psi_hi          = Setting(0.0)
-    psi_hbr         = Setting(0.0)
-    psi_hbi         = Setting(0.0)
+    thickness       = Setting(0.001)
+    psi_0r          = Setting(-1.5127e-05)
+    psi_0i          = Setting(3.4955e-07)
+    psi_hr          = Setting(7.9955e-06)
+    psi_hi          = Setting(2.4361e-07)
+    psi_hbr         = Setting(7.0304e-06)
+    psi_hbi         = Setting(2.1315e-07)
     diffraction_geometry = Setting(0)
 
     notes = Setting("")

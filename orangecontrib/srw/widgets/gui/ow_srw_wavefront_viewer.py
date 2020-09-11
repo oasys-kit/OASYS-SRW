@@ -265,9 +265,9 @@ class SRWWavefrontViewer(SRWWidget):
             if int_phase == 0:
                 delta_e = e[1] - e[0]
                 for j in range(len(e)): i[j, :, :] *= delta_e / (e[j] * 1e-3) # change to fixed bw for integration
-                tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, numpy.sum(i, axis=0)))
+                tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, numpy.sum(i, axis=0), is_multi_energy=True))
             else:
-                tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, numpy.average(i, axis=0)))
+                tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, numpy.average(i, axis=0), is_multi_energy=True))
 
     def run_calculation_for_plots(self, tickets, progress_bar_value):
         raise NotImplementedError("to be implemented")
@@ -296,7 +296,7 @@ class SRWWavefrontViewer(SRWWidget):
         if do_unwrap:
             ticket['histogram'] = unwrap(ticket['histogram'])
 
-        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket, is_multi_energy=self.is_multi_energy())
+        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket, is_multi_energy=ticket['is_multi_energy'])
 
         self.progressBarSet(progressBarValue)
 
