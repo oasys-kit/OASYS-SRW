@@ -757,33 +757,33 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         if self.view_type==2:
             e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
             self.progressBarSet(progress_bar_value)
 
             e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
             e, h, v, p = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, p[int(e.size/2)]))
-
-            self.progressBarSet(progress_bar_value + 10)
+            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, p, tickets, int_phase=1)
 
             e, h, v, p = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, p[int(e.size/2)]))
+            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, p, tickets, int_phase=1)
+
+            self.progressBarSet(progress_bar_value + 10)
         elif self.view_type==1:
             e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False)
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
             self.progressBarSet(progress_bar_value)
 
             e, h, v, p = self.output_wavefront.get_phase()
 
-            tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, p[int(e.size/2)]))
+            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, p, tickets, int_phase=1)
 
             self.progressBarSet(progress_bar_value + 10)
 

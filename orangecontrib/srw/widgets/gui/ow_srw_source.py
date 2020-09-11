@@ -46,13 +46,13 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
     source_name = None
 
-    electron_energy_in_GeV = Setting(2.0)
-    electron_energy_spread = Setting(0.0007)
-    ring_current = Setting(0.4)
-    electron_beam_size_h = Setting(5.5453e-05)
-    electron_beam_size_v = Setting(2.784e-06)
-    electron_beam_divergence_h = Setting(4.5083e-06)
-    electron_beam_divergence_v = Setting(8.98e-07)
+    electron_energy_in_GeV = Setting(6.0)
+    electron_energy_spread = Setting(0.00138)
+    ring_current = Setting(0.2)
+    electron_beam_size_h = Setting(1.48e-05)
+    electron_beam_size_v = Setting(3.7e-06)
+    electron_beam_divergence_h = Setting(2.8e-06)
+    electron_beam_divergence_v = Setting(1.5e-06)
 
     moment_x = Setting(0.0)
     moment_y = Setting(0.0)
@@ -60,12 +60,12 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     moment_xp = Setting(0.0)
     moment_yp = Setting(0.0)
 
-    moment_xx           = Setting((0.05545e-3)**2)
+    moment_xx           = Setting((1.48e-05)**2)
     moment_xxp          = Setting(0.0)
-    moment_xpxp         = Setting((4.5083e-06)**2)
-    moment_yy           = Setting((2.784e-6)**2)
+    moment_xpxp         = Setting((2.8e-06)**2)
+    moment_yy           = Setting((3.7e-06)**2)
     moment_yyp          = Setting(0.0)
-    moment_ypyp         = Setting((8.98e-07)**2)
+    moment_ypyp         = Setting((1.5e-06)**2)
 
     horizontal_emittance = Setting(0.0)
     horizontal_beta = Setting(0.0)
@@ -81,7 +81,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     type_of_properties = Setting(1)
     type_of_initialization = Setting(0)
 
+    wf_energy_type = Setting(0)
     wf_photon_energy = Setting(8000.0)
+    wf_photon_energy_to=Setting(8100.0)
+    wf_photon_energy_points=Setting(11)
     wf_h_slit_gap = Setting(0.001)
     wf_v_slit_gap =Setting( 0.001)
     wf_h_slit_points=Setting(100)
@@ -264,7 +267,24 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         self.left_box_3_2.setVisible(self.type_of_initialization!=1)
 
     def build_wf_photon_energy_box(self, box):
-        oasysgui.lineEdit(box, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
+        gui.comboBox(box, self, "wf_energy_type", label="Energy Setting",
+                     items=["Single Value", "Range"], labelWidth=260,
+                     callback=self.set_WFEnergyType, sendSelectedValue=False, orientation="horizontal")
+
+        self.energy_type_box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=50)
+        oasysgui.lineEdit(self.energy_type_box_1, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.energy_type_box_2 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=50)
+        energy_box = oasysgui.widgetBox(self.energy_type_box_2, "", addSpace=False, orientation="horizontal", height=25)
+        oasysgui.lineEdit(energy_box, self, "wf_photon_energy", "Photon Energy from [eV]", labelWidth=160, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(energy_box, self, "wf_photon_energy_to", "to", labelWidth=20, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.energy_type_box_2, self, "wf_photon_energy_points", "Nr. of Energy values", labelWidth=260, valueType=int, orientation="horizontal")
+
+        self.set_WFEnergyType()
+
+    def set_WFEnergyType(self):
+        self.energy_type_box_1.setVisible(self.wf_energy_type==0)
+        self.energy_type_box_2.setVisible(self.wf_energy_type==1)
 
     def runSRWSource(self):
         self.setStatusMessage("")
@@ -461,77 +481,79 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     def checkLightSourceSpecificFields(self):
         raise NotImplementedError()
 
-
     def checkWavefrontPhotonEnergy(self):
         congruence.checkStrictlyPositiveNumber(self.wf_photon_energy, "Wavefront Propagation Photon Energy")
+
+        if self.wf_energy_type == 1:
+            self.wf_photon_energy_to     = congruence.checkStrictlyPositiveNumber(self.wf_photon_energy_to, "Photon Energy To")
+            self.wf_photon_energy_points = congruence.checkStrictlyPositiveNumber(self.wf_photon_energy_points, "Nr. Energy Values")
+            congruence.checkGreaterThan(self.wf_photon_energy_to, self.wf_photon_energy, "Photon Energy To", "Photon Energy From")
 
     def run_calculation_for_plots(self, tickets, progress_bar_value):
         if not self.output_wavefront is None:
             if self.view_type == 1:
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
                 self.progressBarSet(progress_bar_value)
 
-                e, h, v, i = self.output_wavefront.get_phase()
+                e, h, v, p = self.output_wavefront.get_phase()
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, p, tickets, int_phase=1)
 
                 self.progressBarSet(progress_bar_value + 10)
 
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
                 self.progressBarSet(progress_bar_value + 20)
             elif self.view_type == 2:
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
                 self.progressBarSet(progress_bar_value)
 
-                #--
-
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=False, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
                 #--
 
-                e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
+                e, h, v, p = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, p, tickets, int_phase=1)
 
                 self.progressBarSet(progress_bar_value + 10)
 
-                e, h, v, i = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
+                e, h, v, p = self.output_wavefront.get_phase(polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, p, tickets, int_phase=1)
 
                 #--
 
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
                 self.progressBarSet(progress_bar_value + 20)
 
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
 
     def get_automatic_sr_method(self):
         raise NotImplementedError()
 
     def calculate_wavefront_propagation(self, srw_source):
-        photon_energy = self.get_photon_energy_for_wavefront_propagation(srw_source)
+        photon_energy_min, photon_energy_max,  photon_energy_points = self.get_photon_energy_for_wavefront_propagation(srw_source)
 
-        wf_parameters = WavefrontParameters(photon_energy_min = photon_energy,
-                                            photon_energy_max = photon_energy,
-                                            photon_energy_points=1,
+        wf_parameters = WavefrontParameters(photon_energy_min = photon_energy_min,
+                                            photon_energy_max = photon_energy_max,
+                                            photon_energy_points=photon_energy_points,
                                             h_slit_gap = self.wf_h_slit_gap,
                                             v_slit_gap = self.wf_v_slit_gap,
                                             h_slit_points=self.wf_h_slit_points,
@@ -547,7 +569,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         return srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
-        return self.wf_photon_energy
+        if self.wf_energy_type == 0:
+            return self.wf_photon_energy, self.wf_photon_energy, 1
+        else:
+            return self.wf_photon_energy, self.wf_photon_energy_to, self.wf_photon_energy_points
 
     def get_minimum_propagation_distance(self):
         return round(self.get_source_length()*1.01, 6)

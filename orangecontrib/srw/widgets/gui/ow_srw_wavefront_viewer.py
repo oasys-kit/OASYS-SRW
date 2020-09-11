@@ -72,7 +72,6 @@ class SRWWavefrontViewer(SRWWidget):
     range_y_min = Setting(-50)
     range_y_max = Setting(50)
 
-
     def __init__(self, show_general_option_box=True, show_automatic_box=True, show_view_box=True):
         super().__init__(show_general_option_box=show_general_option_box, show_automatic_box=show_automatic_box)
 
@@ -258,6 +257,18 @@ class SRWWavefrontViewer(SRWWidget):
 
         self.progressBarFinished()
 
+    @classmethod
+    def add_2D_wavefront_plot(cls, e, h, v, i, tickets, int_phase=0):
+        if len(e) <= 1:
+            tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, i[int(e.size / 2)]))
+        else:
+            if int_phase == 0:
+                delta_e = e[1] - e[0]
+                for j in range(len(e)): i[j, :, :] *= delta_e / (e[j] * 1e-3) # change to fixed bw for integration
+                tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, numpy.sum(i, axis=0)))
+            else:
+                tickets.append(SRWPlot.get_ticket_2D(h * 1000, v * 1000, numpy.average(i, axis=0)))
+
     def run_calculation_for_plots(self, tickets, progress_bar_value):
         raise NotImplementedError("to be implemented")
 
@@ -285,7 +296,7 @@ class SRWWavefrontViewer(SRWWidget):
         if do_unwrap:
             ticket['histogram'] = unwrap(ticket['histogram'])
 
-        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket)
+        self.plot_canvas[plot_canvas_index].plot_2D(ticket, var_x, var_y, title, xtitle, ytitle, xum=xum, yum=yum, plotting_range=plotting_range, apply_alpha_channel=apply_alpha_channel, alpha_ticket=alpha_ticket, is_multi_energy=self.is_multi_energy())
 
         self.progressBarSet(progressBarValue)
 
@@ -326,6 +337,9 @@ class SRWWavefrontViewer(SRWWidget):
 
     def is_do_plots(self):
         return self.view_type == 1 or self.view_type == 2
+
+    def is_multi_energy(self):
+        return False
 
     def plot_results(self, tickets = [], progressBarValue=80, ignore_range=False):
         if self.is_do_plots():

@@ -44,7 +44,6 @@ class OWSRWUndulator(OWSRWSource):
     vertical_central_position = Setting(0.0)
     longitudinal_central_position = Setting(0.0)
 
-    wf_use_harmonic = Setting(0)
     wf_harmonic_number = Setting(1)
     wf_harmonic_energy = 0.0
 
@@ -132,9 +131,8 @@ class OWSRWUndulator(OWSRWSource):
         gui.rubber(self.mainArea)
 
     def build_wf_photon_energy_box(self, box):
-
-        gui.comboBox(box, self, "wf_use_harmonic", label="Energy Setting",
-                     items=["Harmonic", "Other"], labelWidth=260,
+        gui.comboBox(box, self, "wf_energy_type", label="Energy Setting",
+                     items=["Harmonic", "Other", "Range"], labelWidth=260,
                      callback=self.set_WFUseHarmonic, sendSelectedValue=False, orientation="horizontal")
 
         self.use_harmonic_box_1 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=50)
@@ -151,6 +149,12 @@ class OWSRWUndulator(OWSRWSource):
 
         self.use_harmonic_box_2 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=50)
         oasysgui.lineEdit(self.use_harmonic_box_2, self, "wf_photon_energy", "Photon Energy [eV]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        self.use_harmonic_box_3 = oasysgui.widgetBox(box, "", addSpace=False, orientation="vertical", height=80)
+        energy_box = oasysgui.widgetBox(self.use_harmonic_box_3, "", addSpace=False, orientation="horizontal", height=25)
+        oasysgui.lineEdit(energy_box, self, "wf_photon_energy", "Photon Energy from [eV]", labelWidth=160, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(energy_box, self, "wf_photon_energy_to", "to", labelWidth=20, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(self.use_harmonic_box_3, self, "wf_photon_energy_points", "Nr. of Energy values", labelWidth=260, valueType=int, orientation="horizontal")
 
         self.set_WFUseHarmonic()
 
@@ -186,8 +190,9 @@ class OWSRWUndulator(OWSRWSource):
         self.set_harmonic_energy()
 
     def set_WFUseHarmonic(self):
-        self.use_harmonic_box_1.setVisible(self.wf_use_harmonic==0)
-        self.use_harmonic_box_2.setVisible(self.wf_use_harmonic==1)
+        self.use_harmonic_box_1.setVisible(self.wf_energy_type==0)
+        self.use_harmonic_box_2.setVisible(self.wf_energy_type==1)
+        self.use_harmonic_box_3.setVisible(self.wf_energy_type==2)
 
         self.set_harmonic_energy()
 
@@ -227,7 +232,7 @@ class OWSRWUndulator(OWSRWSource):
         self.set_MagneticField()
 
     def set_harmonic_energy(self):
-        if self.wf_use_harmonic==0:
+        if self.wf_energy_type==0:
             self.wf_harmonic_energy = round(self.__resonance_energy(harmonic=self.wf_harmonic_number), 2)
         else:
             self.wf_harmonic_energy = numpy.nan
@@ -277,7 +282,16 @@ class OWSRWUndulator(OWSRWSource):
         return 1
 
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
-        return self.wf_photon_energy if self.wf_use_harmonic == 1 else srw_source.get_resonance_energy()*self.wf_harmonic_number
+        return self.wf_photon_energy if self.wf_energy_type == 1 else srw_source.get_resonance_energy()*self.wf_harmonic_number
+
+    def get_photon_energy_for_wavefront_propagation(self, srw_source):
+        if self.wf_energy_type == 0:
+            resonance_energy = srw_source.get_resonance_energy()*self.wf_harmonic_number
+            return resonance_energy, resonance_energy, 1
+        elif self.wf_energy_type == 1:
+            return self.wf_photon_energy, self.wf_photon_energy, 1
+        elif self.wf_energy_type == 2:
+            return self.wf_photon_energy, self.wf_photon_energy_to, self.wf_photon_energy_points
 
     def get_source_length(self):
         return self.period_length*self.number_of_periods
@@ -294,10 +308,14 @@ class OWSRWUndulator(OWSRWSource):
         congruence.checkStrictlyPositiveNumber(self.number_of_periods, "Number of Periods")
 
     def checkWavefrontPhotonEnergy(self):
-        if self.wf_use_harmonic == 0:
+        if self.wf_energy_type == 0:
             congruence.checkStrictlyPositiveNumber(self.wf_harmonic_number, "Wavefront Propagation Harmonic Number")
-        else:
+        elif self.wf_energy_type == 1:
             congruence.checkStrictlyPositiveNumber(self.wf_photon_energy, "Wavefront Propagation Photon Energy")
+        elif self.wf_energy_type == 2:
+            self.wf_photon_energy_to     = congruence.checkStrictlyPositiveNumber(self.wf_photon_energy_to, "Photon Energy To")
+            self.wf_photon_energy_points = congruence.checkStrictlyPositiveNumber(self.wf_photon_energy_points, "Nr. Energy Values")
+            congruence.checkGreaterThan(self.wf_photon_energy_to, self.wf_photon_energy, "Photon Energy To", "Photon Energy From")
 
     def receive_specific_syned_data(self, data):
         if isinstance(data._light_source._magnetic_structure, Undulator):

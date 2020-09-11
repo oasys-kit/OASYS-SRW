@@ -110,7 +110,11 @@ class SRWPlot:
             info_box_inner.setFixedHeight(515*y_scale_factor)
             info_box_inner.setFixedWidth(230*x_scale_factor)
 
-            self.total = gui.lineEdit(info_box_inner, self, "total_field", "\u03a6 [ph/s/0.1%BW]", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
+            self.total_box   = gui.widgetBox(info_box_inner, "", orientation="vertical", height=25)
+            self.total_2_box = gui.widgetBox(info_box_inner, "", orientation="vertical", height=25)
+
+            self.total   = gui.lineEdit(self.total_box, self, "total_field", "\u03a6 [ph/s/0.1%BW]", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
+            self.total_2 = gui.lineEdit(self.total_2_box, self, "total_field", "\u03a6 [ph/s]", tooltip="Total", labelWidth=115, valueType=str, orientation="horizontal")
 
             label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
 
@@ -184,6 +188,17 @@ class SRWPlot:
             palette.setColor(QPalette.Base, QColor(243, 240, 160))
             self.total.setPalette(palette)
 
+            self.total_2.setReadOnly(True)
+            font = QFont(self.total_2.font())
+            font.setBold(True)
+            self.total_2.setFont(font)
+            palette = QPalette(self.total_2.palette())
+            palette.setColor(QPalette.Text, QColor('dark blue'))
+            palette.setColor(QPalette.Base, QColor(243, 240, 160))
+            self.total_2.setPalette(palette)
+
+            self.total_2_box.setVisible(False)
+
             self.fwhm_h.setReadOnly(True)
             font = QFont(self.fwhm_h.font())
             font.setBold(True)
@@ -239,8 +254,13 @@ class SRWPlot:
                 palette.setColor(QPalette.Base, QColor(243, 240, 160))
                 self.boundary_v.setPalette(palette)
 
+        def set_multi_energy(self, multi_energy):
+            self.total_2_box.setVisible(multi_energy==True)
+            self.total_box.setVisible(multi_energy==False)
+
         def clear(self):
             self.total.setText("0.0")
+            self.total_2.setText("0.0")
             self.fwhm_h.setText("0.0000")
             if hasattr(self, "fwhm_v"):  self.fwhm_v.setText("0.0000")
             self.sigma_h.setText("0.0000")
@@ -325,6 +345,7 @@ class SRWPlot:
             self.plot_canvas.replot()
 
             self.info_box.total.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
+            self.info_box.total_2.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.sigma_h.setText("{:5.4f}".format(ticket['sigma']*factor))
@@ -360,7 +381,7 @@ class SRWPlot:
 
             self.setLayout(layout)
 
-        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True, apply_alpha_channel=False, alpha_ticket=None):
+        def plot_2D(self, ticket, var_x, var_y, title, xtitle, ytitle, xum="", yum="", plotting_range=None, use_default_factor=True, apply_alpha_channel=False, alpha_ticket=None, is_multi_energy=False):
 
             matplotlib.rcParams['axes.formatter.useoffset']='False'
 
@@ -487,6 +508,7 @@ class SRWPlot:
                 total_flux = numpy.nan
 
             self.info_box.total.setText("{:.3e}".format(decimal.Decimal(total_flux)))
+            self.info_box.total_2.setText("{:.3e}".format(decimal.Decimal(total_flux)))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm_h'] * factor1))
             self.info_box.fwhm_v.setText("{:5.4f}".format(ticket['fwhm_v'] * factor2))
             self.info_box.label_h.setText("FWHM " + xum)
@@ -500,6 +522,8 @@ class SRWPlot:
             self.info_box.boundary_v.setText("{:5.4f}, {:5.4f}".format(ymin*factor2, ymax*factor2))
             self.info_box.label_b_h.setText("Range " + xum)
             self.info_box.label_b_v.setText("Range " + yum)
+
+            self.info_box.set_multi_energy(is_multi_energy)
 
             if apply_alpha_channel==True:
                 if plotting_range == None:
@@ -627,13 +651,14 @@ class SRWPlot:
         return ticket
 
     @classmethod
-    def get_ticket_2D(cls, x_array, y_array, z_array):
+    def get_ticket_2D(cls, x_array, y_array, z_array, divide_by_pixel_area=True):
         ticket = {'error':0}
         ticket['nbins_h'] = len(x_array)
         ticket['nbins_v'] = len(y_array)
 
         xrange = [x_array.min(), x_array.max() ]
         yrange = [y_array.min(), y_array.max() ]
+        pixel_area = 1.0 if not divide_by_pixel_area else (x_array[1] - x_array[0]) * (y_array[1] - y_array[0])
 
         hh = z_array
         hh_h = hh.sum(axis=1)
@@ -648,7 +673,7 @@ class SRWPlot:
         ticket['histogram'] = hh
         ticket['histogram_h'] = hh_h
         ticket['histogram_v'] = hh_v
-        ticket['total'] = numpy.sum(z_array)
+        ticket['total'] = numpy.sum(z_array) * pixel_area
 
         ticket['fwhm_h'], ticket['fwhm_quote_h'], ticket['fwhm_coordinates_h'] = get_fwhm(hh_h, xx)
         ticket['sigma_h'] = get_sigma(hh_h, xx)
