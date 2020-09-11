@@ -4,9 +4,7 @@ from syned.beamline.optical_elements.ideal_elements.screen import Screen
 from wofrysrw.beamline.optical_elements.ideal_elements.srw_screen import SRWScreen
 from wofrysrw.propagator.wavefront2D.srw_wavefront import PolarizationComponent
 
-from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
-
-from orangecontrib.srw.util.srw_util import SRWPlot
+from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement, SRWWavefrontViewer
 
 class OWSRWBackPropagation(OWSRWOpticalElement):
 
@@ -38,16 +36,16 @@ class OWSRWBackPropagation(OWSRWOpticalElement):
             if self.view_type == 1:
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
             elif self.view_type == 2:
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_HORIZONTAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
                 e, h, v, i = self.output_wavefront.get_intensity(multi_electron=True, polarization_component_to_be_extracted=PolarizationComponent.LINEAR_VERTICAL)
 
-                tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+                SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:

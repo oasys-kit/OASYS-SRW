@@ -1,13 +1,12 @@
 import os, sys
 
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPalette, QColor, QFont
-from PyQt5.QtWidgets import QApplication, QFileDialog
+from PyQt5.QtWidgets import QFileDialog
 
 from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
-from oasys.widgets import congruence
 
 from orangecontrib.srw.util.python_script import PythonConsole
 from orangecontrib.srw.util.srw_objects import SRWData

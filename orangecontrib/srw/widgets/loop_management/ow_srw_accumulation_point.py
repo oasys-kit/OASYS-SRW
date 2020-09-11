@@ -109,19 +109,16 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
                         e, h, v, i = data.get_srw_wavefront().get_intensity(multi_electron=False)
 
-                        tickets = []
-
                         if self.accumulated_intensity is None:
                             self.accumulated_intensity = i
                         else:
-                            if i.shape != self.accumulated_intensity.shape:
-                                raise ValueError("Accumulated Intensity Shape is different from received one")
-
+                            if i.shape != self.accumulated_intensity.shape: raise ValueError("Accumulated Intensity Shape is different from received one")
                             self.accumulated_intensity += i
 
                         self.progressBarSet(60)
 
-                        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, self.accumulated_intensity[int(e.size/2)]))
+                        tickets = []
+                        SRWWavefrontViewer.add_2D_wavefront_plot(e, v, h, self.accumulated_intensity, tickets)
 
                         self.plot_results(tickets, progressBarValue=90)
 
@@ -136,7 +133,6 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                         self.progressBarFinished()
 
                         if self.IS_DEVELOP: raise e
-
 
     def reset_accumulation(self):
         try:

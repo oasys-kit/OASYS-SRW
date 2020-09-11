@@ -45,7 +45,7 @@
 # POSSIBILITY OF SUCH DAMAGE.                                             #
 # #########################################################################
 
-import sys
+import sys, numpy
 import os
 import time
 
@@ -334,8 +334,9 @@ class Histogram(SRWWidget):
 
         if self.multi_electron==0 and self.iterative_mode==2:
             e, h, v, p = wavefront.get_phase(polarization_component_to_be_extracted=polarization_component_to_be_extracted)
-        
-            ticket2D_Phase = SRWPlot.get_ticket_2D(h, v, p[int(e.size/2)])
+
+            if len(e) <= 1: ticket2D_Phase = SRWPlot.get_ticket_2D(h, v, p[int(e.size / 2)])
+            else:           ticket2D_Phase = SRWPlot.get_ticket_2D(h, v, numpy.average(p, axis=0))
 
             ticket_phase = {}
             if var == Column.X:
@@ -360,9 +361,14 @@ class Histogram(SRWWidget):
         e, h, v, i = wavefront.get_intensity(multi_electron=self.multi_electron==1,
                                             polarization_component_to_be_extracted=polarization_component_to_be_extracted,
                                             type_of_dependence=TypeOfDependence.VS_XY)
-        
-        ticket2D_Intensity = SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)])
-        
+
+        if len(e) <= 1:
+            ticket2D_Intensity = SRWPlot.get_ticket_2D(h, v, i[int(e.size/2)])
+        else:
+            delta_e = e[1] - e[0]
+            for j in range(len(e)): i[j, :, :] *= delta_e / (e[j] * 1e-3)  # change to fixed bw for integration
+            ticket2D_Intensity = SRWPlot.get_ticket_2D(h, v, numpy.sum(i, axis=0))
+
         ticket_intensity = {}
         if var == Column.X:
             ticket_intensity["histogram"] = ticket2D_Intensity["histogram_h"]

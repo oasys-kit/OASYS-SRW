@@ -243,13 +243,13 @@ class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
 
         e, h, v, i = srw_wavefront.get_intensity(multi_electron=False)
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+        SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
         self.progressBarSet(progress_bar_value)
 
         e, h, v, i = srw_wavefront.get_phase()
 
-        tickets.append(SRWPlot.get_ticket_2D(h*1000, v*1000, i[int(e.size/2)]))
+        SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, i, tickets)
 
         self.progressBarSet(progress_bar_value + 20)
 
