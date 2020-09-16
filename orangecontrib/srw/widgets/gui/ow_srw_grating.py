@@ -23,6 +23,7 @@ class OWSRWGrating(OWSRWOpticalElement):
     vertical_position_of_mirror_center = Setting(0.0)
 
     add_acceptance_slit = Setting(0)
+    automatic_orientation = Setting(1)
 
     has_height_profile = Setting(0)
     height_profile_data_file           = Setting("mirror.dat")
@@ -66,6 +67,10 @@ class OWSRWGrating(OWSRWOpticalElement):
         oasysgui.lineEdit(self.substrate_box, self, "vertical_position_of_mirror_center", "Vertical position of mirror center [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
         gui.comboBox(self.substrate_box, self, "add_acceptance_slit", label="Add Acceptance Slit",
+                     items=["No", "Yes"], labelWidth=300,
+                     sendSelectedValue=False, orientation="horizontal")
+
+        gui.comboBox(self.substrate_box, self, "automatic_orientation", label="Automatic Orientation of Output Optical Axis",
                      items=["No", "Yes"], labelWidth=300,
                      sendSelectedValue=False, orientation="horizontal")
 
@@ -137,19 +142,20 @@ class OWSRWGrating(OWSRWOpticalElement):
         return grating
 
     def set_additional_parameters(self, beamline_element, propagation_parameters, beamline):
-        grating = beamline.get_beamline_element_at(-1).get_optical_element()
+        if self.automatic_orientation == 1:
+            grating = beamline.get_beamline_element_at(-1).get_optical_element()
 
-        orientation_of_the_output_optical_axis_vector_x, \
-        orientation_of_the_output_optical_axis_vector_y, \
-        orientation_of_the_output_optical_axis_vector_z, \
-        orientation_of_the_horizontal_base_vector_x    , \
-        orientation_of_the_horizontal_base_vector_y     = grating.get_output_orientation_vectors(self.input_srw_data.get_srw_wavefront().get_photon_energy())
+            orientation_of_the_output_optical_axis_vector_x, \
+            orientation_of_the_output_optical_axis_vector_y, \
+            orientation_of_the_output_optical_axis_vector_z, \
+            orientation_of_the_horizontal_base_vector_x    , \
+            orientation_of_the_horizontal_base_vector_y     = grating.get_output_orientation_vectors(self.input_srw_data.get_srw_wavefront().get_photon_energy())
 
-        self.oe_orientation_of_the_output_optical_axis_vector_x = round(orientation_of_the_output_optical_axis_vector_x, 8)
-        self.oe_orientation_of_the_output_optical_axis_vector_y = round(orientation_of_the_output_optical_axis_vector_y, 8)
-        self.oe_orientation_of_the_output_optical_axis_vector_z = round(orientation_of_the_output_optical_axis_vector_z, 8)
-        self.oe_orientation_of_the_horizontal_base_vector_x     = round(orientation_of_the_horizontal_base_vector_x, 8)
-        self.oe_orientation_of_the_horizontal_base_vector_y     = round(orientation_of_the_horizontal_base_vector_y, 8)
+            self.oe_orientation_of_the_output_optical_axis_vector_x = round(orientation_of_the_output_optical_axis_vector_x, 8)
+            self.oe_orientation_of_the_output_optical_axis_vector_y = round(orientation_of_the_output_optical_axis_vector_y, 8)
+            self.oe_orientation_of_the_output_optical_axis_vector_z = round(orientation_of_the_output_optical_axis_vector_z, 8)
+            self.oe_orientation_of_the_horizontal_base_vector_x     = round(orientation_of_the_horizontal_base_vector_x, 8)
+            self.oe_orientation_of_the_horizontal_base_vector_y     = round(orientation_of_the_horizontal_base_vector_y, 8)
 
         super(OWSRWGrating, self).set_additional_parameters(beamline_element, propagation_parameters, beamline)
 
