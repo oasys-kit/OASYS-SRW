@@ -396,7 +396,6 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
         self.displacement_box.setVisible(self.has_displacement==1)
         self.displacement_box_empty.setVisible(self.has_displacement==0)
 
-
     def calculate_angle_radial_mrad(self):
         self.angle_radial_mrad = round(numpy.radians(90-self.angle_radial)*1000, 7)
 
@@ -483,13 +482,23 @@ class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
                     variable_value = trigger.get_additional_parameter("variable_value")
                     variable_um = trigger.get_additional_parameter("variable_um")
 
+                    def check_options(variable_name):
+                        if variable_name in ["shift_x",
+                                             "rotation_x",
+                                             "shift_y",
+                                             "rotation_y"]:
+                            self.has_displacement = 1
+                            self.set_displacement()
+
                     if "," in variable_name:
                         variable_names = variable_name.split(",")
 
                         for variable_name in variable_names:
                             setattr(self, variable_name.strip(), variable_value)
+                            check_options(variable_name)
                     else:
                         setattr(self, variable_name, variable_value)
+                        check_options(variable_name)
 
                     self.input_srw_data.get_srw_wavefront().setScanningData(SRWWavefront.ScanningData(variable_name, variable_value, variable_display_name, variable_um))
                     self.propagate_wavefront()

@@ -113,20 +113,20 @@ class OWSRWMirror(OWSRWOpticalElement):
 
         gui.separator(self.reflectivity_box)
 
-        self.reflectivity_box_1 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=200)
+        self.reflectivity_box_1 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=150)
 
-        self.reflectivity_box_2 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=200)
+        self.reflectivity_box_2 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=150)
 
         oasysgui.lineEdit(self.reflectivity_box_2, self, "reflectivity_value", "Reflectivity Value", labelWidth=260, valueType=float, orientation="horizontal")
 
-        self.reflectivity_box_3 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=270)
+        self.reflectivity_box_3 = oasysgui.widgetBox(self.reflectivity_box, "", addSpace=False, orientation="vertical", height=220)
 
         file_box =  oasysgui.widgetBox(self.reflectivity_box_3, "", addSpace=False, orientation="horizontal")
 
         self.le_reflectivity_data_file = oasysgui.lineEdit(file_box, self, "reflectivity_data_file", "Reflectivity data file", labelWidth=185, valueType=str, orientation="horizontal")
         gui.button(file_box, self, "...", callback=self.selectReflectivityDataFile)
 
-        gui.separator(self.reflectivity_box_3)
+        #gui.separator(self.reflectivity_box_3)
 
         oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_energies_number", "Number of Energy Values", labelWidth=260, valueType=int, orientation="horizontal")
 
@@ -139,7 +139,7 @@ class OWSRWMirror(OWSRWOpticalElement):
                      items=["Linear", "Logarithmic"], labelWidth=250,
                      sendSelectedValue=False, orientation="horizontal")
 
-        gui.separator(self.reflectivity_box_3)
+        #gui.separator(self.reflectivity_box_3)
 
         oasysgui.lineEdit(self.reflectivity_box_3, self, "reflectivity_angles_number", "Number of Grazing Angle Values", labelWidth=260, valueType=int, orientation="horizontal")
 
@@ -152,7 +152,7 @@ class OWSRWMirror(OWSRWOpticalElement):
                      items=["Linear", "Logarithmic"], labelWidth=250,
                      sendSelectedValue=False, orientation="horizontal")
 
-        gui.separator(self.reflectivity_box_3)
+        #gui.separator(self.reflectivity_box_3)
 
         gui.comboBox(self.reflectivity_box_3, self, "reflectivity_components_number", label="Polarization",
                      items=["Total", "\u03c3/\u03c0"], labelWidth=280,
