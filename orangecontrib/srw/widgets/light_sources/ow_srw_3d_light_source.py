@@ -71,9 +71,6 @@ class OWSRW3DLightSource(OWSRWSource):
     def print_specific_infos(self, srw_source):
         pass
 
-    def get_automatic_sr_method(self):
-        return 0
-
     def checkLightSourceSpecificFields(self):
         congruence.checkFile(self.file_name)
         congruence.checkEmptyString(self.comment_character, "Comment character")
