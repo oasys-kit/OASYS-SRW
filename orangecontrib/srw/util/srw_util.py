@@ -14,7 +14,7 @@ except:
 
 from orangewidget import gui as orangegui
 from oasys.widgets import gui
-from oasys.util.oasys_util import get_sigma, get_fwhm, write_surface_file
+from oasys.util.oasys_util import get_average, get_sigma, get_fwhm, write_surface_file
 
 from srxraylib.metrology import profiles_simulation
 from silx.gui.plot.ImageView import ImageView, PlotWindow
@@ -100,6 +100,8 @@ class SRWPlot:
         fwhm_v_field = ""
         sigma_h_field = ""
         sigma_v_field = ""
+        centroid_h_field = ""
+        centroid_v_field = ""
         boundary_h_field = ""
         boundary_v_field = ""
 
@@ -157,6 +159,27 @@ class SRWPlot:
                 self.label_s_v.setPalette(palette)
                 label_box_2.layout().addWidget(self.label_s_v)
                 self.sigma_v = gui.lineEdit(label_box_2, self, "sigma_v_field", "", tooltip="Sigma", labelWidth=115, valueType=str, orientation="horizontal")
+
+            label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+
+            self.label_c_h = QLabel("centroid ")
+            self.label_c_h.setFixedWidth(115)
+            palette =  QPalette(self.label_c_h.palette())
+            palette.setColor(QPalette.Foreground, QColor('blue'))
+            self.label_c_h.setPalette(palette)
+            label_box_1.layout().addWidget(self.label_c_h)
+            self.centroid_h = gui.lineEdit(label_box_1, self, "centroid_h_field", "", tooltip="Centroid", labelWidth=115, valueType=str, orientation="horizontal")
+
+            if is_2d:
+                label_box_2 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+
+                self.label_c_v = QLabel("centroid ")
+                self.label_c_v.setFixedWidth(115)
+                palette =  QPalette(self.label_c_v.palette())
+                palette.setColor(QPalette.Foreground, QColor('red'))
+                self.label_c_v.setPalette(palette)
+                label_box_2.layout().addWidget(self.label_c_v)
+                self.centroid_v = gui.lineEdit(label_box_2, self, "centroid_v_field", "", tooltip="Sigma", labelWidth=115, valueType=str, orientation="horizontal")
 
             label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="vertical")
 
@@ -217,6 +240,15 @@ class SRWPlot:
             palette.setColor(QPalette.Base, QColor(243, 240, 160))
             self.sigma_h.setPalette(palette)
 
+            self.centroid_h.setReadOnly(True)
+            font = QFont(self.centroid_h.font())
+            font.setBold(True)
+            self.centroid_h.setFont(font)
+            palette = QPalette(self.centroid_h.palette())
+            palette.setColor(QPalette.Text, QColor('dark blue'))
+            palette.setColor(QPalette.Base, QColor(243, 240, 160))
+            self.centroid_h.setPalette(palette)
+
             self.boundary_h.setReadOnly(True)
             font = QFont(self.boundary_h.font())
             font.setBold(True)
@@ -245,6 +277,15 @@ class SRWPlot:
                 palette.setColor(QPalette.Base, QColor(243, 240, 160))
                 self.sigma_v.setPalette(palette)
 
+                self.centroid_v.setReadOnly(True)
+                font = QFont(self.centroid_v.font())
+                font.setBold(True)
+                self.centroid_v.setFont(font)
+                palette = QPalette(self.centroid_v.palette())
+                palette.setColor(QPalette.Text, QColor('dark blue'))
+                palette.setColor(QPalette.Base, QColor(243, 240, 160))
+                self.centroid_v.setPalette(palette)
+
                 self.boundary_v.setReadOnly(True)
                 font = QFont(self.boundary_v.font())
                 font.setBold(True)
@@ -267,6 +308,10 @@ class SRWPlot:
             if hasattr(self, "sigma_v"):  self.sigma_v.setText("0.0000")
             self.sigma_h.setText("n.a.")
             if hasattr(self, "sigma_v"):  self.sigma_v.setText("n.a.")
+            self.centroid_h.setText("0.0000")
+            if hasattr(self, "centroid_v"):  self.centroid_v.setText("0.0000")
+            self.boundary_h.setText("")
+            if hasattr(self, "boundary_v"):  self.centroid_v.setText("")
 
     class Detailed1DWidget(QWidget):
 
@@ -314,6 +359,7 @@ class SRWPlot:
             ticket['total'] = numpy.sum(histogram)
             ticket['fwhm'], ticket['fwhm_quote'], ticket['fwhm_coordinates'] = get_fwhm(histogram, bins)
             ticket['sigma'] = get_sigma(histogram, bins)
+            ticket['centroid'] = get_average(histogram, bins)
 
             bins *= factor
 
@@ -350,6 +396,8 @@ class SRWPlot:
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.sigma_h.setText("{:5.4f}".format(ticket['sigma']*factor))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
+            self.info_box.centroid_h.setText("{:5.4f}".format(ticket['centroid']*factor))
+            self.info_box.label_c_h.setText("centroid " + xum)
             self.info_box.boundary_h.setText("{:5.4f}, {:5.4f}".format(min(bins), max(bins)))
             self.info_box.label_b_h.setText("Range " + xum)
 
@@ -437,9 +485,11 @@ class SRWPlot:
 
             ticket['fwhm_h'], ticket['fwhm_quote_h'], ticket['fwhm_coordinates_h'] = get_fwhm(histogram_h, xx)
             ticket['sigma_h'] = get_sigma(histogram_h, xx)
+            ticket['centroid_h'] = get_average(histogram_h, xx)
 
             ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(histogram_v, yy)
             ticket['sigma_v'] = get_sigma(histogram_v, yy)
+            ticket['centroid_v'] = get_average(histogram_v, yy)
 
             # PyMCA inverts axis!!!! histogram must be calculated reversed
             self.plot_canvas.setImage(data_to_plot, origin=origin, scale=scale)
@@ -517,7 +567,10 @@ class SRWPlot:
             self.info_box.sigma_v.setText("{:5.4f}".format(ticket['sigma_v']*factor2))
             self.info_box.label_s_h.setText("\u03c3 " + xum)
             self.info_box.label_s_v.setText("\u03c3 " + yum)
-
+            self.info_box.centroid_h.setText("{:5.4f}".format(ticket['centroid_h'] * factor1))
+            self.info_box.centroid_v.setText("{:5.4f}".format(ticket['centroid_v'] * factor2))
+            self.info_box.label_c_h.setText("centroid " + xum)
+            self.info_box.label_c_v.setText("centroid " + yum)
             self.info_box.boundary_h.setText("{:5.4f}, {:5.4f}".format(xmin*factor1, xmax*factor1))
             self.info_box.boundary_v.setText("{:5.4f}, {:5.4f}".format(ymin*factor2, ymax*factor2))
             self.info_box.label_b_h.setText("Range " + xum)
