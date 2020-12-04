@@ -90,6 +90,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     wf_h_slit_points=Setting(100)
     wf_v_slit_points=Setting(100)
     wf_distance = Setting(10.0)
+    wf_units = Setting(1)
 
     wf_sr_method = Setting(1)
     wf_relative_precision = Setting(0.01)
@@ -229,7 +230,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         
         tab_wav = oasysgui.createTabPage(self.tabs_plots_setting, "Propagation")
 
-        wav_box = oasysgui.widgetBox(tab_wav, "Wavefront Parameters", addSpace=True, orientation="vertical")
+        wav_box = oasysgui.widgetBox(tab_wav, "Wavefront Parameters", addSpace=True, orientation="vertical", height=285)
 
         self.build_wf_photon_energy_box(wav_box)
         oasysgui.lineEdit(wav_box, self, "wf_h_slit_gap", "H Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -237,6 +238,10 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(wav_box, self, "wf_h_slit_points", "H Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_v_slit_points", "V Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_distance", "Propagation Distance [m]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        gui.comboBox(wav_box, self, "wf_units", label="Intensity Units", labelWidth=90,
+                     items=["Arbitrary", "phot/s/0.1%bw/mm\u00B2", "J/eV/mm\u00B2 (frequency) or W/mm\u00B2 (time)"],
+                     sendSelectedValue=False, orientation="horizontal")
 
         pre_box = oasysgui.widgetBox(tab_wav, "Precision Parameters", addSpace=False, orientation="vertical")
 
@@ -249,7 +254,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(pre_box, self, "wf_end_integration_longitudinal_position", "Longitudinal position to finish integration\n(effective if > zStartInteg) [m]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(pre_box, self, "wf_number_of_points_for_trajectory_calculation", "Number of points for trajectory calculation", labelWidth=260, valueType=int, orientation="horizontal")
 
-        gui.comboBox(pre_box, self, "wf_use_terminating_terms", label="Use \"terminating terms\"\n(i.e. asymptotic expansions at zStartInteg\nand zEndInteg) or not",
+        gui.comboBox(pre_box, self, "wf_use_terminating_terms", label="Use \"terminating terms\" or not",
                      items=["No", "Yes"], labelWidth=260,
                      sendSelectedValue=False, orientation="horizontal")
 
@@ -559,6 +564,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
                                             h_slit_points=self.wf_h_slit_points,
                                             v_slit_points=self.wf_v_slit_points,
                                             distance = self.wf_distance,
+                                            electric_field_units = self.wf_units,
                                             wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.wf_sr_method == 0 else self.get_automatic_sr_method(),
                                                                                                         relative_precision=self.wf_relative_precision,
                                                                                                         start_integration_longitudinal_position=self.wf_start_integration_longitudinal_position,

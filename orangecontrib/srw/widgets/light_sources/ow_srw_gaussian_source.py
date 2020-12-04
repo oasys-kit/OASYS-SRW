@@ -67,6 +67,7 @@ class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
     wf_h_slit_points=Setting(100)
     wf_v_slit_points=Setting(100)
     wf_distance = Setting(10.0)
+    wf_units = Setting(1)
 
     wf_sampling_factor_for_adjusting_nx_ny = Setting(0.0)
 
@@ -149,6 +150,10 @@ class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(wav_box, self, "wf_h_slit_points", "H Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_v_slit_points", "V Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_distance", "Propagation Distance [m]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        gui.comboBox(wav_box, self, "wf_units", label="Intensity Units", labelWidth=90,
+                     items=["Arbitrary", "phot/s/0.1%bw/mm\u00B2", "J/eV/mm\u00B2 (frequency) or W/mm\u00B2 (time)"],
+                     sendSelectedValue=False, orientation="horizontal")
 
         pre_box = oasysgui.widgetBox(tab_wav, "Precision Parameters", addSpace=False, orientation="vertical")
 
@@ -262,6 +267,7 @@ class OWSRWGaussianSource(SRWWavefrontViewer, WidgetDecorator):
                                             h_slit_points=self.wf_h_slit_points,
                                             v_slit_points=self.wf_v_slit_points,
                                             distance = self.wf_distance,
+                                            electric_field_units=self.wf_units,
                                             wavefront_precision_parameters=WavefrontPrecisionParameters(sampling_factor_for_adjusting_nx_ny=self.wf_sampling_factor_for_adjusting_nx_ny))
 
         return srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
