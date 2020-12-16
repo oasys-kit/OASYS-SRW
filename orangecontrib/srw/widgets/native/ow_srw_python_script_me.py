@@ -15,6 +15,9 @@ from orangecontrib.srw.widgets.gui.ow_srw_widget import SRWWidget
 
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
 from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import SRWUndulatorLightSource
+from wofrysrw.storage_ring.light_sources.srw_3d_light_source import SRW3DLightSource
+from wofrysrw.storage_ring.light_sources.srw_wiggler_light_source import SRWWigglerLightSource
+from wofrysrw.storage_ring.light_sources.srw_gaussian_light_source import SRWGaussianLightSource
 
 class SRWPythonScriptME(SRWWidget):
 
@@ -161,7 +164,7 @@ class SRWPythonScriptME(SRWWidget):
             try:
                 received_light_source = self.input_srw_data.get_srw_beamline().get_light_source()
 
-                if not (isinstance(received_light_source, SRWBendingMagnetLightSource) or isinstance(received_light_source, SRWUndulatorLightSource)):
+                if isinstance(received_light_source, SRWGaussianLightSource):
                     raise ValueError("ME Script is not available with this source")
 
                 _char = 0 if self._char == 0 else 4
