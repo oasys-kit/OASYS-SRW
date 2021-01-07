@@ -284,6 +284,7 @@ class SRWWavefrontViewer(SRWWidget):
         self.progressBarSet(progressBarValue)
 
     def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False, apply_alpha_channel=False, alpha_ticket=None, do_unwrap=False):
+
         if self.plot_canvas[plot_canvas_index] is None:
             self.plot_canvas[plot_canvas_index] =  SRWPlot.Detailed2DWidget()
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])

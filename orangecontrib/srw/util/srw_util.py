@@ -1,7 +1,7 @@
 import numpy, decimal
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QFont, QPalette, QColor
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox, QFileDialog
+from PyQt5.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox, QFileDialog
 
 from matplotlib import cm
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
@@ -109,7 +109,7 @@ class SRWPlot:
             super(SRWPlot.InfoBoxWidget, self).__init__()
 
             info_box_inner= gui.widgetBox(self, "Info")
-            info_box_inner.setFixedHeight(515*y_scale_factor)
+            info_box_inner.setFixedHeight(458*y_scale_factor)
             info_box_inner.setFixedWidth(230*x_scale_factor)
 
             self.total_box   = gui.widgetBox(info_box_inner, "", orientation="vertical", height=25)
@@ -412,7 +412,7 @@ class SRWPlot:
             self.x_scale_factor = x_scale_factor
             self.y_scale_factor = y_scale_factor
 
-            self.plot_canvas = ImageView(parent=self)
+            self.plot_canvas = gui.imageWiew(parent=self)
 
             self.plot_canvas.setMinimumWidth(590 * x_scale_factor)
             self.plot_canvas.setMaximumWidth(590 * y_scale_factor)
