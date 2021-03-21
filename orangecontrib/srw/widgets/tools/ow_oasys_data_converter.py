@@ -1,7 +1,6 @@
 import os
 
 from orangewidget import gui
-from oasys.widgets import gui as oasysgui
 
 from oasys.widgets import widget
 
