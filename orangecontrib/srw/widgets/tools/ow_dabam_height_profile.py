@@ -30,6 +30,10 @@ class OWdabam_height_profile(OWAbstractDabamHeightProfile):
     def __init__(self):
         super().__init__()
 
+        if not self.heigth_profile_file_name is None:
+            if self.heigth_profile_file_name.endswith("hdf5"):
+                self.heigth_profile_file_name = self.heigth_profile_file_name[:-4] + "dat"
+
     def get_usage_path(self):
         return self.usage_path
 

@@ -744,11 +744,11 @@ class ShowErrorProfileDialog(QDialog):
         self.setWindowTitle('File: Surface Error Profile')
 
         if dimension == 2:
-            self.setFixedHeight(555)
+            self.setFixedHeight(700)
 
             layout = QGridLayout(self)
 
-            figure = Figure(figsize=(100, 100))
+            figure = Figure(figsize=(8, 7))
             figure.patch.set_facecolor('white')
 
             axis = figure.add_subplot(111, projection='3d')
@@ -759,7 +759,7 @@ class ShowErrorProfileDialog(QDialog):
 
             figure_canvas = FigureCanvasQTAgg(figure)
             figure_canvas.setFixedWidth(500)
-            figure_canvas.setFixedHeight(500)
+            figure_canvas.setFixedHeight(645)
 
             self.x_coords, self.y_coords, self.z_values = read_error_profile_file(file_name, dimension=2)
 
