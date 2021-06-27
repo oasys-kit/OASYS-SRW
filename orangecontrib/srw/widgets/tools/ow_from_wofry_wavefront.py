@@ -79,7 +79,7 @@ class OWFromWofryWavefront2d(widget.OWWidget):
         self.setStatusMessage("")
 
         if not input_data is None:
-            self.wavefront = input_data.get_wavefront()
+            self.wavefront = input_data.get_wavefront() # from wofry data
 
             self.convert_wavefront()
 
