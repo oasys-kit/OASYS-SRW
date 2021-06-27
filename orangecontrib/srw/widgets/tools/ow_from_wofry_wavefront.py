@@ -6,11 +6,10 @@ from oasys.widgets import widget
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import QRect
 
-from wofry.propagator.wavefront2D.generic_wavefront import GenericWavefront2D
-
+from orangecontrib.wofry.util.wofry_objects import WofryData
 from orangecontrib.srw.util.srw_objects import SRWData
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront, WavefrontPropagationParameters
+from wofrysrw.propagator.wavefront2D.srw_wavefront import SRWWavefront
 
 from oasys_srw.srwlib import *
 
@@ -23,7 +22,7 @@ class OWFromWofryWavefront2d(widget.OWWidget):
     category = ""
     keywords = ["wise", "gaussian"]
 
-    inputs = [("GenericWavefront2D", GenericWavefront2D, "set_input")]
+    inputs = [("WofryData", WofryData, "set_input")]
 
     outputs = [{"name":"SRWData",
                 "type":SRWData,
@@ -80,7 +79,7 @@ class OWFromWofryWavefront2d(widget.OWWidget):
         self.setStatusMessage("")
 
         if not input_data is None:
-            self.wavefront = input_data
+            self.wavefront = input_data.get_wavefront()
 
             self.convert_wavefront()
 
