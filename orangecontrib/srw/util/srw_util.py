@@ -1,9 +1,9 @@
 import numpy, decimal
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QFont, QPalette, QColor
-from PyQt5.QtWidgets import QWidget, QGridLayout, QHBoxLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox, QFileDialog
+from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox, QFileDialog
 
-from matplotlib import cm
+import h5py, time
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyArrowPatch, ArrowStyle
@@ -17,7 +17,7 @@ from oasys.widgets import gui
 from oasys.util.oasys_util import get_average, get_sigma, get_fwhm, write_surface_file
 
 from srxraylib.metrology import profiles_simulation
-from silx.gui.plot.ImageView import ImageView, PlotWindow
+from silx.gui.plot.ImageView import ImageView
 
 import matplotlib
 from matplotlib.colors import LinearSegmentedColormap
@@ -736,6 +736,117 @@ class SRWPlot:
         ticket['is_multi_energy'] = is_multi_energy
 
         return ticket
+
+    class PlotXYHdf5File(h5py.File):
+        def __init__(self, file_name, mode="w"):
+            try:
+                super(SRWPlot.PlotXYHdf5File, self).__init__(name=file_name, mode=mode)
+            except OSError as e:
+                if "already open" in str(e) and mode=="w":
+                    super(SRWPlot.PlotXYHdf5File, self).__init__(name=file_name, mode="a")
+                    self.close()
+                    super(SRWPlot.PlotXYHdf5File, self).__init__(name=file_name, mode="w")
+
+            if mode != "r":
+                self.coordinates      = self.create_group("coordinates")
+                self.plots            = self.create_group("xy_plots")
+                self.additional_data  = self.create_group("additional_data")
+
+                self.attrs["default"]          = "coordinates/X"
+                self.attrs["file_name"]        = file_name
+                self.attrs["file_time"]        = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime())
+                self.attrs["creator"]          = "PlotXYHdf5File.__init__"
+                self.attrs["code"]             = "SRW"
+                self.attrs["HDF5_Version"]     = h5py.version.hdf5_version
+                self.attrs["h5py_version"]     = h5py.version.version
+
+                self.has_coordinate = False
+                self.has_plot = False
+
+        def get_plot(self, ticket=None):
+            if not ticket is None:
+                ticket['histogram']   = self["/xy_plots/intensity"][()]
+                ticket['histogram_h'] = self["/xy_plots/intensity_h"][()]
+                ticket['histogram_v'] = self["/xy_plots/intensity_v"][()]
+            else:
+                return self["/xy_plots/intensity"][()], \
+                       self["/xy_plots/intensity_h"][()], \
+                       self["/xy_plots/intensity_v"][()]
+
+        def get_coordinates(self, ticket=None):
+            if not ticket is None:
+                ticket["bin_h"] = self["coordinates/X"][()]
+                ticket["bin_v"] = self["coordinates/Y"][()]
+            else:
+                x_array = self["coordinates/X"][()]
+                y_array = self["coordinates/Y"][()]
+
+                return x_array, y_array
+
+        def get_additional_data(self, ticket):
+            ticket["nbins_h"]             = self["/additional_data"].attrs["nbins_h"]
+            ticket["nbins_v"]             = self["/additional_data"].attrs["nbins_v"]
+            ticket['xrange']              = self["/additional_data"].attrs["xrange"]
+            ticket['yrange']              = self["/additional_data"].attrs["yrange"]
+            ticket['total']               = self["/additional_data"].attrs["total"]
+            ticket['fwhm_h']              = self["/additional_data"].attrs["fwhm_h"]
+            ticket['fwhm_quote_h']        = self["/additional_data"].attrs["fwhm_quote_h"]
+            ticket['fwhm_coordinates_h']  = self["/additional_data"].attrs["fwhm_coordinates_h"]
+            ticket['sigma_h']             = self["/additional_data"].attrs["sigma_h"]
+            ticket['fwhm_v']              = self["/additional_data"].attrs["fwhm_v"]
+            ticket['fwhm_quote_v']        = self["/additional_data"].attrs["fwhm_quote_v"]
+            ticket['fwhm_coordinates_v']  = self["/additional_data"].attrs["fwhm_coordinates_v"]
+            ticket['sigma_v']             = self["/additional_data"].attrs["sigma_v"]
+            ticket['is_multi_energy']     = self["/additional_data"].attrs["is_multi_energy"]
+
+        def write_additional_data(self, ticket):
+            self.additional_data.attrs["nbins_h"]            = ticket["nbins_h"]
+            self.additional_data.attrs["nbins_v"]            = ticket["nbins_v"]
+            self.additional_data.attrs["xrange"]             = ticket['xrange']
+            self.additional_data.attrs["yrange"]             = ticket['yrange']
+            self.additional_data.attrs["total"]              = ticket['total']
+            self.additional_data.attrs["fwhm_h"]             = ticket['fwhm_h']
+            self.additional_data.attrs["fwhm_quote_h"]       = ticket['fwhm_quote_h']
+            self.additional_data.attrs["fwhm_coordinates_h"] = ticket['fwhm_coordinates_h']
+            self.additional_data.attrs["sigma_h"]            = ticket['sigma_h']
+            self.additional_data.attrs["fwhm_v"]             = ticket['fwhm_v']
+            self.additional_data.attrs["fwhm_quote_v"]       = ticket['fwhm_quote_v']
+            self.additional_data.attrs["fwhm_coordinates_v"] = ticket['fwhm_coordinates_v']
+            self.additional_data.attrs["sigma_v"]            = ticket['sigma_v']
+            self.additional_data.attrs["is_multi_energy"]    = ticket['is_multi_energy']
+
+        def write_coordinates(self, ticket):
+            if not self.has_coordinate:
+                self.x = self.coordinates.create_dataset("X", data=ticket["bin_h"])
+                self.y = self.coordinates.create_dataset("Y", data=ticket["bin_v"])
+                self.has_coordinate = True
+            else:
+                self.x[...] = ticket["bin_h"]
+                self.y[...] = ticket["bin_v"]
+
+        def add_plot_xy(self, ticket):
+            if not self.has_plot:
+                self.histogram   = self.plots.create_dataset("intensity", data=ticket['histogram'])
+                self.histogram_h = self.plots.create_dataset("intensity_h", data=ticket['histogram_h'])
+                self.histogram_v = self.plots.create_dataset("intensity_v", data=ticket['histogram_v'])
+
+                self.has_plot = True
+            else:
+                self.histogram[...]   = ticket['histogram']
+                self.histogram_h[...] = ticket['histogram_h']
+                self.histogram_v[...] = ticket['histogram_v']
+
+        def add_attribute(self, attribute_name, attribute_value, dataset_name=None):
+            if not dataset_name is None:
+                self[dataset_name].attrs[attribute_name] = attribute_value
+            else:
+                self.attrs[attribute_name] = attribute_value
+
+        def get_attribute(self,  attribute_name, dataset_name=None):
+            if not dataset_name is None:
+                return self[dataset_name].attrs[attribute_name]
+            else:
+                return self.attrs[attribute_name]
 
 class ShowErrorProfileDialog(QDialog):
 
