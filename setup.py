@@ -8,8 +8,8 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-SRW'
-VERSION = '1.1.83'
-ISRELEASED = False
+VERSION = '1.1.84'
+ISRELEASED = True
 
 DESCRIPTION = 'SRW in OASYS'
 README_FILE = os.path.join(os.path.dirname(__file__), 'README.txt')

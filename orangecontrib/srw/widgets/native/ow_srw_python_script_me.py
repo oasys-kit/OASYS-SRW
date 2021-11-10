@@ -36,7 +36,7 @@ class SRWPythonScriptME(SRWWidget):
 
     sampFactNxNyForProp = Setting(1.0) #0.6 #sampling factor for adjusting nx, ny (effective if > 0)
     nMacroElec = Setting(500000) #T otal number of Macro-Electrons (Wavefronts)
-    nMacroElecAvgOneProc = Setting(5) # Number of Macro-Electrons (Wavefronts) to average on each node (for MPI calculations)
+    nMacroElecAvgOneProc = Setting(1) # Number of Macro-Electrons (Wavefronts) to average on each node (for MPI calculations)
     nMacroElecSavePer = Setting(20) # Saving periodicity (in terms of Macro-Electrons) for the Resulting Intensity
     srCalcMeth = Setting(1) # SR calculation method (1- undulator)
     srCalcPrec = Setting(0.01) # SR calculation rel. accuracy
@@ -167,8 +167,6 @@ class SRWPythonScriptME(SRWWidget):
                 if isinstance(received_light_source, SRWGaussianLightSource):
                     raise ValueError("ME Script is not available with this source")
 
-                _char = 0 if self._char == 0 else 4
-
                 '''
                 0- Total Intensity, i.e. Flux per Unit Surface Area (s0);
                 1- Four Stokes components of Flux per Unit Surface Area;
@@ -179,6 +177,7 @@ class SRWPythonScriptME(SRWWidget):
                 20- Electric Field (sum of fields from all macro-electrons, assuming CSR)
                 40- Total Intensity, i.e. Flux per Unit Surface Area (s0), Mutual Intensity Cuts and Degree of Coherence vs X & Y;
                 '''
+                _char = 0
 
                 if self._char <= 4:
                     _char = self._char
