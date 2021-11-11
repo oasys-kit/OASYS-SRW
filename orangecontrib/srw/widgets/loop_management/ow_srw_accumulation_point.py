@@ -70,8 +70,9 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
     autosave_file = None
 
-    number_of_wavefronts = 0
-    last_number_of_wavefronts = 0
+    current_number_of_wavefronts       = 0
+    last_number_of_wavefronts  = 0
+    total_number_of_wavefronts = 0
 
     def __init__(self, show_automatic_box=False):
         super().__init__(show_automatic_box=show_automatic_box, show_view_box=False)
@@ -175,6 +176,14 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
         self.set_autosave()
 
         oasysgui.lineEdit(self.tab_bas, self, "last_number_of_wavefronts", "Previous Nr. of Wavefronts", labelWidth=260, valueType=int, orientation="horizontal")
+        oasysgui.lineEdit(self.tab_bas, self, "current_number_of_wavefronts", "Current Nr. of Wavefronts", labelWidth=260, valueType=int, orientation="horizontal")
+        le = oasysgui.lineEdit(self.tab_bas, self, "total_number_of_wavefronts", "Total Nr. of Wavefronts", labelWidth=260, valueType=int, orientation="horizontal")
+        font = QFont(le.font())
+        font.setBold(True)
+        le.setFont(font)
+        palette = QPalette(le.palette()) # make a copy of the palette
+        palette.setColor(QPalette.ButtonText, QColor('Dark Blue'))
+        le.setPalette(palette) # assign new palette
 
     def set_MergingRange(self):
         self.merge_range_box_1.setVisible(self.use_merging_range == 1)
@@ -201,7 +210,8 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                     try:
                         self.progressBarInit()
 
-                        self.number_of_wavefronts += 1
+                        self.current_number_of_wavefronts += 1
+                        self.total_number_of_wavefronts = self.last_number_of_wavefronts + self.current_number_of_wavefronts
 
                         self.progressBarSet(30)
 
@@ -240,7 +250,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                             self.autosave_file.write_coordinates(tickets[-1])
                             self.autosave_file.add_plot_xy(tickets[-1])
                             self.autosave_file.write_additional_data(tickets[-1])
-                            self.autosave_file.add_attribute("number_of_wavefronts", self.last_number_of_wavefronts + self.number_of_wavefronts)
+                            self.autosave_file.add_attribute("number_of_wavefronts", self.total_number_of_wavefronts)
                             self.autosave_file.flush()
 
                         self.plot_results(tickets, progressBarValue=90)
@@ -260,9 +270,9 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
         if not self.last_tickets is None:
             if ticket["histogram"].shape != self.last_tickets[-1]["histogram"].shape: raise ValueError("Accumulated Intensity Shape is different from received one")
 
-            ticket["histogram"] = ((self.last_tickets[-1]["histogram"] * ((self.last_number_of_wavefronts + self.number_of_wavefronts) - 1)) + ticket["histogram"]) / (self.last_number_of_wavefronts + self.number_of_wavefronts)  # average
-            ticket["histogram_h"] = ((self.last_tickets[-1]["histogram_h"] * ((self.last_number_of_wavefronts + self.number_of_wavefronts) - 1)) + ticket["histogram_h"]) / (self.last_number_of_wavefronts + self.number_of_wavefronts)  # average
-            ticket["histogram_v"] = ((self.last_tickets[-1]["histogram_v"] * ((self.last_number_of_wavefronts + self.number_of_wavefronts) - 1)) + ticket["histogram_v"]) / (self.last_number_of_wavefronts + self.number_of_wavefronts)  # average
+            ticket["histogram"]   = ((self.last_tickets[-1]["histogram"]   * (self.total_number_of_wavefronts - 1)) + ticket["histogram"])   / self.total_number_of_wavefronts  # average
+            ticket["histogram_h"] = ((self.last_tickets[-1]["histogram_h"] * (self.total_number_of_wavefronts - 1)) + ticket["histogram_h"]) / self.total_number_of_wavefronts  # average
+            ticket["histogram_v"] = ((self.last_tickets[-1]["histogram_v"] * (self.total_number_of_wavefronts - 1)) + ticket["histogram_v"]) / self.total_number_of_wavefronts  # average
 
     def reset_accumulation(self):
         try:
@@ -276,7 +286,9 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                                                      numpy.array([0, 0.001]),
                                                      numpy.zeros((2, 2)))], ignore_range=True)
             self.last_tickets = None
-            self.number_of_wavefronts = 0
+            self.current_number_of_wavefronts = 0
+            self.last_number_of_wavefronts    = 0
+            self.total_number_of_wavefronts   = 0
 
             self.progressBarFinished()
         except:
@@ -334,7 +346,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                 save_file.write_coordinates(self.last_tickets[-1])
                 save_file.add_plot_xy(self.last_tickets[-1])
                 save_file.write_additional_data(self.last_tickets[-1])
-                save_file.add_attribute("number_of_wavefronts", self.last_number_of_wavefronts + self.number_of_wavefronts)
+                save_file.add_attribute("number_of_wavefronts", self.total_number_of_wavefronts)
 
                 save_file.close()
             except Exception as exception:
@@ -408,9 +420,13 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
             tickets = [ticket]
 
             try:
-                self.last_number_of_wavefronts = plot_file.get_attribute("number_of_wavefronts")
+                self.current_number_of_wavefronts = 0
+                self.last_number_of_wavefronts    = plot_file.get_attribute("number_of_wavefronts")
+                self.total_number_of_wavefronts   = self.last_number_of_wavefronts
             except:
-                self.last_number_of_wavefronts = 0
+                self.current_number_of_wavefronts = 0
+                self.last_number_of_wavefronts    = 0
+                self.total_number_of_wavefronts   = 0
 
             self.plot_results(tickets, progressBarValue=90)
             self.last_tickets = tickets
