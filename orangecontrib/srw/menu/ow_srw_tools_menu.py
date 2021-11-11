@@ -32,6 +32,10 @@ class SRWToolsMenu(OMenu):
         self.addSubMenu("Select Plots \'No\' on all Source and O.E. widgets")
         self.addSubMenu("Select Plots \'Yes\' on all Source and O.E. widgets")
         self.closeContainer()
+        self.openContainer()
+        self.addContainer("Cumulative Loops")
+        self.addSubMenu("Reload Saved Data on the all the Accumulation Points")
+        self.closeContainer()
 
     def executeAction_1(self, action):
         try:
@@ -152,7 +156,16 @@ class SRWToolsMenu(OMenu):
         except Exception as exception:
             showCriticalMessage(exception.args[0])
 
-    #################################################################
+    def executeAction_7(self, action):
+        try:
+            for node in self.canvas_main_window.current_document().scheme().nodes:
+                widget = self.canvas_main_window.current_document().scheme().widget_for_node(node)
+
+                if isinstance(widget, OWSRWAccumulationPoint) and widget.autosave == 1: widget.reload_autosave_file()
+        except Exception as exception:
+            showCriticalMessage(exception.args[0])
+
+   #################################################################
 
     def set_srw_live_propagation_mode(self):
         for node in self.canvas_main_window.current_document().scheme().nodes:

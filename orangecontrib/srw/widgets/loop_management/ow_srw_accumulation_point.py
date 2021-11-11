@@ -53,7 +53,6 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
     TABS_AREA_HEIGHT = 618
     is_final_screen = True
 
-    accumulated_intensity = None
     last_tickets = None
 
     use_merging_range = Setting(0)
@@ -70,6 +69,9 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
     autosave_file_name = Setting("autosave_total_intensity.hdf5")
 
     autosave_file = None
+
+    number_of_wavefronts = 0
+    last_number_of_wavefronts = 0
 
     def __init__(self, show_automatic_box=False):
         super().__init__(show_automatic_box=show_automatic_box, show_view_box=False)
@@ -165,11 +167,14 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
         self.autosave_box_1 = oasysgui.widgetBox(autosave_box, "", addSpace=False, orientation="horizontal", height=25)
         self.autosave_box_2 = oasysgui.widgetBox(autosave_box, "", addSpace=False, orientation="horizontal", height=25)
 
-        self.le_autosave_file_name = oasysgui.lineEdit(self.autosave_box_1, self, "autosave_file_name", "File Name", labelWidth=100,  valueType=str, orientation="horizontal")
+        self.le_autosave_file_name = oasysgui.lineEdit(self.autosave_box_1, self, "autosave_file_name", "File Name", labelWidth=70,  valueType=str, orientation="horizontal")
 
-        gui.button(self.autosave_box_1, self, "...", callback=self.selectAutosaveFile)
+        gui.button(self.autosave_box_1, self, "...", callback=self.selectAutosaveFile, width=30)
+        gui.button(self.autosave_box_1, self, "\u21a9", callback=self.reload_autosave_file, width=30)
 
         self.set_autosave()
+
+        oasysgui.lineEdit(self.tab_bas, self, "last_number_of_wavefronts", "Previous Nr. of Wavefronts", labelWidth=260, valueType=int, orientation="horizontal")
 
     def set_MergingRange(self):
         self.merge_range_box_1.setVisible(self.use_merging_range == 1)
@@ -196,43 +201,34 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                     try:
                         self.progressBarInit()
 
+                        self.number_of_wavefronts += 1
+
                         self.progressBarSet(30)
 
-                        e, h, v, i = data.get_srw_wavefront().get_intensity(multi_electron=False)
+                        e, h, v, current_intensity = data.get_srw_wavefront().get_intensity(multi_electron=False)
 
                         if self.use_merging_range == 0:
-                            if self.accumulated_intensity is None:
-                                self.accumulated_intensity = i
-                            else:
-                                if i.shape != self.accumulated_intensity.shape: raise ValueError("Accumulated Intensity Shape is different from received one")
-                                self.accumulated_intensity += i
-
                             self.progressBarSet(60)
 
                             tickets = []
-                            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, self.accumulated_intensity, tickets)
-
+                            SRWWavefrontViewer.add_2D_wavefront_plot(e, h, v, current_intensity, tickets)
                         else:
                             new_h = numpy.linspace(self.merging_range_x_min*1e-6, self.merging_range_x_max*1e-6, self.merging_nr_points_x)
                             new_v = numpy.linspace(self.merging_range_y_min*1e-6, self.merging_range_y_max*1e-6, self.merging_nr_points_y)
 
-                            new_i = numpy.zeros((len(e), len(new_h), len(new_v)))
+                            new_current_intensity = numpy.zeros((len(e), len(new_h), len(new_v)))
 
                             for index in range(len(e)):
-                                interpolator = RectBivariateSpline(x=h, y=v, z=i[index, :, :], bbox=[None, None, None, None], kx=2, ky=2, s=0)
+                                interpolator = RectBivariateSpline(x=h, y=v, z=current_intensity[index, :, :], bbox=[None, None, None, None], kx=2, ky=2, s=0)
 
-                                new_i[index, :, :] = interpolator(new_h, new_v)
-
-                            if self.accumulated_intensity is None:
-                                self.accumulated_intensity = new_i
-                            else:
-                                if new_i.shape != self.accumulated_intensity.shape: raise ValueError("Accumulated Intensity Shape is different from received one")
-                                self.accumulated_intensity += new_i
+                                new_current_intensity[index, :, :] = interpolator(new_h, new_v)
 
                             self.progressBarSet(60)
 
                             tickets = []
-                            SRWWavefrontViewer.add_2D_wavefront_plot(e, new_h, new_v, self.accumulated_intensity, tickets)
+                            SRWWavefrontViewer.add_2D_wavefront_plot(e, new_h, new_v, new_current_intensity, tickets)
+
+                        self.rinormalize(tickets[-1])
 
                         if self.autosave == 1:
                             if self.autosave_file is None:
@@ -244,6 +240,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                             self.autosave_file.write_coordinates(tickets[-1])
                             self.autosave_file.add_plot_xy(tickets[-1])
                             self.autosave_file.write_additional_data(tickets[-1])
+                            self.autosave_file.add_attribute("number_of_wavefronts", self.last_number_of_wavefronts + self.number_of_wavefronts)
                             self.autosave_file.flush()
 
                         self.plot_results(tickets, progressBarValue=90)
@@ -259,11 +256,17 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
                         if self.IS_DEVELOP: raise e
 
+    def rinormalize(self, ticket):
+        if not self.last_tickets is None:
+            if ticket["histogram"].shape != self.last_tickets[-1]["histogram"].shape: raise ValueError("Accumulated Intensity Shape is different from received one")
+
+            ticket["histogram"] = ((self.last_tickets[-1]["histogram"] * ((self.last_number_of_wavefronts + self.number_of_wavefronts) - 1)) + ticket["histogram"]) / (self.last_number_of_wavefronts + self.number_of_wavefronts)  # average
+            ticket["histogram_h"] = ((self.last_tickets[-1]["histogram_h"] * ((self.last_number_of_wavefronts + self.number_of_wavefronts) - 1)) + ticket["histogram_h"]) / (self.last_number_of_wavefronts + self.number_of_wavefronts)  # average
+            ticket["histogram_v"] = ((self.last_tickets[-1]["histogram_v"] * ((self.last_number_of_wavefronts + self.number_of_wavefronts) - 1)) + ticket["histogram_v"]) / (self.last_number_of_wavefronts + self.number_of_wavefronts)  # average
+
     def reset_accumulation(self):
         try:
             self.progressBarInit()
-
-            self.accumulated_intensity = None
 
             if not self.autosave_file is None:
                 self.autosave_file.close()
@@ -273,6 +276,8 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                                                      numpy.array([0, 0.001]),
                                                      numpy.zeros((2, 2)))], ignore_range=True)
             self.last_tickets = None
+            self.number_of_wavefronts = 0
+
             self.progressBarFinished()
         except:
             pass
@@ -329,6 +334,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                 save_file.write_coordinates(self.last_tickets[-1])
                 save_file.add_plot_xy(self.last_tickets[-1])
                 save_file.write_additional_data(self.last_tickets[-1])
+                save_file.add_attribute("number_of_wavefronts", self.last_number_of_wavefronts + self.number_of_wavefronts)
 
                 save_file.close()
             except Exception as exception:
@@ -389,25 +395,42 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
                 if self.IS_DEVELOP: raise exception
 
+    def __load_file(self, file_name):
+        if not file_name is None:
+            plot_file = SRWPlot.PlotXYHdf5File(congruence.checkDir(file_name), mode="r")
+
+            ticket = {}
+
+            plot_file.get_plot(ticket)
+            plot_file.get_coordinates(ticket)
+            plot_file.get_additional_data(ticket)
+
+            tickets = [ticket]
+
+            try:
+                self.last_number_of_wavefronts = plot_file.get_attribute("number_of_wavefronts")
+            except:
+                self.last_number_of_wavefronts = 0
+
+            self.plot_results(tickets, progressBarValue=90)
+            self.last_tickets = tickets
+
+            self.progressBarFinished()
+
+    def reload_autosave_file(self):
+        try:
+            self.__load_file(self.autosave_file_name)
+
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e), QMessageBox.Ok)
+
+            if self.IS_DEVELOP: raise e
+
     def load_cumulated_data(self):
         try:
             file_name = oasysgui.selectFileFromDialog(self, None, "Select File", file_extension_filter="HDF5 Files (*.hdf5 *.h5 *.hdf)")
 
-            if not file_name is None:
-                plot_file = SRWPlot.PlotXYHdf5File(congruence.checkDir(file_name), mode="r")
-
-                ticket = {}
-
-                plot_file.get_plot(ticket)
-                plot_file.get_coordinates(ticket)
-                plot_file.get_additional_data(ticket)
-
-                tickets = [ticket]
-
-                self.plot_results(tickets, progressBarValue=90)
-                self.last_tickets = tickets
-
-                self.progressBarFinished()
+            self.__load_file(file_name)
 
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e), QMessageBox.Ok)
