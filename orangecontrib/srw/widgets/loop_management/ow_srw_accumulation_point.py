@@ -308,7 +308,7 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
 
     def save_cumulated_data(self):
         file_name = oasysgui.selectSaveFileFromDialog(self, "Save Current Plot", default_file_name=("" if self.autosave==0 else self.autosave_file_name),
-                                                      file_extension_filter="HDF5 Files (*.hdf5 *.h5 *.hdf);;Text Files (*.dat *.txt);;Ansys Files (*.csv)")
+                                                      file_extension_filter="HDF5 Files (*.hdf5 *.h5 *.hdf);;Text Files (*.dat *.txt);;Images (*.png)")
 
         if not file_name is None and not file_name.strip()=="":
             format, ok = QInputDialog.getItem(self, "Select Output Format", "Formats: ", ("Hdf5", "Text", "Image", "Hdf5 & Image", "All"), 3, False)
@@ -371,26 +371,16 @@ class OWSRWAccumulationPoint(SRWWavefrontViewer):
                     return pickle.load(buf)
 
                 fig = duplicate(self.plot_canvas[0].plot_canvas._backend.fig)
+                fig.set_size_inches(10, 8)
 
                 vmin = numpy.min(self.last_tickets[-1]["histogram"])
                 vmax = numpy.max(self.last_tickets[-1]["histogram"])
 
                 cbar = fig.colorbar(cm.ScalarMappable(norm=Normalize(vmin=vmin, vmax=vmax), cmap=cmap_temperature), ax=fig.gca())
-                cbar.ax.set_ylabel('Power Density [W/mm\u00b2]')
+                cbar.ax.set_ylabel('Intensity [ph/s/.1%BW/mm\u00b2]', fontsize=14)
                 ticks = cbar.get_ticks()
                 cbar.set_ticks([vmax] + list(ticks))
-
-                def format_number(number):
-                    order_of_magnitude = (1 if number >= 1 else -1) * int(numpy.floor(numpy.log10(numpy.abs(number))))
-
-                    if order_of_magnitude > 3:
-                        return round(number, 1)
-                    elif order_of_magnitude >= 0:
-                        return round(number, 4 - order_of_magnitude)
-                    else:
-                        return round(number, 3 + abs(order_of_magnitude))
-
-                cbar.set_ticklabels([str(format_number(vmax))] + ["{:.1e}".format(t) for t in ticks])
+                cbar.set_ticklabels(["{:.1e}".format(vmax)] + ["{:.1e}".format(t) for t in ticks])
 
                 fig.savefig(os.path.splitext(file_name)[0] + ".png")
 
