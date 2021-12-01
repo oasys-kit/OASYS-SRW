@@ -10,7 +10,7 @@ from syned.beamline.shape import Rectangle, Ellipse
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement
 
-class OWSRWSlits(OWSRWOpticalElement):
+class OWSRWAbsorber(OWSRWOpticalElement):
 
     horizontal_shift = Setting(0.0)
     vertical_shift = Setting(0.0)
@@ -81,7 +81,7 @@ class OWSRWSlits(OWSRWOpticalElement):
 
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
-            if isinstance(optical_element, Slit):
+            if self.check_syned_absorber(optical_element):
                 if isinstance(optical_element._boundary_shape, Rectangle):
                     self.shape = 0
 
@@ -99,6 +99,12 @@ class OWSRWSlits(OWSRWOpticalElement):
                     self.horizontal_shift = optical_element._boundary_shape._a_axis_min + self.radius
                     self.vertical_shift = optical_element._boundary_shape._b_axis_min + self.radius
             else:
-                raise Exception("Syned Data not correct: Optical Element is not a Slit")
+                raise Exception("Syned Data not correct: Optical Element is not a " + self.get_syned_optical_element_name())
         else:
             raise Exception("Syned Data not correct: Empty Optical Element")
+
+    def check_syned_absorber(self, optical_element):
+        raise NotImplementedError
+
+    def get_syned_optical_element_name(self):
+        raise NotImplementedError
