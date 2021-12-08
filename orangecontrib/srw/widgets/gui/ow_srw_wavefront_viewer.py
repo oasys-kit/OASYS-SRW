@@ -72,6 +72,8 @@ class SRWWavefrontViewer(SRWWidget):
     range_y_min = Setting(-50)
     range_y_max = Setting(50)
 
+    do_average = False
+
     def __init__(self, show_general_option_box=True, show_automatic_box=True, show_view_box=True):
         super().__init__(show_general_option_box=show_general_option_box, show_automatic_box=show_automatic_box)
 
@@ -274,7 +276,7 @@ class SRWWavefrontViewer(SRWWidget):
 
     def plot_1D(self, ticket, progressBarValue, var, plot_canvas_index, title, xtitle, ytitle, xum=""):
         if self.plot_canvas[plot_canvas_index] is None:
-            self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed1DWidget()
+            self.plot_canvas[plot_canvas_index] = SRWPlot.Detailed1DWidget(do_average=self.do_average)
 
             plot_canvas_box = oasysgui.widgetBox(self.tab[plot_canvas_index], "", addSpace=False, orientation="horizontal")
             plot_canvas_box.layout().addWidget(self.plot_canvas[plot_canvas_index])
@@ -286,7 +288,7 @@ class SRWWavefrontViewer(SRWWidget):
     def plot_2D(self, ticket, progressBarValue, var_x, var_y, plot_canvas_index, title, xtitle, ytitle, xum="", yum="", ignore_range=False, apply_alpha_channel=False, alpha_ticket=None, do_unwrap=False):
 
         if self.plot_canvas[plot_canvas_index] is None:
-            self.plot_canvas[plot_canvas_index] =  SRWPlot.Detailed2DWidget()
+            self.plot_canvas[plot_canvas_index] =  SRWPlot.Detailed2DWidget(do_average=self.do_average)
             self.tab[plot_canvas_index].layout().addWidget(self.plot_canvas[plot_canvas_index])
 
         if self.use_range == 1 and not ignore_range:

@@ -104,8 +104,9 @@ class SRWPlot:
         centroid_v_field = ""
         boundary_h_field = ""
         boundary_v_field = ""
+        average_field = ""
 
-        def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, is_2d=True):
+        def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, is_2d=True, do_average=False):
             super(SRWPlot.InfoBoxWidget, self).__init__()
 
             info_box_inner= gui.widgetBox(self, "Info")
@@ -180,6 +181,11 @@ class SRWPlot:
                 self.label_c_v.setPalette(palette)
                 label_box_2.layout().addWidget(self.label_c_v)
                 self.centroid_v = gui.lineEdit(label_box_2, self, "centroid_v_field", "", tooltip="Sigma", labelWidth=115, valueType=str, orientation="horizontal")
+
+            if do_average:
+                label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="horizontal")
+
+                self.average = gui.lineEdit(label_box_1, self, "average_field", "Average", tooltip="Average", labelWidth=115, valueType=str, orientation="horizontal")
 
             label_box_1 = gui.widgetBox(info_box_inner, "", addSpace=False, orientation="vertical")
 
@@ -295,6 +301,16 @@ class SRWPlot:
                 palette.setColor(QPalette.Base, QColor(243, 240, 160))
                 self.boundary_v.setPalette(palette)
 
+            if do_average:
+                self.average.setReadOnly(True)
+                font = QFont(self.average.font())
+                font.setBold(True)
+                self.average.setFont(font)
+                palette = QPalette(self.average.palette())
+                palette.setColor(QPalette.Text, QColor('dark blue'))
+                palette.setColor(QPalette.Base, QColor(243, 240, 160))
+                self.average.setPalette(palette)
+
         def set_multi_energy(self, multi_energy):
             self.total_2_box.setVisible(multi_energy==True)
             self.total_box.setVisible(multi_energy==False)
@@ -312,10 +328,11 @@ class SRWPlot:
             if hasattr(self, "centroid_v"):  self.centroid_v.setText("0.0000")
             self.boundary_h.setText("")
             if hasattr(self, "boundary_v"):  self.centroid_v.setText("")
+            if hasattr(self, "average"): self.average.setText("0.0000")
 
     class Detailed1DWidget(QWidget):
 
-        def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0):
+        def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, do_average=False):
             super(SRWPlot.Detailed1DWidget, self).__init__()
 
             self.plot_canvas = gui.plotWindow(roi=False, control=False, position=True, logScale=True)
@@ -323,8 +340,9 @@ class SRWPlot:
             self.plot_canvas.setActiveCurveColor(color='blue')
             self.plot_canvas.setMinimumWidth(590*x_scale_factor)
             self.plot_canvas.setMaximumWidth(590*x_scale_factor)
+            self.do_average = do_average
 
-            self.info_box = SRWPlot.InfoBoxWidget(x_scale_factor, y_scale_factor, is_2d=False)
+            self.info_box = SRWPlot.InfoBoxWidget(x_scale_factor, y_scale_factor, is_2d=False, do_average=do_average)
 
             layout = QGridLayout()
 
@@ -359,7 +377,7 @@ class SRWPlot:
             ticket['total'] = numpy.sum(histogram)
             ticket['fwhm'], ticket['fwhm_quote'], ticket['fwhm_coordinates'] = get_fwhm(histogram, bins)
             ticket['sigma'] = get_sigma(histogram, bins)
-            ticket['centroid'] = get_average(histogram, bins)
+            if self.do_average: ticket['average'] = ticket['total']/len(histogram)
 
             bins *= factor
 
@@ -400,13 +418,14 @@ class SRWPlot:
             self.info_box.label_c_h.setText("centroid " + xum)
             self.info_box.boundary_h.setText("{:5.4f}, {:5.4f}".format(min(bins), max(bins)))
             self.info_box.label_b_h.setText("Range " + xum)
+            if self.do_average: self.info_box.average.setText("{:5.4f}".format(ticket['average']))
 
         def clear(self):
             self.plot_canvas.clear()
             self.info_box.clear()
 
     class Detailed2DWidget(QWidget):
-        def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0):
+        def __init__(self, x_scale_factor = 1.0, y_scale_factor = 1.0, do_average=False):
             super(SRWPlot.Detailed2DWidget, self).__init__()
 
             self.x_scale_factor = x_scale_factor
@@ -417,7 +436,8 @@ class SRWPlot:
             self.plot_canvas.setMinimumWidth(590 * x_scale_factor)
             self.plot_canvas.setMaximumWidth(590 * y_scale_factor)
 
-            self.info_box = SRWPlot.InfoBoxWidget(x_scale_factor, y_scale_factor)
+            self.info_box = SRWPlot.InfoBoxWidget(x_scale_factor, y_scale_factor, is_2d=True, do_average=do_average)
+            self.do_average = do_average
 
             layout = QGridLayout()
 
@@ -490,6 +510,8 @@ class SRWPlot:
             ticket['fwhm_v'], ticket['fwhm_quote_v'], ticket['fwhm_coordinates_v'] = get_fwhm(histogram_v, yy)
             ticket['sigma_v'] = get_sigma(histogram_v, yy)
             ticket['centroid_v'] = get_average(histogram_v, yy)
+            if self.do_average: ticket['average'] = ticket['total']/(nbins_h*nbins_v)
+
 
             # PyMCA inverts axis!!!! histogram must be calculated reversed
             self.plot_canvas.setImage(data_to_plot, origin=origin, scale=scale)
@@ -575,6 +597,7 @@ class SRWPlot:
             self.info_box.boundary_v.setText("{:5.4f}, {:5.4f}".format(ymin*factor2, ymax*factor2))
             self.info_box.label_b_h.setText("Range " + xum)
             self.info_box.label_b_v.setText("Range " + yum)
+            if self.do_average: self.info_box.average.setText("{:5.4f}".format(ticket['average']))
 
             self.info_box.set_multi_energy(is_multi_energy)
 
