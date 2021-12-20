@@ -184,12 +184,26 @@ def calculate_degree_of_coherence_vs_sum_and_difference(coor, coor_conj, mutual_
 def load_intensity_file(filename):
     data, dump, allrange, arLabels, arUnits = file_load(filename)
 
-    dim_x = allrange[5]
-    dim_y = allrange[8]
-    np_array = data.reshape((dim_y, dim_x))
-    np_array = np_array.transpose()
+    dim_x = allrange[5] # columns
+    dim_y = allrange[8] # rows
+
+    data_size = data.shape[0]
+
     x_coordinates = numpy.linspace(allrange[3], allrange[4], dim_x)
     y_coordinates = numpy.linspace(allrange[6], allrange[7], dim_y)
+
+    if data_size==dim_x*dim_y:
+        np_array = data.reshape((dim_y, dim_x))
+        np_array = np_array.transpose()
+    else:
+        real_dim_y = int(data_size/dim_x)
+        data_to_remove = data_size%dim_x
+        index_to_remove = dim_y%real_dim_y
+
+        np_array = data[:-data_to_remove].reshape((real_dim_y, dim_x))
+        np_array = np_array.transpose()
+
+        y_coordinates = y_coordinates[:-index_to_remove]
 
     return x_coordinates, y_coordinates, np_array
 
