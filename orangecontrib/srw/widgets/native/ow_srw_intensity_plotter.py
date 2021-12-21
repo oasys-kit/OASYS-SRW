@@ -1,6 +1,6 @@
 __author__ = 'labx'
 
-from numpy import nan
+from numpy import nan, linspace
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -34,6 +34,10 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
     view_type = 1
 
     last_tickets=None
+    last_raw_data=None
+
+    resolution_reduction_x = Setting(1.0)
+    resolution_reduction_y = Setting(1.0)
 
     def __init__(self):
         super().__init__(show_automatic_box=False, show_view_box=False)
@@ -80,32 +84,51 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
 
         self.refresh_button = gui.button(view_box_2, self, "Refresh", callback=self.replot)
 
-        self.plot_range_box_1 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=50)
-        self.plot_range_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=50)
+        self.plot_range_box_1 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=100)
+        self.plot_range_box_2 = oasysgui.widgetBox(view_box_1, "", addSpace=False, orientation="vertical", height=100)
 
         view_box_2 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal")
 
         oasysgui.lineEdit(view_box_2, self, "range_x_min", "Plotting Range X min [\u03bcm]", labelWidth=150, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(view_box_2, self, "range_x_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
 
+        oasysgui.lineEdit(self.plot_range_box_1, self, "resolution_reduction_x", "Resolution reduction factor X (\u2265 1.0)", labelWidth=250, valueType=float, orientation="horizontal")
+
         view_box_3 = oasysgui.widgetBox(self.plot_range_box_1, "", addSpace=False, orientation="horizontal")
 
         oasysgui.lineEdit(view_box_3, self, "range_y_min", "Plotting Range Y min [\u03bcm]", labelWidth=150, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(view_box_3, self, "range_y_max", "max [\u03bcm]", labelWidth=60, valueType=float, orientation="horizontal")
 
+        oasysgui.lineEdit(self.plot_range_box_1, self, "resolution_reduction_y", "Resolution reduction factor Y (\u2265 1.0)", labelWidth=250, valueType=float, orientation="horizontal")
+
         self.set_PlottingRange()
 
+    def is_rebinning(self):
+        return self.resolution_reduction_x > 1.0 or self.resolution_reduction_y > 1.0
+
     def replot(self):
-        if self.last_tickets is None:
-            self.plot_intensity()
-        else:
-            self.progressBarInit()
+        try:
+            if self.last_tickets is None and self.last_raw_data is None:
+                self.plot_intensity()
+            else:
+                self.progressBarInit()
 
-            self.progressBarSet(50)
+                if self.is_rebinning():
+                    tickets = []
 
-            self.plot_results(self.last_tickets, progressBarValue=50)
+                    x, y, intensity = self.__rebin(self.last_raw_data[0], self.last_raw_data[1], self.last_raw_data[2])
 
-            self.progressBarFinished()
+                    tickets.append(SRWPlot.get_ticket_2D(x * 1000, y * 1000, intensity))
+                else:
+                    tickets = self.last_tickets
+
+                self.progressBarSet(50)
+
+                self.plot_results(tickets, progressBarValue=50)
+
+                self.progressBarFinished()
+        except Exception as e:
+            QMessageBox.critical(self, "Error", str(e), QMessageBox.Ok)
 
     def selectIntensityFile(self):
         self.le_intensity_file_name.setText(oasysgui.selectFileFromDialog(self, self.intensity_file_name, "Intensity File"))
@@ -118,6 +141,11 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
 
             x, y, intensity = native_util.load_intensity_file(self.intensity_file_name)
 
+            self.last_raw_data = [x, y, intensity]
+
+            if self.is_rebinning():
+                x, y, intensity = self.__rebin(x, y, intensity)
+
             tickets.append(SRWPlot.get_ticket_2D(x*1000, y*1000, intensity))
 
             self.progressBarSet(50)
@@ -129,6 +157,18 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
             self.progressBarFinished()
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e), QMessageBox.Ok)
+
+    def __rebin(self, x, y, intensity):
+        new_shape = [intensity.shape[0], intensity.shape[1]]
+
+        if self.resolution_reduction_x > 1.0: new_shape[0] = int(new_shape[0] / self.resolution_reduction_x)
+        if self.resolution_reduction_y > 1.0: new_shape[1] = int(new_shape[1] / self.resolution_reduction_y)
+
+        shape = (new_shape[0], intensity.shape[0] // new_shape[0], new_shape[1], intensity.shape[1] // new_shape[1])
+
+        return linspace(x[0], x[-1], new_shape[0]), \
+               linspace(y[0], y[-1], new_shape[1]), \
+               intensity.reshape(shape).mean(-1).mean(1)
 
     def getVariablesToPlot(self):
         return [[1, 2]]
