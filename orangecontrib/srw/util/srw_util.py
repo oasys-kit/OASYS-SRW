@@ -4,7 +4,7 @@ from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QDialog, QVBoxLayout, QDialogButtonBox, QFileDialog
 
 import h5py, time
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from oasys.widgets.gui import FigureCanvas3D
 from matplotlib.figure import Figure
 from matplotlib.patches import FancyArrowPatch, ArrowStyle
 try:
@@ -891,7 +891,7 @@ class ShowErrorProfileDialog(QDialog):
             axis.set_ylabel("Y [m]")
             axis.set_zlabel("Z [nm]")
 
-            figure_canvas = FigureCanvasQTAgg(figure)
+            figure_canvas = FigureCanvas3D(ax=axis, fig=figure)
             figure_canvas.setFixedWidth(500)
             figure_canvas.setFixedHeight(645)
 
