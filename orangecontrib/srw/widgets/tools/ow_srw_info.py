@@ -58,13 +58,9 @@ class OWSRWInfo(widget.OWWidget):
 
             self.build_info()
 
-
-
     def build_info(self):
         try:
             self.text_area.clear()
-
-            from wofrysrw.beamline.srw_beamline import SRWBeamline
 
             beamline = self.srw_data.get_srw_beamline()
 
