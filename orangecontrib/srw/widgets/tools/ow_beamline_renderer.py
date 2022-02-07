@@ -175,9 +175,7 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                 height, shift = get_height_shift()
 
                 if isinstance(optical_element, SRWScreen):
-                    self.add_point(centers, limits, oe_index=oe_index,
-                                   distance=oe_distance, height=height, shift=shift,
-                                   label="Screen", aspect_ratio_modifier=aspect_ratio_modifier)
+                    pass # not a physical element
                 elif isinstance(optical_element, SRWIdealLens):
                     self.add_point(centers, limits, oe_index=oe_index,
                                    distance=oe_distance, height=height, shift=shift,
