@@ -175,7 +175,9 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                 height, shift = get_height_shift()
 
                 if isinstance(optical_element, SRWScreen):
-                    pass # not a physical element
+                    self.add_point(centers, limits, oe_index=oe_index,
+                                   distance=oe_distance, height=height, shift=shift,
+                                   label=None, aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWIdealLens):
                     self.add_point(centers, limits, oe_index=oe_index,
                                    distance=oe_distance, height=height, shift=shift,
@@ -190,7 +192,8 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
 
                     self.add_slits_filter(centers, limits, oe_index=oe_index,
                                           distance=oe_distance, height=height, shift=shift,
-                                          aperture=aperture, label=label, aspect_ratio_modifier=aspect_ratio_modifier)
+                                          aperture=aperture, label=label,
+                                          aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWFilter):
                     self.add_slits_filter(centers, limits, oe_index=oe_index,
                                           distance=oe_distance, height=height, shift=shift,
@@ -201,13 +204,15 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                                    distance=oe_distance, height=height, shift=shift,
                                    label="Transmission Element", aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWCRL):
-                    self.add_point(centers, limits, oe_index=oe_index,
-                                   distance=oe_distance, height=height, shift=shift,
-                                   label="CRL", aspect_ratio_modifier=aspect_ratio_modifier)
+                    self.add_non_optical_element(centers, limits, oe_index=oe_index,
+                                                 distance=oe_distance, height=height, shift=shift,
+                                                 length=optical_element.number_of_lenses * 0.0025, # fictional but typical, for visibility
+                                                 color=OpticalElementsColors.LENS, aspect_ration_modifier=aspect_ratio_modifier, label="CRLs")
                 elif isinstance(optical_element, SRWZonePlate):
-                    self.add_point(centers, limits, oe_index=oe_index,
-                                   distance=oe_distance, height=height, shift=shift,
-                                   label="Zone Plate", aspect_ratio_modifier=aspect_ratio_modifier)
+                    self.add_non_optical_element(centers, limits, oe_index=oe_index,
+                                                 distance=oe_distance, height=height, shift=shift,
+                                                 length=0.005, # fictional for visibility
+                                                 color=OpticalElementsColors.LENS, aspect_ration_modifier=aspect_ratio_modifier, label="Zone Plate")
                 elif (isinstance(optical_element, SRWMirror) or
                       isinstance(optical_element, SRWGrating) or
                       isinstance(optical_element, SRWCrystal)):
