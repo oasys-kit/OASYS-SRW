@@ -891,7 +891,7 @@ class ShowErrorProfileDialog(QDialog):
             axis.set_ylabel("Y [m]")
             axis.set_zlabel("Z [nm]")
 
-            figure_canvas = FigureCanvas3D(ax=axis, fig=figure, show_legend=False)
+            figure_canvas = FigureCanvas3D(ax=axis, fig=figure, show_legend=False, show_buttons=False)
             figure_canvas.setFixedWidth(500)
             figure_canvas.setFixedHeight(645)
 
