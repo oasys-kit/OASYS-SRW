@@ -68,7 +68,7 @@ from wofrysrw.beamline.optical_elements.crystals.srw_crystal import SRWCrystal
 from wofrysrw.beamline.optical_elements.other.srw_crl import SRWCRL
 from wofrysrw.beamline.optical_elements.other.srw_zone_plate import SRWZonePlate
 
-from oasys.widgets.abstract.beamline_rendering.ow_abstract_beamline_renderer import AbstractBeamlineRenderer, AspectRatioModifier, Orientations, OpticalElementsColors, initialize_arrays
+from oasys.widgets.abstract.beamline_rendering.ow_abstract_beamline_renderer import AbstractBeamlineRenderer, AspectRatioModifier, Orientations, OpticalElementsColors, initialize_arrays, get_height_shift, get_inclinations
 
 class SRWBeamlineRenderer(AbstractBeamlineRenderer):
     name = "Beamline Renderer"
@@ -94,7 +94,6 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
             self.srw_data = input_data
             self.render(on_receiving_input=True)
 
-
     def render_beamline(self):
         if not self.srw_data is None:
             self.figure_canvas.clear_axis()
@@ -112,32 +111,32 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                                                                                  1.0,
                                                                                  1,0])
             previous_oe_distance    = 0.0
+            previous_image_segment  = 0.0
             previous_image_distance = 0.0
             previous_height = self.initial_height # for better visibility
             previous_shift  = 0.0
-            previous_orientation = Orientations.UP
             beam_horizontal_inclination = 0.0
-            beam_vertical_inclination = 0.0
+            beam_vertical_inclination   = 0.0
 
             if self.draw_source:
-                srw_source         = beamline.get_light_source()
-                magnetic_structure = srw_source.get_magnetic_structure()
+                source         = beamline.get_light_source()
+                magnetic_structure = source.get_magnetic_structure()
                 canting = 0.0
                 length  = 0.0
 
-                if isinstance(srw_source, SRWGaussianLightSource): source_name = "Gaussian"
-                elif isinstance(srw_source, SRWBendingMagnetLightSource): source_name = "Bending Magnet"
-                elif isinstance(srw_source, SRWUndulatorLightSource):
+                if isinstance(source, SRWGaussianLightSource): source_name = "Gaussian"
+                elif isinstance(source, SRWBendingMagnetLightSource): source_name = "Bending Magnet"
+                elif isinstance(source, SRWUndulatorLightSource):
                     source_name = "Undulator"
                     length = magnetic_structure._period_length*magnetic_structure._number_of_periods
                     canting = magnetic_structure.longitudinal_central_position
-                elif isinstance(srw_source, SRWWigglerLightSource):
+                elif isinstance(source, SRWWigglerLightSource):
                     source_name = "Wiggler"
                     length = magnetic_structure._period_length*magnetic_structure._number_of_periods
                     canting = magnetic_structure.longitudinal_central_position
                 else:  source_name = None
 
-                previous_image_distance = srw_source.get_source_wavefront_parameters()._distance
+                previous_oe_distance = source.get_source_wavefront_parameters()._distance
 
                 self.add_source(centers, limits, length=length, height=self.initial_height,
                                 canting=canting, aspect_ration_modifier=aspect_ratio_modifier, source_name=source_name)
@@ -150,36 +149,27 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                 coordinates     = beamline_element.get_coordinates()
                 optical_element = beamline_element.get_optical_element()
 
-                source_distance = coordinates.p()
-                image_distance = coordinates.q()
+                source_segment = coordinates.p()
+                image_segment  = coordinates.q()
 
-                oe_distance = previous_oe_distance + previous_image_distance + source_distance
+                source_distance = source_segment * numpy.cos(beam_vertical_inclination) * numpy.cos(beam_horizontal_inclination)
 
-                def get_height_shift():
-                    if previous_orientation == Orientations.UP:
-                        height = previous_height + (source_distance + previous_image_distance)*numpy.sin(2*beam_vertical_inclination)
-                        shift  = previous_shift
-                    elif previous_orientation == Orientations.DOWN:
-                        height = previous_height - (source_distance + previous_image_distance)*numpy.sin(2*beam_vertical_inclination)
-                        shift  = previous_shift
-                    if previous_orientation == Orientations.LEFT:
-                        height = previous_height
-                        shift  = previous_shift - (source_distance + previous_image_distance)*numpy.sin(2*beam_horizontal_inclination)
-                    elif previous_orientation == Orientations.RIGHT:
-                        height = previous_height
-                        shift  = previous_shift + (source_distance + previous_image_distance)*numpy.sin(2*beam_horizontal_inclination)
+                segment_to_oe     = previous_image_segment + source_segment
+                oe_total_distance = previous_oe_distance   + previous_image_distance + source_distance
 
-                    return height, shift
-
-                height, shift = get_height_shift()
+                height, shift = get_height_shift(segment_to_oe,
+                                                 previous_height,
+                                                 previous_shift,
+                                                 beam_vertical_inclination,
+                                                 beam_horizontal_inclination)
 
                 if isinstance(optical_element, SRWScreen):
                     self.add_point(centers, limits, oe_index=oe_index,
-                                   distance=oe_distance, height=height, shift=shift,
+                                   distance=oe_total_distance, height=height, shift=shift,
                                    label=None, aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWIdealLens):
                     self.add_point(centers, limits, oe_index=oe_index,
-                                   distance=oe_distance, height=height, shift=shift,
+                                   distance=oe_total_distance, height=height, shift=shift,
                                    label="Ideal Lens", aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWSlit):
                     h_min, h_max, v_min, v_max = optical_element.get_boundary_shape().get_boundaries()
@@ -190,26 +180,26 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                     elif isinstance(optical_element, SRWObstacle): label += " (O)"
 
                     self.add_slits_filter(centers, limits, oe_index=oe_index,
-                                          distance=oe_distance, height=height, shift=shift,
+                                          distance=oe_total_distance, height=height, shift=shift,
                                           aperture=aperture, label=label,
                                           aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWFilter):
                     self.add_slits_filter(centers, limits, oe_index=oe_index,
-                                          distance=oe_distance, height=height, shift=shift,
+                                          distance=oe_total_distance, height=height, shift=shift,
                                           aperture=None, label="Filter (" + optical_element.get_material() + ")",
                                           aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWTransmission):
                     self.add_point(centers, limits, oe_index=oe_index,
-                                   distance=oe_distance, height=height, shift=shift,
+                                   distance=oe_total_distance, height=height, shift=shift,
                                    label="Transmission Element", aspect_ratio_modifier=aspect_ratio_modifier)
                 elif isinstance(optical_element, SRWCRL):
                     self.add_non_optical_element(centers, limits, oe_index=oe_index,
-                                                 distance=oe_distance, height=height, shift=shift,
+                                                 distance=oe_total_distance, height=height, shift=shift,
                                                  length=optical_element.number_of_lenses * 0.0025, # fictional but typical, for visibility
                                                  color=OpticalElementsColors.LENS, aspect_ration_modifier=aspect_ratio_modifier, label="CRLs")
                 elif isinstance(optical_element, SRWZonePlate):
                     self.add_non_optical_element(centers, limits, oe_index=oe_index,
-                                                 distance=oe_distance, height=height, shift=shift,
+                                                 distance=oe_total_distance, height=height, shift=shift,
                                                  length=0.005, # fictional for visibility
                                                  color=OpticalElementsColors.LENS, aspect_ration_modifier=aspect_ratio_modifier, label="Zone Plate")
                 elif (isinstance(optical_element, SRWMirror) or
@@ -235,24 +225,27 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                         color = OpticalElementsColors.CRYSTAL
                         label = "Crystal"
 
+                    absolute_inclination, beam_horizontal_inclination, beam_vertical_inclination = get_inclinations(orientation, inclination, beam_vertical_inclination, beam_horizontal_inclination)
+
                     self.add_optical_element(centers, limits, oe_index=oe_index,
-                                             distance=oe_distance, height=height, shift=shift,
-                                             length=length, width=width, thickness=0.01, inclination=inclination, orientation=orientation,
+                                             distance=oe_total_distance, height=height, shift=shift,
+                                             length=length, width=width, thickness=0.01, inclination=absolute_inclination, orientation=orientation,
                                              color=color, aspect_ration_modifier=aspect_ratio_modifier, label=label)
 
-                    if orientation == Orientations.UP:      beam_vertical_inclination += inclination
-                    elif orientation == Orientations.DOWN:  beam_vertical_inclination -= inclination
-                    elif orientation == Orientations.LEFT:  beam_horizontal_inclination -= inclination
-                    elif orientation == Orientations.RIGHT: beam_horizontal_inclination += inclination
-
-                    previous_orientation = orientation
+                image_distance = image_segment * numpy.cos(beam_vertical_inclination) * numpy.cos(beam_horizontal_inclination)  # new direction
 
                 previous_height         = height
                 previous_shift          = shift
-                previous_oe_distance    = oe_distance
+                previous_oe_distance    = oe_total_distance
+                previous_image_segment  = image_segment
                 previous_image_distance = image_distance
 
-            height, shift = get_height_shift()
+            height, shift = get_height_shift(previous_image_segment,
+                                             previous_height,
+                                             previous_shift,
+                                             beam_vertical_inclination,
+                                             beam_horizontal_inclination)
+
             self.add_point(centers, limits, oe_index=number_of_elements - 1,
                            distance=previous_oe_distance + previous_image_distance,
                            height=height, shift=shift, label="End Point",
