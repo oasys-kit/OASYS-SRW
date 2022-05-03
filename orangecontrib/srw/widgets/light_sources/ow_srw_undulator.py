@@ -282,9 +282,6 @@ class OWSRWUndulator(OWSRWSource):
         return 1
 
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
-        return self.wf_photon_energy if self.wf_energy_type == 1 else srw_source.get_resonance_energy()*self.wf_harmonic_number
-
-    def get_photon_energy_for_wavefront_propagation(self, srw_source):
         if self.wf_energy_type == 0:
             resonance_energy = srw_source.get_resonance_energy()*self.wf_harmonic_number
             return resonance_energy, resonance_energy, 1

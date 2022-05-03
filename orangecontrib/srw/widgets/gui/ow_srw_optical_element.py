@@ -30,8 +30,6 @@ from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 from wofrysrw.beamline.optical_elements.srw_optical_element import Orientation
 
-from orangecontrib.srw.util.srw_util import SRWPlot
-
 
 class OWSRWOpticalElement(SRWWavefrontViewer, WidgetDecorator):
 

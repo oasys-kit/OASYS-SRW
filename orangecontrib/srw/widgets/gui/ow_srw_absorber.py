@@ -5,7 +5,6 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
-from syned.beamline.optical_elements.absorbers.slit import Slit
 from syned.beamline.shape import Rectangle, Ellipse
 
 from orangecontrib.srw.widgets.gui.ow_srw_optical_element import OWSRWOpticalElement

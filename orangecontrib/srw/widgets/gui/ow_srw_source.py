@@ -1,6 +1,6 @@
 __author__ = 'labx'
 
-import os, sys, numpy
+import sys, numpy
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -10,7 +10,7 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 from oasys.util.oasys_util import EmittingStream
-from oasys.util.oasys_util import TriggerIn, TriggerOut
+from oasys.util.oasys_util import TriggerOut
 
 from syned.beamline.beamline import Beamline
 from syned.beamline.optical_elements.absorbers.slit import Slit
@@ -22,7 +22,6 @@ from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, W
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 from wofrysrw.beamline.srw_beamline import SRWBeamline
 
-from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
 from orangecontrib.srw.widgets.gui.ow_srw_wavefront_viewer import SRWWavefrontViewer
 
