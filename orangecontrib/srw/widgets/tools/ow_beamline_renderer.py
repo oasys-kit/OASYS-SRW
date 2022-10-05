@@ -205,7 +205,9 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                 elif (isinstance(optical_element, SRWMirror) or
                       isinstance(optical_element, SRWGrating) or
                       isinstance(optical_element, SRWCrystal)):
-                    inclination = optical_element.grazing_angle
+                    inclination_in  = optical_element.grazing_angle
+                    if isinstance(optical_element, SRWGrating): inclination_out = inclination_in + optical_element.get_deflection_angle(self.srw_data.get_srw_wavefront().get_photon_energy())
+                    else: inclination_out = inclination_in
                     orientation = optical_element.orientation_of_reflection_plane # they are the same numbers
 
                     if (isinstance(optical_element, SRWMirror) or  isinstance(optical_element, SRWGrating)):
@@ -225,7 +227,7 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
                         color = OpticalElementsColors.CRYSTAL
                         label = "Crystal"
 
-                    absolute_inclination, beam_horizontal_inclination, beam_vertical_inclination = get_inclinations(orientation, inclination, beam_vertical_inclination, beam_horizontal_inclination)
+                    absolute_inclination, beam_horizontal_inclination, beam_vertical_inclination = get_inclinations(orientation, inclination_in, inclination_out, beam_vertical_inclination, beam_horizontal_inclination)
 
                     self.add_optical_element(centers, limits, oe_index=oe_index,
                                              distance=oe_total_distance, height=height, shift=shift,
