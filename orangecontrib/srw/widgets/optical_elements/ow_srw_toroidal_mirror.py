@@ -4,8 +4,6 @@ from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
 
-from syned.beamline.shape import Toroidal
-
 from wofrysrw.beamline.optical_elements.mirrors.srw_toroidal_mirror import SRWToroidalMirror
 
 from orangecontrib.srw.widgets.gui.ow_srw_mirror import OWSRWMirror
