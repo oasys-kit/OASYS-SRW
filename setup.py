@@ -8,7 +8,7 @@ except AttributeError:
     from setuptools import find_packages, setup
 
 NAME = 'OASYS1-SRW'
-VERSION = '1.1.102'
+VERSION = '1.1.103'
 ISRELEASED = True
 
 DESCRIPTION = 'SRW in OASYS'
@@ -40,8 +40,8 @@ SETUP_REQUIRES = (
 )
 
 INSTALL_REQUIRES = (
-    'oasys1>=1.2.102',
-    'wofrysrw>=1.1.22',
+    'oasys1>=1.2.122',
+    'wofrysrw>=1.1.23',
     'scikit-image'
 )
 

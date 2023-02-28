@@ -46,7 +46,6 @@
 # ----------------------------------------------------------------------- #
 
 import numpy
-from Shadow import OE, IdealLensOE, CompoundOE
 
 from orangecontrib.srw.util.srw_objects import SRWData
 
