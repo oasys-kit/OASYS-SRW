@@ -13,6 +13,6 @@ class OWSRWPlaneCrystal(OWSRWCrystal):
         super().__init__()
 
     def receive_shape_specific_syned_data(self, optical_element):
-        if not isinstance(optical_element._surface_shape, Plane):
+        if not isinstance(optical_element.get_surface_shape(), Plane):
             raise Exception("Syned Data not correct: Crystal Surface Shape is not Plane")
 

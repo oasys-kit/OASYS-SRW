@@ -81,22 +81,24 @@ class OWSRWAbsorber(OWSRWOpticalElement):
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
             if self.check_syned_absorber(optical_element):
-                if isinstance(optical_element._boundary_shape, Rectangle):
+                boundary_shape = optical_element.get_boundary_shape()
+
+                if isinstance(boundary_shape, Rectangle):
                     self.shape = 0
 
-                    self.width  = numpy.abs(optical_element._boundary_shape._x_right - optical_element._boundary_shape._x_left)
-                    self.height = numpy.abs(optical_element._boundary_shape._y_top - optical_element._boundary_shape._y_bottom)
-                    self.horizontal_shift = optical_element._boundary_shape._x_left + 0.5*self.width
-                    self.vertical_shift = optical_element._boundary_shape._y_bottom + 0.5*self.height
+                    self.width  = numpy.abs(boundary_shape._x_right - boundary_shape._x_left)
+                    self.height = numpy.abs(boundary_shape._y_top - boundary_shape._y_bottom)
+                    self.horizontal_shift = boundary_shape._x_left + 0.5*self.width
+                    self.vertical_shift = boundary_shape._y_bottom + 0.5*self.height
 
-                if isinstance(optical_element._boundary_shape, Ellipse):
+                if isinstance(boundary_shape, Ellipse):
                     self.shape = 1
 
-                    self.radius  = 0.25*(numpy.abs(optical_element._boundary_shape._a_axis_max - optical_element._boundary_shape._a_axis_min) +
-                                         numpy.abs(optical_element._boundary_shape._b_axis_max - optical_element._boundary_shape._b_axis_min))
+                    self.radius  = 0.25*(numpy.abs(boundary_shape._a_axis_max - boundary_shape._a_axis_min) +
+                                         numpy.abs(boundary_shape._b_axis_max - boundary_shape._b_axis_min))
 
-                    self.horizontal_shift = optical_element._boundary_shape._a_axis_min + self.radius
-                    self.vertical_shift = optical_element._boundary_shape._b_axis_min + self.radius
+                    self.horizontal_shift = boundary_shape._a_axis_min + self.radius
+                    self.vertical_shift = boundary_shape._b_axis_min + self.radius
             else:
                 raise Exception("Syned Data not correct: Optical Element is not a " + self.get_syned_optical_element_name())
         else:

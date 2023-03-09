@@ -165,7 +165,7 @@ class OWSRWGrating(OWSRWOpticalElement):
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
             if isinstance(optical_element, Grating):
-                boundaries = optical_element._boundary_shape.get_boundaries()
+                boundaries = optical_element.get_boundary_shape().get_boundaries()
 
                 self.tangential_size=round(abs(boundaries[3] - boundaries[2]), 6)
                 self.sagittal_size=round(abs(boundaries[1] - boundaries[0]), 6)
