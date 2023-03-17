@@ -377,6 +377,7 @@ class SRWPlot:
             ticket['total'] = numpy.sum(histogram)
             ticket['fwhm'], ticket['fwhm_quote'], ticket['fwhm_coordinates'] = get_fwhm(histogram, bins)
             ticket['sigma'] = get_sigma(histogram, bins)
+            ticket['centroid'] = get_average(histogram, bins)
             if self.do_average: ticket['average'] = ticket['total']/len(histogram)
 
             bins *= factor

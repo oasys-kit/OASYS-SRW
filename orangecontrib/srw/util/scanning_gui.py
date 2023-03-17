@@ -283,7 +283,6 @@ class Scan3DHistoWidget(AbstractScanHistoWidget):
 
         self.colorbar.update_normal(lc)
         self.colorbar.draw_all()
-        self.colorbar.update_bruteforce(lc)
 
 class ScanHistoWidget(AbstractScanHistoWidget):
 
