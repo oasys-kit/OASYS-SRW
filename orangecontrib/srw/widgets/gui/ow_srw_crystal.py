@@ -48,7 +48,6 @@ class OWSRWCrystal(OWSRWOpticalElement):
         super().__init__(azimuth_hor_vert=True)
 
     def draw_specific_box(self):
-
         self.crystal_box = oasysgui.widgetBox(self.tab_bas, "Crystal Setting", addSpace=False, orientation="vertical")
 
         oasysgui.lineEdit(self.crystal_box, self, "d_spacing", "d-spacing [Å]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -87,7 +86,6 @@ class OWSRWCrystal(OWSRWOpticalElement):
 
         usage_box.layout().addWidget(label)
 
-
     def get_optical_element(self):
         return SRWCrystal(orientation_of_reflection_plane = self.orientation_azimuthal,
                           invert_tangent_component        = self.invert_tangent_component == 1,
@@ -105,14 +103,17 @@ class OWSRWCrystal(OWSRWOpticalElement):
     def receive_specific_syned_data(self, optical_element):
         if not optical_element is None:
             if isinstance(optical_element, Crystal):
-                self.asymmetry_angle           = optical_element._asymmetry_angle,
-                self.thickness                 = optical_element._thickness,
+                self.asymmetry_angle      = optical_element._asymmetry_angle,
+                self.thickness            = optical_element._thickness,
                 self.diffraction_geometry = optical_element._diffraction_geometry
+
+                self.receive_shape_specific_syned_data(optical_element)
             else:
                 raise Exception("Syned Data not correct: Optical Element is not a Crystal")
         else:
             raise Exception("Syned Data not correct: Empty Optical Element")
 
+    def receive_shape_specific_syned_data(self, optical_element): raise NotImplementedError
 
     def check_data(self):
         super().check_data()
