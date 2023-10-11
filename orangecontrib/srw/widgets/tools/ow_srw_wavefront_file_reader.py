@@ -100,10 +100,12 @@ class OWWavefrontFileReader(oasyswidget.OWWidget):
         try:
             congruence.checkEmptyString(self.file_name, "File Name")
             congruence.checkFile(self.file_name)
-            native_srw_wavefront = load_hdf5_2_wfr(self.file_name,self.data_path)
+            native_srw_wavefront = load_hdf5_2_wfr(self.file_name, self.data_path)
             self.send("SRWData", SRWData(srw_wavefront=SRWWavefront.decorateSRWWF(native_srw_wavefront)))
         except Exception as e:
             QMessageBox.critical(self, "Error", str(e.args[0]), QMessageBox.Ok)
+
+            if self.IS_DEVELOP: raise e
 
 if __name__ == "__main__":
     from PyQt5.QtWidgets import QApplication

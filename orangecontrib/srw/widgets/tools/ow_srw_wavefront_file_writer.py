@@ -95,8 +95,8 @@ class OWSRWWavefrontFileWriter(widget.OWWidget):
                 # the save_h5_file method.
 
                 srw_wavefront = self.input_data.get_srw_wavefront()
-                save_wfr_2_hdf5(self.input_data.get_srw_wavefront(),self.file_name,subgroupname=self.data_path,
-                                intensity=True,phase=False,overwrite=True)
+                save_wfr_2_hdf5(srw_wavefront, self.file_name, subgroupname=self.data_path,
+                                intensity=True, phase=False, overwrite=True)
 
                 path, file_name = os.path.split(self.file_name)
 
