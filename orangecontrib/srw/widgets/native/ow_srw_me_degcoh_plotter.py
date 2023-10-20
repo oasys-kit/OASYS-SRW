@@ -30,8 +30,8 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
 
     calculation = Setting(0)
     
-    horizontal_cut_file_name = Setting("<file_me_degcoh>.1")
-    vertical_cut_file_name = Setting("<file_me_degcoh>.2")
+    horizontal_cut_file_name = Setting("<file_me_degcoh_x>.dat")
+    vertical_cut_file_name = Setting("<file_me_degcoh_y>.dat")
     mode = Setting(0)
 
     is_final_screen = True
@@ -131,10 +131,12 @@ class OWSRWDegCohPlotter(SRWWavefrontViewer):
         self.box_2.setVisible(self.calculation == 1)
 
     def selectHorizontalCutFile(self):
-        self.le_horizontal_cut_file_name.setText(oasysgui.selectFileFromDialog(self, self.horizontal_cut_file_name, "Mutual Intensity Horizontal Cut File", file_extension_filter="*.1"))
+        what = "Mutual Intensity" if self.calculation==0 else "Degree of Coherence"
+        self.le_horizontal_cut_file_name.setText(oasysgui.selectFileFromDialog(self, self.horizontal_cut_file_name, what + " Horizontal Cut File", file_extension_filter="SRW files (*.dat);;All files (*.*)"))
 
     def selectVerticalCutFile(self):
-        self.le_vertical_cut_file_name.setText(oasysgui.selectFileFromDialog(self, self.vertical_cut_file_name, "Mutual Intensity Horizontal Cut File", file_extension_filter="*.2"))
+        what = "Mutual Intensity" if self.calculation == 0 else "Degree of Coherence"
+        self.le_vertical_cut_file_name.setText(oasysgui.selectFileFromDialog(self, self.vertical_cut_file_name, what + " Vertical Cut File", file_extension_filter="SRW files (*.dat);;All files (*.*)"))
 
     def plot_degcoh(self):
         try:

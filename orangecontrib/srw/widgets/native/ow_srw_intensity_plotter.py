@@ -131,7 +131,7 @@ class OWSRWIntensityPlotter(SRWWavefrontViewer):
             QMessageBox.critical(self, "Error", str(e), QMessageBox.Ok)
 
     def selectIntensityFile(self):
-        self.le_intensity_file_name.setText(oasysgui.selectFileFromDialog(self, self.intensity_file_name, "Intensity File"))
+        self.le_intensity_file_name.setText(oasysgui.selectFileFromDialog(self, self.intensity_file_name, "Intensity File", file_extension_filter="SRW files (*.dat);;All files (*.*)"))
 
     def plot_intensity(self):
         try:
