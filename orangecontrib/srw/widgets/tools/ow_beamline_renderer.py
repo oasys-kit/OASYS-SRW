@@ -67,7 +67,7 @@ from wofrysrw.beamline.optical_elements.crystals.srw_crystal import SRWCrystal
 from wofrysrw.beamline.optical_elements.other.srw_crl import SRWCRL
 from wofrysrw.beamline.optical_elements.other.srw_zone_plate import SRWZonePlate
 
-from oasys.widgets.abstract.beamline_rendering.ow_abstract_beamline_renderer import AbstractBeamlineRenderer, AspectRatioModifier, Orientations, OpticalElementsColors, initialize_arrays, get_height_shift, get_inclinations
+from syned.gui.beamline_rendering.ow_abstract_beamline_renderer import AbstractBeamlineRenderer, AspectRatioModifier, Orientations, OpticalElementsColors, initialize_arrays, get_height_shift, get_inclinations
 
 class SRWBeamlineRenderer(AbstractBeamlineRenderer):
     name = "Beamline Renderer"

@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QApplication
 
 import orangecanvas.resources as resources
 
-from oasys.widgets.abstract.error_profile.abstract_dabam_height_profile import OWAbstractDabamHeightProfile
+from syned.gui.error_profile.abstract_dabam_height_profile import OWAbstractDabamHeightProfile
 
 from orangecontrib.srw.util.srw_objects import SRWPreProcessorData, SRWErrorProfileData
 import orangecontrib.srw.util.srw_util as SU
