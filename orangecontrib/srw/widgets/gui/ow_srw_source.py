@@ -245,7 +245,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         pre_box = oasysgui.widgetBox(tab_wav, "Precision Parameters", addSpace=False, orientation="vertical")
 
         gui.comboBox(pre_box, self, "wf_sr_method", label="Calculation Method",
-                     items=["Manual", "Auto"], labelWidth=260,
+                     items=self.get_calculation_method_items(), labelWidth=260,
                      sendSelectedValue=False, orientation="horizontal")
 
         oasysgui.lineEdit(pre_box, self, "wf_relative_precision", "Relative Precision", labelWidth=260, valueType=float, orientation="horizontal")
@@ -260,6 +260,9 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         oasysgui.lineEdit(pre_box, self, "wf_sampling_factor_for_adjusting_nx_ny", "Sampling factor for adjusting nx/ny\n(effective if > 0)", labelWidth=260, valueType=float, orientation="horizontal")
 
         gui.rubber(self.controlArea)
+
+    def get_calculation_method_items(self):
+        return ["Manual", "Auto-Undulator", "Auto-Wiggler"]
 
     def set_TypeOfProperties(self):
         self.left_box_2_1.setVisible(self.type_of_properties==0)
@@ -550,7 +553,7 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
 
 
     def get_automatic_sr_method(self):
-        raise NotImplementedError()
+        return self.wf_sr_method
 
     def calculate_wavefront_propagation(self, srw_source):
         photon_energy_min, photon_energy_max,  photon_energy_points = self.get_photon_energy_for_wavefront_propagation(srw_source)

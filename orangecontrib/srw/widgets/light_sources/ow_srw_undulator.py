@@ -278,9 +278,6 @@ class OWSRWUndulator(OWSRWSource):
     def print_specific_infos(self, srw_source):
         print("1st Harmonic Energy", srw_source.get_resonance_energy(), "\n")
 
-    def get_automatic_sr_method(self):
-        return 1
-
     def get_photon_energy_for_wavefront_propagation(self, srw_source):
         if self.wf_energy_type == 0:
             resonance_energy = srw_source.get_resonance_energy()*self.wf_harmonic_number

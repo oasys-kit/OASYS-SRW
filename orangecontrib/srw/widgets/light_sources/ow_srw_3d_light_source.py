@@ -37,7 +37,7 @@ class OWSRW3DLightSource(OWSRWSource):
         oasysgui.lineEdit(left_box_2, self, "comment_character", "Comment Character", labelWidth=320, valueType=str, orientation="horizontal")
 
         gui.comboBox(left_box_2, self, "interpolation_method", label="Interpolation Method",
-                     items=["bi-linear", "bi-quadratic", "bi-cubic"], labelWidth=260,
+                     items=["bi-linear", "bi-quadratic", "bi-cubic", "1D cubic spline (Z) + 2D bi-cubic"], labelWidth=135,
                      sendSelectedValue=False, orientation="horizontal")
 
 
@@ -48,9 +48,6 @@ class OWSRW3DLightSource(OWSRWSource):
         self.le_file_name.setText(oasysgui.selectFileFromDialog(self, self.file_name, "3D data file"))
 
     # TODO: these methods maker sense only after reading the file, must be fixed
-
-    def get_automatic_sr_method(self):
-        return 2
 
     def get_default_initial_z(self):
         try:

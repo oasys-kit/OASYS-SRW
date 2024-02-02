@@ -57,6 +57,9 @@ class OWSRWBendingMagnet(OWSRWSource):
     def print_specific_infos(self, srw_source):
         pass
 
+    def get_calculation_method_items(self):
+        return ["Manual", "Auto"]
+
     def get_automatic_sr_method(self):
         return 2
 
