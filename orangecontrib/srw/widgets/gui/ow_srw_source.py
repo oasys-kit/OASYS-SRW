@@ -86,6 +86,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
     wf_photon_energy_points=Setting(11)
     wf_h_slit_gap = Setting(0.001)
     wf_v_slit_gap =Setting( 0.001)
+    wf_h_slit_c = Setting(0.0)
+    wf_v_slit_c =Setting( 0.0)
     wf_h_slit_points=Setting(100)
     wf_v_slit_points=Setting(100)
     wf_distance = Setting(10.0)
@@ -232,8 +234,12 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         wav_box = oasysgui.widgetBox(tab_wav, "Wavefront Parameters", addSpace=True, orientation="vertical", height=285)
 
         self.build_wf_photon_energy_box(wav_box)
-        oasysgui.lineEdit(wav_box, self, "wf_h_slit_gap", "H Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(wav_box, self, "wf_v_slit_gap", "V Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
+        box = oasysgui.widgetBox(wav_box, "", addSpace=False, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "wf_h_slit_gap", "H Slit Gap [m]", labelWidth=130, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "wf_h_slit_c", "  Center [m]", labelWidth=50, valueType=float, orientation="horizontal")
+        box = oasysgui.widgetBox(wav_box, "", addSpace=False, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "wf_v_slit_gap", "V Slit Gap [m]", labelWidth=130, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "wf_v_slit_c", "  Center [m]", labelWidth=50, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_h_slit_points", "H Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_v_slit_points", "V Slit Points", labelWidth=260, valueType=int, orientation="horizontal")
         oasysgui.lineEdit(wav_box, self, "wf_distance", "Propagation Distance [m]", labelWidth=260, valueType=float, orientation="horizontal")
@@ -565,6 +571,8 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
                                             v_slit_gap = self.wf_v_slit_gap,
                                             h_slit_points=self.wf_h_slit_points,
                                             v_slit_points=self.wf_v_slit_points,
+                                            h_position=self.wf_h_slit_c,
+                                            v_position=self.wf_v_slit_c,
                                             distance = self.wf_distance,
                                             electric_field_units = self.wf_units,
                                             wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.wf_sr_method == 0 else self.get_automatic_sr_method(),

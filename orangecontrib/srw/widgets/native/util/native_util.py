@@ -184,26 +184,34 @@ def calculate_degree_of_coherence_vs_sum_and_difference(coor, coor_conj, mutual_
 def load_intensity_file(filename):
     data, dump, allrange, arLabels, arUnits = file_load(filename)
 
+    dim_e = allrange[2]
     dim_x = allrange[5] # columns
     dim_y = allrange[8] # rows
-
-    data_size = data.shape[0]
 
     x_coordinates = numpy.linspace(allrange[3], allrange[4], dim_x)
     y_coordinates = numpy.linspace(allrange[6], allrange[7], dim_y)
 
-    if data_size==dim_x*dim_y:
-        np_array = data.reshape((dim_y, dim_x))
-        np_array = np_array.transpose()
+    data_size = data.shape[0]
+
+    if dim_e == 1:
+        if data_size == dim_x*dim_y:
+            np_array = data.reshape((dim_y, dim_x))
+            np_array = np_array.transpose()
+        else:
+            real_dim_y = int(data_size/dim_x)
+            data_to_remove = data_size%dim_x
+            index_to_remove = dim_y%real_dim_y
+
+            np_array = data[:-data_to_remove].reshape((real_dim_y, dim_x))
+            np_array = np_array.transpose()
+
+            y_coordinates = y_coordinates[:-index_to_remove]
     else:
-        real_dim_y = int(data_size/dim_x)
-        data_to_remove = data_size%dim_x
-        index_to_remove = dim_y%real_dim_y
-
-        np_array = data[:-data_to_remove].reshape((real_dim_y, dim_x))
-        np_array = np_array.transpose()
-
-        y_coordinates = y_coordinates[:-index_to_remove]
+        if data_size == dim_e * dim_x * dim_y:
+            np_array = numpy.sum(data.reshape((dim_y, dim_x, dim_e)), axis=2)
+            np_array = np_array.transpose()
+        else:
+            raise Exception(f"Malformed file, shape {dim_e}x{dim_x}x{dim_y} does not correspond to the total size {data.shape[0]}")
 
     return x_coordinates, y_coordinates, np_array
 
@@ -211,8 +219,11 @@ def load_intensity_file(filename):
 def load_mutual_intensity_file(filename):
     data, dump, allrange, arLabels, arUnits = file_load(filename)
 
+    dim_e = allrange[2]
     dim_x = allrange[5]
     dim_y = allrange[8]
+
+    if dim_e > 1: raise ValueError("ME Mutual Intensity file contains more than one energy")
 
     dim = 1
     if dim_x > 1: dim = dim_x

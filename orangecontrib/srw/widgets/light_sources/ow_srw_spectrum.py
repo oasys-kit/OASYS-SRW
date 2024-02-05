@@ -19,8 +19,8 @@ from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, W
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
-
 from wofrysrw.storage_ring.light_sources.srw_undulator_light_source import FluxPrecisionParameters, SRWUndulatorLightSource
+from wofrysrw.storage_ring.light_sources.srw_3d_light_source import SRW3DLightSource
 
 from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.util.srw_objects import SRWData
@@ -70,6 +70,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     spe_photon_energy_points=Setting(10000)
     spe_h_slit_gap = Setting(0.0001)
     spe_v_slit_gap =Setting( 0.0001)
+    spe_h_slit_c = Setting(0.0)
+    spe_v_slit_c =Setting( 0.0)
     spe_h_slit_points=Setting(1)
     spe_v_slit_points=Setting(1)
     spe_distance = Setting(1.0)
@@ -93,6 +95,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     calculated_total_power = 0.0
 
     received_light_source = None
+    received_wavefront = None
 
     TABS_AREA_HEIGHT = 618
     CONTROL_AREA_WIDTH = 405
@@ -134,8 +137,13 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         oasysgui.lineEdit(spe_box, self, "spe_photon_energy_min", "Photon Energy Min [eV]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(spe_box, self, "spe_photon_energy_max", "Photon Energy Max [eV]", labelWidth=260, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(spe_box, self, "spe_photon_energy_points", "Photon Energy Points", labelWidth=260, valueType=int, orientation="horizontal")
-        oasysgui.lineEdit(spe_box, self, "spe_h_slit_gap", "H Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(spe_box, self, "spe_v_slit_gap", "V Slit Gap [m]", labelWidth=260, valueType=float, orientation="horizontal")
+
+        box = oasysgui.widgetBox(spe_box, "", addSpace=False, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "spe_h_slit_gap", "H Slit Gap [m]", labelWidth=130, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "spe_h_slit_c", "  Center [m]", labelWidth=50, valueType=float, orientation="horizontal")
+        box = oasysgui.widgetBox(spe_box, "", addSpace=False, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "spe_v_slit_gap", "V Slit Gap [m]", labelWidth=130, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(box, self, "spe_v_slit_c", "  Center [m]", labelWidth=50, valueType=float, orientation="horizontal")
 
         self.box_points = oasysgui.widgetBox(spe_box, "", addSpace=False, orientation="vertical")
 
@@ -158,7 +166,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         tab_prop = oasysgui.createTabPage(self.tabs_precision, "Propagation")
 
         gui.comboBox(tab_prop, self, "spe_sr_method", label="Calculation Method",
-                     items=["Manual", "Auto"], labelWidth=260,
+                     items=["Manual", "Auto-Undulator", "Auto-Wiggler"], labelWidth=260,
                      sendSelectedValue=False, orientation="horizontal")
 
         oasysgui.lineEdit(tab_prop, self, "spe_relative_precision", "Relative Precision", labelWidth=260, valueType=float, orientation="horizontal")
@@ -225,11 +233,11 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                         energy_spread=received_electron_beam._energy_spread,
                                         current=received_electron_beam._current)
 
-        electron_beam._moment_x = 0.0
-        electron_beam._moment_y = 0.0
-        electron_beam._moment_z = self.get_default_initial_z()
-        electron_beam._moment_xp = 0.0
-        electron_beam._moment_yp = 0.0
+        electron_beam._moment_x = received_electron_beam._moment_x
+        electron_beam._moment_y = received_electron_beam._moment_y
+        electron_beam._moment_z = received_electron_beam._moment_z
+        electron_beam._moment_xp = received_electron_beam._moment_xp
+        electron_beam._moment_yp = received_electron_beam._moment_yp
         electron_beam._moment_xx = received_electron_beam._moment_xx
         electron_beam._moment_xxp = received_electron_beam._moment_xxp
         electron_beam._moment_xpxp = received_electron_beam._moment_xpxp
@@ -244,35 +252,25 @@ class OWSRWSpectrum(SRWWavefrontViewer):
             print("1st Harmonic Energy", srw_source.get_resonance_energy())
             print(srw_source.get_photon_source_properties(harmonic=1).to_info())
 
-    def get_default_initial_z(self):
-        if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-            return -0.5*self.received_light_source._magnetic_structure._length
-        elif isinstance(self.received_light_source, SRWUndulatorLightSource):
-            return -0.5*self.received_light_source._magnetic_structure._period_length*(self.received_light_source._magnetic_structure._number_of_periods + 4) # initial Longitudinal Coordinate (set before the ID)
-
     def get_srw_source(self, electron_beam=ElectronBeam()):
         if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
             return SRWBendingMagnetLightSource(name=self.received_light_source._name,
                                                electron_beam=electron_beam,
-                                               bending_magnet_magnetic_structure=self.received_light_source._magnetic_structure
-                                               )
+                                               bending_magnet_magnetic_structure=self.received_light_source._magnetic_structure)
         elif isinstance(self.received_light_source, SRWUndulatorLightSource):
             return SRWUndulatorLightSource(name=self.received_light_source._name,
                                            electron_beam=electron_beam,
-                                           undulator_magnetic_structure=self.received_light_source._magnetic_structure
-                                           )
+                                           undulator_magnetic_structure=self.received_light_source._magnetic_structure)
+        elif isinstance(self.received_light_source, SRW3DLightSource):
+            return SRW3DLightSource(name=self.received_light_source._name,
+                                    electron_beam=electron_beam,
+                                    magnet_magnetic_structure=self.received_light_source._magnetic_structure)
 
     def getCalculatedTotalPowerString(self):
         if self.calculated_total_power == 0:
             return ""
         else:
             return "Total: " + str(int(self.calculated_total_power)) + " W"
-
-    def get_automatic_sr_method(self):
-        if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
-            return 2
-        elif isinstance(self.received_light_source, SRWUndulatorLightSource):
-            return 1
 
     def get_minimum_propagation_distance(self):
         return round(self.get_source_length()*1.01, 6)
@@ -282,6 +280,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
             return self.received_light_source._magnetic_structure._length
         elif isinstance(self.received_light_source, SRWUndulatorLightSource):
             return self.received_light_source._magnetic_structure._period_length*self.received_light_source._magnetic_structure._number_of_periods
+        elif isinstance(self.received_light_source, SRW3DLightSource):
+            return self.received_light_source._magnetic_structure.get_SRWMagneticStructure().rz
 
     def checkFields(self):
 
@@ -319,8 +319,10 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                             v_slit_gap = self.spe_v_slit_gap,
                                             h_slit_points = self.spe_h_slit_points,
                                             v_slit_points = self.spe_v_slit_points,
+                                            h_position=self.spe_h_slit_c,
+                                            v_position=self.spe_v_slit_c,
                                             distance = self.spe_distance,
-                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.spe_sr_method == 0 else self.get_automatic_sr_method(),
+                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=self.spe_sr_method,
                                                                                                         relative_precision=self.spe_relative_precision,
                                                                                                         start_integration_longitudinal_position=self.spe_start_integration_longitudinal_position,
                                                                                                         end_integration_longitudinal_position=self.spe_end_integration_longitudinal_position,
@@ -331,7 +333,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
 
-        if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
+        if isinstance(self.received_light_source, SRWBendingMagnetLightSource) or isinstance(self.received_light_source, SRW3DLightSource):
             e, i = srw_wavefront.get_flux(multi_electron=True, polarization_component_to_be_extracted=self.spe_polarization_component_to_be_extracted)
         elif isinstance(self.received_light_source, SRWUndulatorLightSource):
             e, i = srw_source.get_undulator_flux(source_wavefront_parameters=wf_parameters,
@@ -353,7 +355,7 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                             h_position=self.spe_on_axis_x,
                                             v_position=self.spe_on_axis_y,
                                             distance = self.spe_distance,
-                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=0 if self.spe_sr_method == 0 else self.get_automatic_sr_method(),
+                                            wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=self.spe_sr_method,
                                                                                                         relative_precision=self.spe_relative_precision,
                                                                                                         start_integration_longitudinal_position=self.spe_start_integration_longitudinal_position,
                                                                                                         end_integration_longitudinal_position=self.spe_end_integration_longitudinal_position,
@@ -452,8 +454,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         if not data is None:
             try:
                 if isinstance(data, SRWData):
-                    self.received_light_source = data.get_srw_beamline().get_light_source()
-                    received_wavefront = data.get_srw_wavefront()
+                    received_light_source = data.get_srw_beamline().get_light_source()
+                    received_wavefront    = data.get_srw_wavefront()
 
                     if not received_wavefront is None:
                         if self.spe_photon_energy_min == 0.0 and self.spe_photon_energy_max == 0.0:
@@ -462,17 +464,19 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                             self.spe_photon_energy_points=received_wavefront.mesh.ne
                         self.spe_h_slit_gap = received_wavefront.mesh.xFin - received_wavefront.mesh.xStart
                         self.spe_v_slit_gap = received_wavefront.mesh.yFin - received_wavefront.mesh.yStart
+                        self.spe_h_slit_c = received_wavefront.mesh.xStart + 0.5*self.spe_h_slit_gap
+                        self.spe_v_slit_c = received_wavefront.mesh.yStart + 0.5*self.spe_v_slit_gap
                         self.spe_distance = received_wavefront.mesh.zStart
 
                     n_tab = len(self.tabs_precision)
 
-                    if isinstance(self.received_light_source, SRWBendingMagnetLightSource):
+                    if isinstance(received_light_source, SRWBendingMagnetLightSource) or isinstance(received_light_source, SRW3DLightSource):
                         self.spe_h_slit_points = received_wavefront.mesh.nx
                         self.spe_v_slit_points = received_wavefront.mesh.ny
                         self.box_points.setVisible(True)
 
                         if n_tab > 1: self.tabs_precision.removeTab(n_tab-1)
-                    elif isinstance(self.received_light_source, SRWUndulatorLightSource):
+                    elif isinstance(received_light_source, SRWUndulatorLightSource):
                         self.spe_h_slit_points = 1
                         self.spe_v_slit_points = 1
                         self.box_points.setVisible(False)
@@ -486,6 +490,9 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                             oasysgui.lineEdit(tab_flu, self, "spe_azimuthal_integration_precision_parameter", "Azimuthal integration precision param.", labelWidth=260, valueType=int, orientation="horizontal")
                     else:
                         raise ValueError("This source is not supported")
+
+                    self.received_light_source = received_light_source
+                    self.received_wavefront = received_wavefront
                 else:
                     raise ValueError("SRW data not correct")
             except Exception as exception:
