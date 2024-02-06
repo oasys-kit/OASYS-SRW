@@ -3,6 +3,7 @@ __author__ = 'labx'
 import sys, numpy
 from numpy import nan
 import scipy.constants as codata
+from copy import deepcopy
 
 from PyQt5.QtGui import QPalette, QColor, QFont
 from PyQt5.QtWidgets import QMessageBox
@@ -15,7 +16,7 @@ from oasys.util.oasys_util import EmittingStream
 
 from syned.storage_ring.light_source import ElectronBeam
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters, PolarizationComponent
+from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters, PolarizationComponent, TypeOfDependence
 from wofrysrw.storage_ring.srw_electron_beam import SRWElectronBeam
 
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
@@ -75,8 +76,6 @@ class OWSRWSpectrum(SRWWavefrontViewer):
     spe_h_slit_points=Setting(1)
     spe_v_slit_points=Setting(1)
     spe_distance = Setting(1.0)
-    spe_on_axis_x = Setting(0.0)
-    spe_on_axis_y =Setting( 0.0)
     spe_polarization_component_to_be_extracted = Setting(6)
 
     spe_sr_method = Setting(1)  
@@ -104,6 +103,10 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         super().__init__(show_automatic_box=show_automatic_box, show_view_box=False)
 
         self.general_options_box.setVisible(False)
+
+        self.runaction = widget.OWAction("Calculated Spectrum", self)
+        self.runaction.triggered.connect(self.calculateRadiation)
+        self.addAction(self.runaction)
 
         button_box = oasysgui.widgetBox(self.controlArea, "", addSpace=False, orientation="horizontal")
 
@@ -155,9 +158,6 @@ class OWSRWSpectrum(SRWWavefrontViewer):
         gui.comboBox(spe_box, self, "spe_polarization_component_to_be_extracted", label="Polarization Component",
                      items=PolarizationComponent.tuple(), labelWidth=150,
                      sendSelectedValue=False, orientation="horizontal")
-
-        oasysgui.lineEdit(spe_box, self, "spe_on_axis_x", "H On-Axis Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(spe_box, self, "spe_on_axis_y", "V On-Axis Position [m]", labelWidth=260, valueType=float, orientation="horizontal")
 
         pre_box = oasysgui.widgetBox(self.controlArea, "Precision Parameters", addSpace=False, orientation="vertical", width=self.CONTROL_AREA_WIDTH-5)
 
@@ -343,7 +343,9 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                                                                                    azimuthal_integration_precision_parameter=self.spe_azimuthal_integration_precision_parameter,
                                                                                                    calculation_type=1))
 
-        tickets.append(SRWPlot.get_ticket_1D(e, i))
+        power = i * 1e3 * (e[1]-e[0]) * codata.e
+        cumulated_power = numpy.cumsum(power)
+        self.calculated_total_power = cumulated_power[-1]
 
         wf_parameters = WavefrontParameters(photon_energy_min = self.spe_photon_energy_min,
                                             photon_energy_max = self.spe_photon_energy_max,
@@ -352,8 +354,8 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                             v_slit_gap = 0.0,
                                             h_slit_points = 1,
                                             v_slit_points = 1,
-                                            h_position=self.spe_on_axis_x,
-                                            v_position=self.spe_on_axis_y,
+                                            h_position=self.spe_h_slit_c,
+                                            v_position=self.spe_v_slit_c,
                                             distance = self.spe_distance,
                                             wavefront_precision_parameters=WavefrontPrecisionParameters(sr_method=self.spe_sr_method,
                                                                                                         relative_precision=self.spe_relative_precision,
@@ -363,18 +365,12 @@ class OWSRWSpectrum(SRWWavefrontViewer):
                                                                                                         use_terminating_terms=self.spe_use_terminating_terms,
                                                                                                         sampling_factor_for_adjusting_nx_ny=self.spe_sampling_factor_for_adjusting_nx_ny))
 
-        power = i * 1e3 * (e[1]-e[0]) * codata.e
-        cumulated_power = numpy.cumsum(power)
-        self.calculated_total_power = cumulated_power[-1]
-
         srw_wavefront = srw_source.get_SRW_Wavefront(source_wavefront_parameters=wf_parameters)
-
-        e, i = srw_wavefront.get_flux(multi_electron=False, polarization_component_to_be_extracted=self.spe_polarization_component_to_be_extracted)
+        _, on_axis_i  = srw_wavefront.get_flux(multi_electron=False, polarization_component_to_be_extracted=self.spe_polarization_component_to_be_extracted)
 
         tickets.append(SRWPlot.get_ticket_1D(e, i))
-
+        tickets.append(SRWPlot.get_ticket_1D(e, on_axis_i))
         tickets.append(SRWPlot.get_ticket_1D(e, power))
-
         tickets.append(SRWPlot.get_ticket_1D(e, cumulated_power))
 
         self.progressBarSet(progress_bar_value)

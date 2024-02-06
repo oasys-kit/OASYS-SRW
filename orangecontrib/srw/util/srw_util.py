@@ -409,8 +409,8 @@ class SRWPlot:
 
             self.plot_canvas.replot()
 
-            self.info_box.total.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
-            self.info_box.total_2.setText("{:.2e}".format(decimal.Decimal(ticket['total'])))
+            self.info_box.total.setText("{:.2e}".format(decimal.Decimal(float(ticket['total']))))
+            self.info_box.total_2.setText("{:.2e}".format(decimal.Decimal(float(ticket['total']))))
             self.info_box.fwhm_h.setText("{:5.4f}".format(ticket['fwhm']*factor))
             self.info_box.label_h.setText("FWHM " + xum)
             self.info_box.sigma_h.setText("{:5.4f}".format(ticket['sigma']*factor))
