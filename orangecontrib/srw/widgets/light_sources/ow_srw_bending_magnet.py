@@ -5,13 +5,10 @@ from orangewidget import gui
 from orangewidget.settings import Setting
 from oasys.widgets import gui as oasysgui
 from oasys.widgets import congruence
-from oasys.util.oasys_util import EmittingStream
 
-from wofrysrw.propagator.wavefront2D.srw_wavefront import WavefrontParameters, WavefrontPrecisionParameters
 from wofrysrw.storage_ring.light_sources.srw_bending_magnet_light_source import SRWBendingMagnetLightSource
 from wofrysrw.storage_ring.magnetic_structures.srw_bending_magnet import SRWBendingMagnet
 
-from orangecontrib.srw.util.srw_util import SRWPlot
 from orangecontrib.srw.widgets.gui.ow_srw_source import OWSRWSource
 
 from syned.storage_ring.magnetic_structures.bending_magnet import BendingMagnet

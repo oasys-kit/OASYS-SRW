@@ -467,7 +467,11 @@ class OWSRWSpectrum(SRWWavefrontViewer):
 
                     n_tab = len(self.tabs_precision)
 
-                    if isinstance(received_light_source, SRWBendingMagnetLightSource) or isinstance(received_light_source, SRW3DLightSource):
+                    if isinstance(received_light_source, SRWBendingMagnetLightSource):
+                        self.spe_h_slit_points = 1
+                        self.spe_v_slit_points = 1
+                        self.box_points.setVisible(False)
+                    elif isinstance(received_light_source, SRW3DLightSource):
                         self.spe_h_slit_points = received_wavefront.mesh.nx
                         self.spe_v_slit_points = received_wavefront.mesh.ny
                         self.box_points.setVisible(True)
