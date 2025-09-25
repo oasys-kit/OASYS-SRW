@@ -91,7 +91,7 @@ class SRWBeamlineRenderer(AbstractBeamlineRenderer):
 
         if not input_data is None:
             self.srw_data = input_data
-            self.render(on_receiving_input=True)
+            self.perform_rendering(on_receiving_input=True)
 
     def render_beamline(self):
         if not self.srw_data is None:
