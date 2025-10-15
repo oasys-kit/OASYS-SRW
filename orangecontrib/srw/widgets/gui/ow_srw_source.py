@@ -189,13 +189,13 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
         gui.separator(left_box_2_3_r)
 
         oasysgui.lineEdit(left_box_2_3_l, self, "horizontal_emittance", "Emittance x [m]", labelWidth=100, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_2_3_l, self, "horizontal_beta"     , "\u03B2x [m]"    , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_l, self, "horizontal_alpha"    , "\u03B1x [rad]"    , labelWidth=100, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2_3_l, self, "horizontal_beta"     , "\u03B2x [m]"    , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_l, self, "horizontal_eta"      , "\u03B7x [m]"    , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_l, self, "horizontal_etap"     , "\u03B7x' [rad]"   , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_r, self, "vertical_emittance"  , "Emittance y [m]", labelWidth=100, valueType=float, orientation="horizontal")
-        oasysgui.lineEdit(left_box_2_3_r, self, "vertical_beta"       , "\u03B2y [m]"    , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_r, self, "vertical_alpha"      , "\u03B1y [rad]"    , labelWidth=100, valueType=float, orientation="horizontal")
+        oasysgui.lineEdit(left_box_2_3_r, self, "vertical_beta"       , "\u03B2y [m]"    , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_r, self, "vertical_eta"        , "\u03B7y [m]"    , labelWidth=100, valueType=float, orientation="horizontal")
         oasysgui.lineEdit(left_box_2_3_r, self, "vertical_etap"       , "\u03B7y' [rad]"   , labelWidth=100, valueType=float, orientation="horizontal")
 
@@ -386,16 +386,16 @@ class OWSRWSource(SRWWavefrontViewer, WidgetDecorator):
             self.moment_ypyp = electron_beam._moment_ypyp
 
         elif self.type_of_properties == 2:
-            electron_beam.set_moments_from_twiss(horizontal_emittance = self.horizontal_emittance,
-                                                 horizontal_beta      = self.horizontal_beta,
-                                                 horizontal_alpha     = self.horizontal_alpha,
-                                                 horizontal_eta       = self.horizontal_eta,
-                                                 horizontal_etap      = self.horizontal_etap,
-                                                 vertical_emittance   = self.vertical_emittance,
-                                                 vertical_beta        = self.vertical_beta,
-                                                 vertical_alpha       = self.vertical_alpha,
-                                                 vertical_eta         = self.vertical_eta,
-                                                 vertical_etap        = self.vertical_etap)
+            electron_beam.set_twiss_all(emittance_x = self.horizontal_emittance,
+                                        beta_x      = self.horizontal_beta,
+                                        alpha_x     = self.horizontal_alpha,
+                                        eta_x       = self.horizontal_eta,
+                                        etap_x      = self.horizontal_etap,
+                                        emittance_y = self.vertical_emittance,
+                                        beta_y      = self.vertical_beta,
+                                        alpha_y     = self.vertical_alpha,
+                                        eta_y       = self.vertical_eta,
+                                        etap_y      = self.vertical_etap)
 
             self.moment_xx = electron_beam._moment_xx
             self.moment_xpxp = electron_beam._moment_xpxp
